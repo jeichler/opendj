@@ -88,31 +88,31 @@ Idea:
 # Conventions
 
 ## Component names
-Convention: ``` <layer>-<component>-<additional> ```
+Convention: ``` <layer>-<component>[-<additional>]```
+Layer: the architecture layer, like frontend, service, provider, backend
+Component: the actual name of the component
+additional: optional addition names, if a component is de-composed into multiple sub-comonents
 
 
 ## URI Paths and API Endpoints
 - static UI stuff: /**ui**/*<component>*/...
   Examples: 
     - www.opendj.io/ui/web/img/logo.png
-    The only exception to this rule is the landing page *www.opendj.io* which is served directly from there.
+    The only exception to this rule is the landing page *www.opendj.io* which is served directly from there, at least with a re-direct to opendj.io/ui/web/index.html
 
 
-- APIs: /**api**/*<component>*/...
+- APIs: /**api**/*<component>*/*<version>*
+API: static priced
+component: name of the component, *without the layer name* (to shorten names)
+version: major version number of the api. "v1" for most services for the time being.
   Examples:
-    - www.opendj.io/api/service-playlist/get 
-    - www.opendj.io/api/backend-spotifyprovider/spotifyPleaseCallbackHereAfterUserConsent
-
-
-
+    - www.opendj.io/api/playlist/v1/get 
+    - www.opendj.io/api/spotify/v1/search
 ***???*** 
 Not sure if this is really a good idea - if you have a single component service both static stuff and api, you need two routes in OpenShift to get the traffic to that component. Better would be:
 /**<component>**/*ui*/...
 /**<component>**/*api*/...
-
-
-
-
+--> We dont have that due to the layering defined in the architecutre. And if yes, then we do create two  routes for heavens sake
 
 
 
@@ -130,6 +130,7 @@ git structure:
 -components
 --<component name>
 ---docs
+---api
 ---src
 ---deploy
 
@@ -187,6 +188,8 @@ http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.mu
 http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/getAvailableDevices?event=4711
 http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/searchTrack?event=4711&q=Michael+Jackson
 
+
+http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
 
 
 
