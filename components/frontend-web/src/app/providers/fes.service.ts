@@ -40,6 +40,9 @@ export class FEService {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
 
+        // TODO: DanielF says: I need not the fromIndex, but the trackID, because the fromIndex might have changed
+        // meanwhile on the server side (imagine two concurrent edits). adding an syntax error here for ortwin to notice!
+        READ COMMENT ABOVE AND FIX ME PLEASE
         return this.http.get(this.SPOTIFY_PROVIDER_API +
             '/events/0/playlists/0/reorder?from=' + encodeURIComponent(fromIndex) +
             '&to=' + encodeURIComponent(toIndex));
