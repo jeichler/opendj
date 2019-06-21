@@ -1,41 +1,11 @@
 ---
 - hosts: localhost
+  vars:
+    NAMESPACE: "dfroehli-opendj-dev"
+    DNS_BASENAME: "dev.opendj.io"
   tasks:
-    - name: Deploy Kafka via Operator
-      k8s:
-        state: present
-        wait: true
-        definition:
-          apiVersion: kafka.strimzi.io/v1alpha1
-          kind: Kafka
-          metadata:
-            name: opendj-kafka
-            namespace: "{{ namespace }}"
-          spec:
-            kafka:
-              version: 2.1.1
-              replicas: 1
-              listeners:
-                plain: {}
-                tls: {}
-              config:
-                offsets.topic.replication.factor: 1
-                transaction.state.log.replication.factor: 1
-                transaction.state.log.min.isr: 1
-                log.message.format.version: "2.1"
-              storage:
-                type: persistent-claim
-                size: 1Gi
-                deleteClaim: true
-            zookeeper:
-              replicas: 1
-              storage:
-                type: persistent-claim
-                size: 1Gi
-                deleteClaim: true
-
-# Create Secret Manually:
-#  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
+    # Create Secret Manually:
+    #  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
     # - name: Create Spotify secret
     #   k8s:
     #     state: present
@@ -48,10 +18,7 @@
     #         CLIENT_SECRET: <SECRET>
     #       metadata:
     #         name: spotify-api-credentials
-    #         namespace: "{{ namespace }}"
-          type: Opaque
-  
-      
+    #         namespace: "{{NAMESPACE}}"
     - name: Create ImageStreamTag
       k8s:
         state: present
@@ -62,10 +29,10 @@
           metadata:
             annotations:
             labels:
-              app: spotify-provider-boundary
-              template: opendj-nodejs-spotify-provider-boundary
-            name: spotify-provider-boundary
-            namespace: "{{ namespace }}"
+              app: provider-spotify
+              template: opendj-nodejs-provider-spotify
+            name: provider-spotify
+            namespace: "{{NAMESPACE}}"
           spec:
             lookupPolicy:
               local: false
@@ -79,24 +46,24 @@
           metadata:
             annotations:
             labels:
-              app: spotify-provider-boundary
-              template: opendj-nodejs-spotify-provider-boundary
-            name: spotify-provider-boundary
-            namespace: "{{namespace}}"
+              app: provider-spotify
+              template: opendj-nodejs-provider-spotify
+            name: provider-spotify
+            namespace: "{{NAMESPACE}}"
           spec:
             failedBuildsHistoryLimit: 5
             nodeSelector: null
             output:
               to:
                 kind: ImageStreamTag
-                name: spotify-provider-boundary:latest
+                name: provider-spotify:latest
             postCommit: {}
             resources: {}
             runPolicy: Serial
             source:
-              contextDir: components/spotify-provider-boundary
+              contextDir: components/provider-spotify
               git:
-                uri: https://github.com/sa-mw-dach/OpenDJ.git
+                uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
               sourceStrategy:
@@ -107,7 +74,7 @@
                   name: nodejs:8
                   namespace: openshift
               type: Source
-            successfulBuildsHistoryLimit: 5
+            successfulBuildsHistoryLimit: 2
             triggers:
             - imageChange:
               type: ImageChange
@@ -129,15 +96,15 @@
             annotations:
               template.alpha.openshift.io/wait-for-ready: 'true'
             labels:
-              app: spotify-provider-boundary
-              template: opendj-nodejs-spotify-provider-boundary
-            name: spotify-provider-boundary
-            namespace: "{{namespace}}"
+              app: provider-spotify
+              template: opendj-nodejs-provider-spotify
+            name: provider-spotify
+            namespace: "{{NAMESPACE}}"
           spec:
-            replicas: 1
+            replicas: 2
             revisionHistoryLimit: 10
             selector:
-              name: spotify-provider-boundary
+              name: provider-spotify
             strategy:
               activeDeadlineSeconds: 21600
               resources: {}
@@ -151,8 +118,8 @@
             template:
               metadata:
                 labels:
-                  name: spotify-provider-boundary
-                name: spotify-provider-boundary
+                  name: provider-spotify
+                name: provider-spotify
               spec:
                 containers:
                   - env:
@@ -167,7 +134,7 @@
                       - name: KAFKA_HOST
                         value: "opendj-kafka-kafka-bootstrap:9092"
                       - name: SPOTIFY_CALLBACK_URL
-                        value: "http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/auth_callback"
+                        value: "http://{{DNS_BASENAME}}/api/provider-spotify/v1/auth_callback"
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
                         value: "60000"
                       - name: SPOTIFY_REFRESH_INITIAL_DELAY
@@ -180,16 +147,25 @@
                         value: "3"     
                       - name: SPOTIFY_SEARCH_LIMIT
                         value: "20"     
-
                     envFrom:
                       - prefix: SPOTIFY_
                         secretRef:
                           name: spotify-api-credentials
                     imagePullPolicy: IfNotPresent
-                    name: spotify-provider-boundary
+                    name: provider-spotify
                     ports:
                       - containerPort: 8080
                         protocol: TCP
+                    readinessProbe:
+                      failureThreshold: 3
+                      httpGet:
+                        path: /ready
+                        port: 8080
+                        scheme: HTTP
+                      initialDelaySeconds: 1
+                      periodSeconds: 10
+                      successThreshold: 1
+                      timeoutSeconds: 1
                     resources:
                       limits:
                         memory: 512Mi
@@ -205,11 +181,11 @@
               - imageChangeParams:
                   automatic: true
                   containerNames:
-                    - spotify-provider-boundary
+                    - provider-spotify
                   from:
                     kind: ImageStreamTag
-                    name: 'spotify-provider-boundary:latest'
-                    namespace: "{{namespace}}"
+                    name: 'provider-spotify:latest'
+                    namespace: "{{NAMESPACE}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service
@@ -222,9 +198,9 @@
           metadata:
             annotations:
             labels:
-              app: spotify-provider-boundary
-            name: spotify-provider-boundary
-            namespace: "{{namespace}}"
+              app: provider-spotify
+            name: provider-spotify
+            namespace: "{{NAMESPACE}}"
           spec:
             ports:
               - name: web
@@ -232,7 +208,7 @@
                 protocol: TCP
                 targetPort: 8080
             selector:
-              name: spotify-provider-boundary
+              name: provider-spotify
             sessionAffinity: None
             type: ClusterIP
     - name: Create Route
@@ -245,13 +221,15 @@
           metadata:
             annotations:
             labels:
-              app: spotify-provider-boundary
-            name: spotify-provider-boundary
-            namespace: "{{namespace}}"
+              app: provider-spotify
+            name: provider-spotify
+            namespace: "{{NAMESPACE}}"
           spec:
+            host: "{{DNS_BASENAME}}"
+            path: /api/provider-spotify
             to:
               kind: Service
-              name: spotify-provider-boundary
+              name: provider-spotify
               weight: 100
             wildcardPolicy: None
             
