@@ -193,6 +193,8 @@ http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
 
 
 
+http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=4711&q=Rock
+
 
 
 
