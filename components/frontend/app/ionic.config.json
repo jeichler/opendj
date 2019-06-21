@@ -1,7 +1,0 @@
-{
-  "name": "OpenDj-fe",
-  "integrations": {
-    "cordova": {}
-  },
-  "type": "angular"
-}
