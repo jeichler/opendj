@@ -7,55 +7,6 @@ This contains
 
 ## Architecture Questions:
 
-### Layering I
-is the client allowed to directly call a low level, e.g. frontent-web call spotify-backed?
-Option A: yes
-Example: EventRegistration Page calls backend-spotify to retrview auth-url 
-Pro: 
-+fast: several backends can be queried by the browser in parallel
-+de-coupling of microservers - no deep call chain of A->B->C->D
-- coupling of frontend to various deeper layers of the architecture
-
-### Layering II
-Layers:
-1. frontend 
-Contains all UX/UI relevant stuff that actually runs on the client (HTML, Android App), not on sever.  
-**??? Good Idea???** HTML needs to be served by Server!!!  
-Examples:
-    - frontend-browser-ui  
-    - frontend-app-android (if we need one later)
-1. services-frontend 
-
-### Layering III
-We need to de-couple the frontend from the services, e.g. for converting internal kafka event streams to websockets, isolate changes.
-Options:
-1. [Backend for Frontend](https://docs.microsoft.com/en-us/azure/architecture/patterns/backends-for-frontends) - dedicated backend per frontend type (web, app)
-1. [Gateway Aggregration](https://docs.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation) 
-
-I think we need a "Backend For Frontend" Facade, aka "Mobile Backend as a Service". 
-Responsibilties:
-- Auth checking
-- mapping of internal kafka events to websockets
-
-## WebSockets I
-Use websockets for client/server async events, or bring kafka out to the client?
-
-Con:
-1. Kafaka protocol is binary, more complex to get it through routers, load balancers
-1. Security?
-
-## WebSockets II
-If we use websockets and have a BFF
-
-
-### Persistence
-Isnt kafka enough? The last event on the topic? 
-Question: how to delete? active message? Timestamp+timeout?
-
-
-### Are microservices components or subsystems in UML
-e.g. the playlist service has two components: the api and a database (e.g. mongo)
-How do we describe that in UML?
 
 ### Service Discovery: 
 Description: 
@@ -83,36 +34,6 @@ Idea:
 
 - Principal: No breaking changes
 - Principal: no mandatory fields in messages.
-
-
-# Conventions
-
-## Component names
-Convention: ``` <layer>-<component>[-<additional>]```
-Layer: the architecture layer, like frontend, service, provider, backend
-Component: the actual name of the component
-additional: optional addition names, if a component is de-composed into multiple sub-comonents
-
-
-## URI Paths and API Endpoints
-- static UI stuff: /**ui**/*<component>*/...
-  Examples: 
-    - www.opendj.io/ui/web/img/logo.png
-    The only exception to this rule is the landing page *www.opendj.io* which is served directly from there, at least with a re-direct to opendj.io/ui/web/index.html
-
-
-- APIs: /**api**/*<component>*/*<version>*
-API: static priced
-component: name of the component, *without the layer name* (to shorten names)
-version: major version number of the api. "v1" for most services for the time being.
-  Examples:
-    - www.opendj.io/api/playlist/v1/get 
-    - www.opendj.io/api/spotify/v1/search
-***???*** 
-Not sure if this is really a good idea - if you have a single component service both static stuff and api, you need two routes in OpenShift to get the traffic to that component. Better would be:
-/**<component>**/*ui*/...
-/**<component>**/*api*/...
---> We dont have that due to the layering defined in the architecutre. And if yes, then we do create two  routes for heavens sake
 
 
 
@@ -195,6 +116,89 @@ http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
 
 http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=4711&q=Rock
 
+
+http://dev.opendj.io/api/service-playlist/v1/searchTrack?event=4711&q=Rock
+
+
+# playlist API RESTfull:
+
+## Retrieve current Playlist:
+GET dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
+Response: Array of Track Objects:
+[{
+  "id": "4pbJqGIASGPr0ZpGpnWkDn",
+  "name": "We Will Rock You - Remastered",
+  "artist": "Queen",
+  "year": 1977,
+  "image_url": "https://i.scdn.co/image/3b745272b2865b71822c5c6c2727ccdcade6aa9f",
+  "duration_ms": 122066,
+  "preview": "https://p.scdn.co/mp3-preview/1d423eaa321c18b53fa2b857bcb60b8aa92cca04?cid=ae5f9971dec243f98cf746c496181712",
+  "popularity": 79,
+  "provider": "spotify",
+  "genre": "glam rock, rock",
+  "danceability": 69,
+  "energy": 50,
+  "acousticness": 68,
+  "instrumentalness": 0,
+  "liveness": 26,
+  "happiness": 48,
+  "bpm": 81,
+  "added_by": "dfroehli"
+}]
+
+## start, stop,skip current Playlist (Curators Only)
+POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/action?cmd=start
+
+## Add Track to to List:
+POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
+Input:(Body: provider, id as received from search, userID)
+Response: 200 OK
+
+## Move Track to new Position:
+PATCH dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks/{trackId}
+Input Body: newPos, zero based integer of new desired position in the playlist of that track
+Response: 200 OK
+
+
+# playlist API Old School::
+
+## Retrieve current Playlist:
+GET dev.opendj.io/api/service-playlist/v1/read?event={eventId}&playlist={playlistId}
+Response: Array of Track Objects:
+[{
+  "id": "4pbJqGIASGPr0ZpGpnWkDn",
+  "name": "We Will Rock You - Remastered",
+  "artist": "Queen",
+  "year": 1977,
+  "image_url": "https://i.scdn.co/image/3b745272b2865b71822c5c6c2727ccdcade6aa9f",
+  "duration_ms": 122066,
+  "preview": "https://p.scdn.co/mp3-preview/1d423eaa321c18b53fa2b857bcb60b8aa92cca04?cid=ae5f9971dec243f98cf746c496181712",
+  "popularity": 79,
+  "provider": "spotify",
+  "genre": "glam rock, rock",
+  "danceability": 69,
+  "energy": 50,
+  "acousticness": 68,
+  "instrumentalness": 0,
+  "liveness": 26,
+  "happiness": 48,
+  "bpm": 81,
+  "added_by": "dfroehli"
+}]
+
+## start, stop,skip current Playlist (Curators Only)
+POST dev.opendj.io/api/service-playlist/v1/play?event={eventId}&playlist={playlistId}&cmd=start
+Other cmds: stop, skip
+
+## Add Track to to List:
+POST dev.opendj.io/api/service-playlist/v1/addTrack?event={eventId}&playlist={playlistId}
+Input:(Body: provider, id as received from search, userID)
+Response: 200 OK
+
+## Move Track to new Position:
+POST dev.opendj.io/api/service-playlist/v1/moveTrack?event={eventId}&playlist={playlistId}
+Input Body: provider,id as received from search, newPo (zero based integer of new desired position in the playlist of that track)
+Response: 200 OK
 
 
 
