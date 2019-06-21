@@ -8,12 +8,12 @@ import { Injectable } from '@angular/core';
 })
 export class FEService {
 
-    SPOTIFY_API =  'http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider';
+    SPOTIFY_PROVIDER_API =  'http://dev.opendj.io/api/provider-spotify/v1';
 
     constructor(public http: HttpClient) {}
 
     searchTracks(queryString): any {
-        return this.http.get(this.SPOTIFY_API + '/searchTrack?event=4711&q=' + queryString);
+        return this.http.get(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=4711&q=' + queryString);
     }
 
 }
