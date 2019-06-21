@@ -43,7 +43,8 @@ export class FEService {
         // TODO: DanielF says: I need not the fromIndex, but the trackID, because the fromIndex might have changed
         // meanwhile on the server side (imagine two concurrent edits). adding an syntax error here for ortwin to notice!
         READ COMMENT ABOVE AND FIX ME PLEASE
-        return this.http.get(this.SPOTIFY_PROVIDER_API +
+        // TODO: DanielF: get is not suitable for a mutator, I suggest to use patch(preferred, because of MODIFY semantic),put or post here:
+        return this.http.patch(this.SPOTIFY_PROVIDER_API +
             '/events/0/playlists/0/reorder?from=' + encodeURIComponent(fromIndex) +
             '&to=' + encodeURIComponent(toIndex));
     }
@@ -59,10 +60,12 @@ export class FEService {
         return this.http.put(this.SPOTIFY_PROVIDER_API + '/events/0/playlists/0/pause', {});
     }
 
+ /*   DanielF says: there is no difference between "pause" and "stop". Lets make it play/pause, because sound more like music then start/stop
     stopTrack(): Observable<any> {
         return this.http.put(this.SPOTIFY_PROVIDER_API + '/events/0/playlists/0/stop', {});
     }
-
+*/
+ 
     playNextTrack(): Observable<any> {
         return this.http.put(this.SPOTIFY_PROVIDER_API + '/events/0/playlists/0/next', {});
     }
