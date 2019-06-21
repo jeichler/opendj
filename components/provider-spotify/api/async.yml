@@ -1,0 +1,7 @@
+asyncapi: '2.0.0-rc1'
+id: 'urn:provider-spotify'
+info:
+  title: Async API definition for provider-spotify
+  version: '1.0.0'
+# TODO: Add more flesh here
+

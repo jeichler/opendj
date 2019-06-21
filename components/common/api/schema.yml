@@ -1,0 +1,18 @@
+openapi: 3.0.0
+info:
+  title: Common Schemas used for OpenDJ
+  version: '1.0.0'
+components:
+  schemas:
+    Track:
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        duration_ms:
+          type: integer
+# TODO: Add more flesh here
+
+
+
