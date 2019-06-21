@@ -10,6 +10,10 @@ var log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
 var COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
+var readyState = {
+    kafkaClient: false,
+    refreshExpiredTokens: false,
+};
 
 if (COMPRESS_RESULT == 'true') {
     log.info("compression enabled");
@@ -19,7 +23,6 @@ if (COMPRESS_RESULT == 'true') {
 
 }
 app.use(cors());
-
 
 function handleError(err, response) {
     log.error('Error: ' + err);
@@ -58,8 +61,16 @@ var kafkaClient = new kafka.KafkaClient({
     reconnectOnIdle: true,
 });
 kafkaClient.on('error', function(err) {
-    log.log("kafkaClient error: %s -  reconnecting....", err);
+    log.error("kafkaClient error: %s -  reconnecting....", err);
+    readyState.kafkaClient = false;
+    readyState.kafkaClientError = JSON.stringify(err);
     kafkaClient.connect();
+});
+
+kafkaClient.on('connect', function(err) {
+    log.info("kafkaClient connect");
+    readyState.kafkaClient = true;
+    readyState.kafkaClientError = "";
 });
 
 kafkaClient.connect();
@@ -80,9 +91,6 @@ kafkaClient.createTopics(topicsToCreate, (error, result) => {
 
 var kafkaProducer = new kafka.Producer(kafkaClient);
 
-kafkaProducer.on('ready', function() {
-    log.info("kafkaProducer is ready");
-});
 kafkaProducer.on('error', function(err) {
     log.error("kafkaProducer error: %s", err);
 });
@@ -92,6 +100,10 @@ var kafkaConsumer = new kafka.Consumer(kafkaClient, [
 ], {
     autoCommit: true,
     fromOffset: true
+});
+
+kafkaConsumer.on('error', function(error) {
+    log.error("kafkaConsumer error: %s", error);
 });
 
 kafkaConsumer.on('message', function(message) {
@@ -125,9 +137,6 @@ kafkaConsumer.on('message', function(message) {
     }
 });
 
-kafkaConsumer.on('error', function(error) {
-    log.error("kafkaConsumer error: %s", error);
-});
 
 function fireEventStateChange(eventState) {
     log.debug("fireEventStateChange for eventID=%s", eventState.eventID);
@@ -372,8 +381,8 @@ function refreshAccessToken(event) {
 
 function refreshExpiredTokens() {
     log.trace("refreshExpiredTokens begin");
-
     mapOfEventStates.forEach(refreshAccessToken);
+    readyState.refreshExpiredTokens = true;
 
     log.trace("refreshExpiredTokens end");
 }
@@ -599,6 +608,17 @@ router.get('/trackDetails', async function(req, res) {
 
 });
 
+router.get('/ready', function(req, res) {
+    log.trace("ready begin");
+    // Default: not ready:
+    var status = 500;
+    if (readyState.kafkaClient &&
+        readyState.refreshExpiredTokens) {
+        status = 200;
+    }
+
+    res.status(status).send(JSON.stringify(readyState));
+});
 
 
 
@@ -635,7 +655,7 @@ if (typeof spotifyClientID !== 'undefined' && spotifyClientID) {
 //swaggerDocument = require('./swagger.json');
 //app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use("/backend-spotifyprovider", router);
+app.use("/api/provider-spotify/v1", router);
 
 // Wait 5 seconds for all messages to be processed, then check once for expired tokens:
 setTimeout(refreshExpiredTokens, SPOTIFY_REFRESH_INITIAL_DELAY);
