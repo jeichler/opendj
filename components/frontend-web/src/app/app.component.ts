@@ -12,7 +12,6 @@ import { EnvService } from './providers/env.service';
   templateUrl: 'app.component.html'
 })
 export class AppComponent implements OnInit {
-
   loggedIn = false;
   userDetails = { username: '', isCurator: false };
 
@@ -84,7 +83,7 @@ export class AppComponent implements OnInit {
       this.loggedIn = loggedIn;
       if (this.loggedIn) {
         this.appPages = this.appPagesLoggedIn;
-        this.router.navigateByUrl('/home');
+        this.router.navigateByUrl('/playlist');
       } else {
         this.appPages = this.appPagesLoggedOut;
         this.userDetails = { username: '', isCurator: false };
@@ -94,7 +93,7 @@ export class AppComponent implements OnInit {
   }
 
   listenForLoginEvents() {
-    this.events.subscribe('user:login', (data) => {
+    this.events.subscribe('user:login', data => {
       if (data !== null && data.length === 2) {
         this.userDetails.username = data[0];
         this.userDetails.isCurator = data[1];
@@ -118,5 +117,4 @@ export class AppComponent implements OnInit {
     this.checkLoginStatus();
     this.listenForLoginEvents();
   }
-
 }
