@@ -22,6 +22,8 @@ if (COMPRESS_RESULT == 'true') {
     log.info("compression disabled");
 
 }
+// Required for POST operations with body:
+app.use(express.json());
 
 function handleError(err, response) {
     log.error('Error: ' + err);
@@ -154,6 +156,7 @@ var SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost
 var DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
 var DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
 var DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
+var DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS || 'false') == 'true';
 var MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
 var INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
 
@@ -163,6 +166,7 @@ var mapOfEvents = new Map([
     ["0", {
         eventID: "0",
         autoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
+        allowDuplicateTracks: DEFAULT_ALLOW_DUPLICATE_TRACKS,
         activePlaylist: 0,
         progressPercentageRequiredForEffectivePlaylist: DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST,
         playlists: [{
@@ -208,6 +212,75 @@ async function createAutofillPlayList(eventID) {
     }
     log.trace("createAutofillPlayList end eventID=%s result=%s", eventID, JSON.stringify(result));
     return result;
+}
+
+function findTrackInList(listOfTracks, provider, trackID) {
+    log.trace("begin findTrackInList");
+    var result = -1;
+    for (let i = 0; i < listOfTracks.length; i++) {
+        var track = listOfTracks[i];
+        if (track.id == trackID && track.provider == provider) {
+            result = i;
+            break;
+        }
+    }
+    log.trace("end findTrackInList result=%i", result);
+    return result;
+}
+
+function getETADateForTrackInPlayList(playlist, pos) {
+    var ts = Date.now();
+    if (playlist.currentTrack) {
+        ts += (currentTrack.duration_ms - currentTrack.progress_ms);
+    }
+    for (var i = 0; i < pos; i++) {
+        ts += playlist.nextTracks[i].duration_ms;
+    }
+
+    return new Date(ts);
+}
+
+async function addTrack(event, playlist, provider, trackID, user) {
+    log.trace("begin addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
+    if (provider != "spotify") {
+        log.error("Unkown provider %s", provider);
+        throw { code: "PLYLST-100", msg: "Unknown provider " + provider + "! Currently, only spotify is implemented as provider" };
+    }
+
+
+    log.trace("check next tracks for duplicate")
+    var pos = findTrackInList(playlist.nextTracks, provider, trackID);
+    if (pos >= 0) {
+        log.debug("ADD rejected because in playlist at pos %s", pos);
+        var eta = getETADateForTrackInPlayList(playlist, pos);
+        throw { code: "PLYLST-110", msg: "Sorry, this track is already in the playlist at position #" + (pos + 1) + " and is expected to be played around " + eta.getHours() + ":" + eta.getMinutes() + "!" };
+    }
+
+    if (!event.allowDuplicateTracks) {
+        log.trace("duplicates not allowed, search for track in effective playlist");
+        pos = findTrackInList(event.effectivePlaylist, provider, trackID);
+        if (pos >= 0) {
+            log.debug("ADD rejected because not duplicated allowed and track is in effective playlist");
+            throw { code: "PLYLST-120", msg: "Sorry, this event does not allow duplicate tracks, and this track has already been played at " + event.effectivePlaylist[pos].started_at };
+        }
+    }
+
+    // Okay, track can be added. Let's get the details
+    try {
+        var track = await getTrackDetailsForTrackID(event.eventID, trackID);
+        if (user)
+            track.added_by = user;
+        else
+            track.added_by = "?";
+
+        // TODO: Insert AI/ML Code here to find the best position for this new track in the playlist
+        playlist.nextTracks.push(track);
+    } catch (err) {
+        log.error("getTrackDetailsForTrackID failed!", err);
+        throw { code: "PLYLST-130", msg: "Could not get details for track. Err=" + JSON.stringify(err) };
+    }
+
+    log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
 }
 
 function updateCurrentTrackProgress(playlist) {
@@ -386,9 +459,6 @@ function checkEvents() {
     log.trace("checkEvents end");
 }
 
-
-// ------------------------------------  Routes ---------------------
-
 // Make sure we update progress field of current Track, if we hand out
 // Track Info:
 function uglyTrackProgressUpdater() {
@@ -406,6 +476,8 @@ function getEventForRequest(req) {
 function getPlaylistForRequest(req) {
     return getEventForRequest(req).playlists[req.params.listID];
 }
+
+// ------------------------------------  Routes ---------------------
 
 router.get('/events/', function(req, res) {
     log.trace("begin GET events");
@@ -463,8 +535,42 @@ router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     res.status(200).send(playlist);
 });
 
-// TODO:
+router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
+    log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    log.trace("body=%s", JSON.stringify(req.body));
+
+    var event = getEventForRequest(req);
+    var playlist = getPlaylistForRequest(req);
+    var provider = req.body.provider;
+    var trackID = req.body.id;
+    var user = req.body.user;
+
+    try {
+        await addTrack(event, playlist, provider, trackID, user);
+        firePlaylistChangedEvent(event, playlist);
+        res.status(200).send(playlist);
+        log.info("Track ADDED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
+    } catch (error) {
+        log.error(error);
+        // Probably a duplicate or track not found problem:
+        // 406: Not Acceptable
+        res.status(406).send(JSON.stringify(error));
+    }
+
+
+});
+
+// return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id, user: ""});
+
+
+// TODOs:
+//
+// ADD Track:
 // return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id});
+// REORDER:
+//    return this.http.patch(this.PLAYLIST_PROVIDER_API +'/events/0/playlists/0/reorder', {from: fromIndex, to:toIndex, provider: "fixme", id: "fixme"} );
+// DELETE Track:
+// return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId));
 
 
 

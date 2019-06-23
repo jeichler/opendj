@@ -118,6 +118,8 @@
                         value: "true"
                       - name: DEFAULT_IS_PLAYING
                         value: "true"
+                      - name: DEFAULT_ALLOW_DUPLICATE_TRACKS
+                        value: "false"
                       - name: MOCKUP_AUTOSKIP
                         value: "0"
                       - name: INTERNAL_POLL_INTERVAL
