@@ -562,39 +562,40 @@ router.get('/trackDetails', async function(req, res) {
     if (colonPos != -1) {
         trackID = trackID.substring(colonPos + 1);
     }
+    res.send("WTF");
+    /*
+        // We have to make four calls - we do that in parallel to speed things up
+        // The problem is the "Genre" Result - it's not stored with the track, but with
+        // either the album or the artist. So here we go:
+        // #1: Get basic Track Result:
+        trackResult = api.getTrack(trackID);
 
-    // We have to make four calls - we do that in parallel to speed things up
-    // The problem is the "Genre" Result - it's not stored with the track, but with
-    // either the album or the artist. So here we go:
-    // #1: Get basic Track Result:
-    trackResult = api.getTrack(trackID);
+        // #2: Get get Track Audio Features (danceability, energy and stuff):
+        audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
+        
+            // When we have trackResult we get the album and artist ID , and with that, we can make call 
+            // #3 to get album details and ...
+            trackResult = await trackResult;
+            if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
+                albumResult = api.getAlbum(trackResult.body.album.id);
+            }
 
-    // #2: Get get Track Audio Features (danceability, energy and stuff):
-    audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
+            // ... call #4 to get Artist Result:
+            if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
+                artistResult = api.getArtist(trackResult.body.artists[0].id);
+            }
 
-    // When we have trackResult we get the album and artist ID , and with that, we can make call 
-    // #3 to get album details and ...
-    trackResult = await trackResult;
-    if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
-        albumResult = api.getAlbum(trackResult.body.album.id);
-    }
+            // Wait for all results to return:
+            albumResult = await albumResult;
+            audioFeaturesResult = await audioFeaturesResult;
+            artistResult = await artistResult;
 
-    // ... call #4 to get Artist Result:
-    if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
-        artistResult = api.getArtist(trackResult.body.artists[0].id);
-    }
+            // TODO: Merge responses into OpenDJ TrackResult 
+            // For now (and debugging), we send the raw: spotify objects:
+            var result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
 
-    // Wait for all results to return:
-    albumResult = await albumResult;
-    audioFeaturesResult = await audioFeaturesResult;
-    artistResult = await artistResult;
-
-    // TODO: Merge responses into OpenDJ TrackResult 
-    // For now (and debugging), we send the raw: spotify objects:
-    var result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
-
-    res.send(result);
-
+            res.send(result);
+        */
     /*
         res.send({
             track: trackResult,

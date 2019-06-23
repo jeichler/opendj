@@ -159,7 +159,7 @@
                     readinessProbe:
                       failureThreshold: 3
                       httpGet:
-                        path: /ready
+                        path: /api/provider-spotify/v1/ready
                         port: 8080
                         scheme: HTTP
                       initialDelaySeconds: 1

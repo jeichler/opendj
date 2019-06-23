@@ -1,0 +1,35 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Deploy Kafka via Operator
+      k8s:
+        state: present
+        wait: true
+        definition:
+          apiVersion: kafka.strimzi.io/v1alpha1
+          kind: Kafka
+          metadata:
+            name: opendj-kafka
+            namespace: "{{ namespace }}"
+          spec:
+            kafka:
+              version: 2.1.1
+              replicas: 1
+              listeners:
+                plain: {}
+                tls: {}
+              config:
+                offsets.topic.replication.factor: 1
+                transaction.state.log.replication.factor: 1
+                transaction.state.log.min.isr: 1
+                log.message.format.version: "2.1"
+              storage:
+                type: persistent-claim
+                size: 1Gi
+                deleteClaim: true
+            zookeeper:
+              replicas: 1
+              storage:
+                type: persistent-claim
+                size: 1Gi
+                deleteClaim: true

@@ -19,18 +19,22 @@ export class PlaylistPage implements OnInit {
     public actionSheetController: ActionSheetController,
     public toastController: ToastController,
     public websocketService: WebsocketService,
-    public mockService: MockService
+    public mockService: MockService,
+    public feSevice: FEService
   ) {
   }
 
   onRenderItems(event) {
-    console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
+    // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
     const draggedItem = this.playlist.splice(event.detail.from, 1)[0];
     this.playlist.splice(event.detail.to, 0, draggedItem);
-    // this.listItems = reorderArray(this.listItems, event.detail.from, event.detail.to);
+    /*
+    this.feSevice.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
+      data => {},
+      err => console.log(err));
+    */
     event.detail.complete();
-    // TODO:
-    // this.websocketService.updatePlaylist(this.playlist);
+
   }
 
   async presentModal() {
@@ -179,11 +183,11 @@ export class PlaylistAddModalComponent implements OnInit {
   }
 
   updateSearch() {
-
-    this.feService.searchTracks(this.queryText).subscribe(data => {
-      this.tracks = data;
-      // console.log(JSON.stringify(this.playlist));
-    });
+    this.feService.searchTracks(this.queryText).subscribe(
+      data => {
+        this.tracks = data;
+      },
+      err => console.log(err));
   }
 
   ngOnInit() {
