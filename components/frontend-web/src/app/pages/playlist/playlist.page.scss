@@ -1,18 +1,52 @@
+@mixin gradient-top {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(0deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+@mixin gradient-bottom {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(180deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+
+@mixin gradient-left {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(90eg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+
+@mixin gradient-right {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(270deg,  rgba(56, 70, 108, .8) 15%, rgba(79, 83, 94, 0.8) 80%) !important;
+}
+
+ion-header {
+ @include gradient-bottom;
+}
+
 ion-content {
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(162deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
-
-
-
+@include gradient-top;
+    // --ion-background-color: inherit;
 
 }
-.current-track {
-    // min-height: 5vh;
-    // height: 100px;
+
+ion-fab-button {
+    --background: rgb(64, 74, 187);
 }
-ion-toolbar {
-    --background: transparent !important;
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-}
+
+
+
+//  ion-toolbar {
+    // --background: transparent !important;
+    // --background-color: transparent;
+    // --ion-color-base: transparent !important;
+// }
+
+// .current-track {
+//     // min-height: 5vh;
+//     // height: 100px;
+// }

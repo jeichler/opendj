@@ -3,6 +3,7 @@ import { ModalController, ActionSheetController, ToastController, Platform } fro
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
+import { Track } from 'src/app/models/track';
 
 @Component({
   selector: 'app-playlist',
@@ -13,6 +14,18 @@ export class PlaylistPage implements OnInit {
   private selectedItem: any;
 
   playlist: any = [];
+
+  track: Track = {
+    id: '543bCW2ruMPmxUBWirQ3MR',
+    name: 'Cross Me (feat. Chance the Rapper & PnB Rock)',
+    artist: 'Ed Sheeran, Chance the Rapper, et al',
+    year: 2019,
+    image_url: 'https://i.scdn.co/image/d9b6b23a234ba66bc4ce7ec26368d5302355a57e',
+    duration_ms: 206186,
+    preview: 'https://p.scdn.co/mp3-preview/d5caccdfe52737ae696dfc02fdea2c7f5599231d?cid=ae5f9971dec243f98cf746c496181712',
+    popularity: 91,
+    provider: 'spotify'
+  };
 
   constructor(
     public modalController: ModalController,

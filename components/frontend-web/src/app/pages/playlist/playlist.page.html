@@ -1,60 +1,22 @@
 <!-- <div class="context"> -->
-<ion-content fullscreen>
-  <ion-header>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-menu-button color="light"></ion-menu-button>
-      </ion-buttons>
-      <ion-title color="light">
-        Playlist Name
-      </ion-title>
-      <ion-buttons *ngIf="platform.is('ios')" color="light" slot="end">
-        <ion-button shape="round" (click)="presentModal()">
-          <ion-icon color="light" name="add"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+<ion-header no-border>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button color="light"></ion-menu-button>
+    </ion-buttons>
+    <ion-title color="light">
+      Playlist Name
+    </ion-title>
+    <ion-buttons *ngIf="platform.is('ios')" color="light" slot="end">
+      <ion-button shape="round" (click)="presentModal()">
+        <ion-icon color="light" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <app-current-track [track]="track"></app-current-track>
+</ion-header>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <ion-item class="current-track" no-padding no-border>
-          <div slot="start">
-            <ion-thumbnail class="ion-margin-start">
-              <ion-img
-                src="https://www.verti-music-hall.de/assets/img/iStock-627183716_medium-5bb5fa97ca.jpg">
-              </ion-img>
-            </ion-thumbnail>
-          </div>
-
-          <div slot="end">
-            <ion-row>
-              <ion-col>
-                <ion-label text-wrap color="light">Title</ion-label>
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
-                <ion-button size="small" color="light" shape="round"
-                  fill="outline">
-                  <ion-icon name="square"></ion-icon>
-                </ion-button>
-                <ion-button size="small" color="success" shape="round">
-                  <ion-icon name="pause"></ion-icon>
-                </ion-button>
-                <ion-button size="small" color="light" shape="round"
-                  fill="outline">
-                  <ion-icon name="skip-forward"></ion-icon>
-                </ion-button>
-              </ion-col>
-            </ion-row>
-          </div>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-
+<ion-content>
   <ion-list no-padding>
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
@@ -82,7 +44,7 @@
   </ion-list>
 
   <ion-fab *ngIf="platform.is('android') || platform.is('desktop')"
-    vertical="bottom" horizontal="end" slot="fixed">
+    vertical="bottom" horizontal="end" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

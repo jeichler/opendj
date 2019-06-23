@@ -36,7 +36,8 @@
   ion-content {
     --background-color: transparent;
     --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(162deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+    --background: black;
+    // --ion-background-color: linear-gradient(162deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
   }
 
   ion-list {
