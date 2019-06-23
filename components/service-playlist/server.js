@@ -439,7 +439,7 @@ router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
     res.status(200).send(playlist);
 });
 
-router.get('/events/:eventID/playlists/:listID/skip', function(req, res) {
+router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
