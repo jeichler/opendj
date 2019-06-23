@@ -153,6 +153,7 @@ var SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost
 // Default for emergenceAddToPlaylist:
 var DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
 var DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
+var DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
 var MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
 var INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
 
@@ -162,14 +163,15 @@ var mapOfEvents = new Map([
     ["0", {
         eventID: "0",
         autoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
+        activePlaylist: 0,
+        progressPercentageRequiredForEffectivePlaylist: DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST,
         playlists: [{
             playlistID: 0,
             isPlaying: DEFAULT_IS_PLAYING,
-            //            currentTrackStartedAt: 0,
-            //            currentTrackPauseAt: 0,
             currentTrack: null,
             nextTracks: []
-        }]
+        }],
+        effectivePlaylist: []
     }],
 ]);
 
@@ -259,6 +261,19 @@ function pause(event, playlist) {
 function skip(event, playlist) {
     log.trace("skip begin");
     log.info("SKIP event=%s, playlist=%s", event.eventID, playlist.playlistID);
+
+    if (playlist.isPlaying && playlist.currentTrack) {
+        log.trace("skipping current track");
+        var progressPercentage = Math.round((playlist.currentTrack.progress_ms / playlist.currentTrack.duration_ms) * 100);
+        if (progressPercentage >= event.progressPercentageRequiredForEffectivePlaylist) {
+            log.debug("adding current track to effectivePlaylist")
+            event.effectivePlaylist.push(playlist.currentTrack);
+        } else {
+            log.debug("Track was skipped at %s\%, which is below required %s\% for effective playlist, so NOT adding it",
+                progressPercentage, event.progressPercentageRequiredForEffectivePlaylist);
+        }
+    }
+
     playlist.currentTrack = playlist.nextTracks.shift();
     if (playlist.currentTrack) {
         playlist.currentTrack.progress_ms = 0;
@@ -447,6 +462,11 @@ router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     firePlaylistChangedEvent(event, playlist);
     res.status(200).send(playlist);
 });
+
+// TODO:
+// return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id});
+
+
 
 app.use("/api/service-playlist/v1", router);
 
