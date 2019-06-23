@@ -6,6 +6,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { LoginPage } from './login.page';
+import { MoreOptionsComponent } from 'src/app/components/more-options/more-options.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,12 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [LoginPage]
+  entryComponents: [
+    MoreOptionsComponent
+  ],
+  declarations: [
+    LoginPage,
+    MoreOptionsComponent
+  ]
 })
 export class LoginPageModule {}

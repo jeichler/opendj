@@ -52,7 +52,8 @@ export class AppComponent implements OnInit {
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {
+    this.platform.ready().then((readySource) => {
+      console.log(`Platform: ${readySource}`);
       this.statusBar.styleDefault();
       this.splashScreen.hide();
     });
@@ -113,7 +114,6 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit() {
-    console.log('onInit');
     this.checkLoginStatus();
     this.listenForLoginEvents();
   }

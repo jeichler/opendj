@@ -16,7 +16,6 @@ import { WebsocketService } from './providers/websocket.service';
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     BrowserModule,
     HttpClientModule,

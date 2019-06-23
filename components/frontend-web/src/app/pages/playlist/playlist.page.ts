@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController } from '@ionic/angular';
+import { ModalController, ActionSheetController, ToastController, Platform } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
@@ -20,7 +20,8 @@ export class PlaylistPage implements OnInit {
     public toastController: ToastController,
     public websocketService: WebsocketService,
     public mockService: MockService,
-    public feSevice: FEService
+    public feSevice: FEService,
+    public platform: Platform
   ) {
   }
 

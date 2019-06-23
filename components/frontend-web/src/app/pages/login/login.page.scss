@@ -1,100 +1,52 @@
-// .login-logo {
-//     padding: 20px 0;
-//     min-height: 200px;
-//     text-align: center;
-//   }
-
-//   .login-logo img {
-//     max-width: 300px;
-//     margin-bottom: -50px;
-//   }
-
-//   .list {
-//     margin-bottom: 0;
-//   }
-//   .item, .list, .item-content, .item-complex {
-//     --ion-background-color: transparent !important;
-//   }
-
-/* Cool infinite background scrolling animation.
- * Twitter: @kootoopas
- */
-
-/* Exo thin font from Google. */
-@import url(https://fonts.googleapis.com/css?family=Exo:100);
-
-/* Background data (Original source: https://subtlepatterns.com/grid-me/) */
-$bg-url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC";
-$bg-width: 50px;
-$bg-height: 50px;
-
-/* Animations */
-@-webkit-keyframes bg-scrolling-reverse {
-  100% {
-    background-position: $bg-width $bg-height;
+.login-logo {
+    // padding: 20px 0;
+    min-height: 200px;
+    text-align: center;
   }
-}
-@-moz-keyframes bg-scrolling-reverse {
-  100% {
-    background-position: $bg-width $bg-height;
-  }
-}
-@-o-keyframes bg-scrolling-reverse {
-  100% {
-    background-position: $bg-width $bg-height;
-  }
-}
-@keyframes bg-scrolling-reverse {
-  100% {
-    background-position: $bg-width $bg-height;
-  }
-}
 
-@-webkit-keyframes bg-scrolling {
-  0% {
-    background-position: $bg-width $bg-height;
+  .login-logo ion-img {
+    max-width: inherit;
+    // margin-left: 14%;
+    // margin-bottom: -50px;
   }
-}
-@-moz-keyframes bg-scrolling {
-  0% {
-    background-position: $bg-width $bg-height;
+
+  .list {
+    margin-bottom: 0;
   }
-}
-@-o-keyframes bg-scrolling {
-  0% {
-    background-position: $bg-width $bg-height;
+  .item, .list, .item-content, .item-complex {
+    --ion-background-color: transparent !important;
   }
-}
-@keyframes bg-scrolling {
-  0% {
-    background-position: $bg-width $bg-height;
+
+  .login-form-wrapper {
+    text-align: center;
+    max-width: 25vw;
+    margin: 0 auto;
   }
-}
 
-/* Main styles */
-body {
-  margin-top: 13.5rem;
-
-  color: #999;
-  font: 400 16px/1.5 exo, ubuntu, "segoe ui", helvetica, arial, sans-serif;
-  text-align: center;
-  /* img size is 50x50 */
-  background: url($bg-url) repeat 0 0;
-
-  -webkit-animation: bg-scrolling-reverse 0.92s infinite; /* Safari 4+ */
-  -moz-animation: bg-scrolling-reverse 0.92s infinite; /* Fx 5+ */
-  -o-animation: bg-scrolling-reverse 0.92s infinite; /* Opera 12+ */
-  animation: bg-scrolling-reverse 0.92s infinite; /* IE 10+ */
-  -webkit-animation-timing-function: linear;
-  -moz-animation-timing-function: linear;
-  -o-animation-timing-function: linear;
-  animation-timing-function: linear;
-
-  &::before {
-    content: "INFINITY";
-
-    font-size: 8rem;
-    font-weight: 100;
-    font-style: normal;
+  @media only screen and (max-width: 600px) {
+    .login-form-wrapper {
+      max-width: 65vw;
+    }
   }
-}
+
+  .header {
+    height: 40px;
+  }
+
+  ion-content {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(162deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+  }
+
+  ion-list {
+    --background: transparent !important;
+    --ion-background-color: rgba(53, 54, 56, 0.8) !important;
+    // background-image: URL('./../../assets/imgs/logo_transparent.png') center center !important;
+  }
+
+  ion-toolbar {
+    --background: transparent !important;
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+  }
