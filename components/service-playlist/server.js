@@ -231,7 +231,7 @@ function findTrackInList(listOfTracks, provider, trackID) {
 function getETADateForTrackInPlayList(playlist, pos) {
     var ts = Date.now();
     if (playlist.currentTrack) {
-        ts += (currentTrack.duration_ms - currentTrack.progress_ms);
+        ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
     }
     for (var i = 0; i < pos; i++) {
         ts += playlist.nextTracks[i].duration_ms;
