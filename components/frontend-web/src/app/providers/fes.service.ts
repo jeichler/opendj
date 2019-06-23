@@ -32,7 +32,8 @@ export class FEService {
         // (if a future AI/ML implmentation decides to move it somewhere else).
         // But you could also ignore the resonse, as that upate of the playlist
         // will also be broadcasted via websocket:
-        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id});
+        // And I need the user!
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id, user: "AnonSquirrel"});
     }
 
     deleteTrack(trackId: string): Observable<any> {
