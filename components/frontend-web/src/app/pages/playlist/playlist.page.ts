@@ -113,6 +113,14 @@ export class PlaylistPage implements OnInit {
     return element ? element.id : null;
   }
 
+  ionViewDidEnter() {
+    // console.log(this.websocketService.connect());
+  }
+
+  ionViewDidLeave() {
+    // console.log(this.websocketService.disconnect());
+  }
+
   ngOnInit() {
     /*
     this.mockService.getEvents().subscribe(data => {
