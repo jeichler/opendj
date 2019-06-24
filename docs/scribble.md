@@ -93,34 +93,44 @@ http://localhost:8081/backend-spotifyprovider/auth_callback
 # provider api:
 
 # first: get login url:
-http://localhost:8080/backend-spotifyprovider/getSpotifyLoginURL?event=4711
-http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/getSpotifyLoginURL?event=4711
+http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+
+# second: (copy paste that URL to another tab and see spotify consent screen, then call back
+# Success full if you see a "1" response
 
 
-# second: (copy paste that URL to antoher tab and see how spotify consent screen), then call back
-
-# third:
-http://localhost:8080/backend-spotifyprovider/getCurrentTrack?event=4711
-http://localhost:8080/backend-spotifyprovider/getAvailableDevices?event=4711
-http://localhost:8080/backend-spotifyprovider/searchTrack?event=4711&q=Michael+Jackson
-
-
-http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/getCurrentTrack?event=4711
-http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/getAvailableDevices?event=4711
-http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/searchTrack?event=4711&q=Michael+Jackson
-
-
+# third: Searches, currentTrack, AvailDevices:
+http://localhost:8080/api/provider-spotify/v1/searchTrack?event=4711&q=Michael+Jackson
 http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
+http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=4711
+
+http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
+http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
+http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
+
+
+# Access Playlist
+http://localhost:8081/api/service-playlist/v1/events/0/
+http://dev.opendj.io/api/service-playlist/v1/events/0/
+http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/play
+http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
+http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
+
+# Add TracK
+
+curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 
 
 
-http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=4711&q=Rock
 
 
-http://dev.opendj.io/api/service-playlist/v1/searchTrack?event=4711&q=Rock
 
 
 # playlist API RESTfull:
+http://localhost:8081/api/service-playlist/v1/events/4711/playlists/42/tracks
+
+
 
 ## Retrieve current Playlist:
 GET dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
@@ -147,7 +157,7 @@ Response: Array of Track Objects:
 }]
 
 ## start, stop,skip current Playlist (Curators Only)
-POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/action?cmd=start
+POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/play
 
 ## Add Track to to List:
 POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
@@ -187,7 +197,7 @@ Response: Array of Track Objects:
 }]
 
 ## start, stop,skip current Playlist (Curators Only)
-POST dev.opendj.io/api/service-playlist/v1/play?event={eventId}&playlist={playlistId}&cmd=start
+POST dev.opendj.io/api/service-playlist/v1/play?event={eventId}&playlist={playlistId}&cmd=play
 Other cmds: stop, skip
 
 ## Add Track to to List:
@@ -201,5 +211,7 @@ Input Body: provider,id as received from search, newPo (zero based integer of ne
 Response: 200 OK
 
 
-
+# Ortwin says:
+GET /events/0/playlists/0/
+PUT /events/0/playlists/0/play'
 
