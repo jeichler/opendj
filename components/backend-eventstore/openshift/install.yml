@@ -12,8 +12,8 @@
           apiVersion: kafka.strimzi.io/v1alpha1
           kind: Kafka
           metadata:
-            name: opendj-kafka
-            namespace: "{{ namespace }}"
+            name: backend-eventstore
+            namespace: "{{ NAMESPACE }}"
           spec:
             kafka:
               version: 2.1.1

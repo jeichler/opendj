@@ -134,7 +134,7 @@
                       - name: MOCKUP_TRACKDURATION_MS
                         value: "20000"
                       - name: KAFKA_HOST
-                        value: "opendj-kafka-kafka-bootstrap:9092"
+                        value: "backend-eventstore-kafka-bootstrap:9092"
                       - name: SPOTIFY_CALLBACK_URL
                         value: "http://{{DNS_BASENAME}}/api/provider-spotify/v1/auth_callback"
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL

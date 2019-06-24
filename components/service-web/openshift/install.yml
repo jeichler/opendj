@@ -111,7 +111,7 @@
                 containers:
                   - env:
                       - name: KAFKA_HOST
-                        value: "opendj-kafka-kafka-bootstrap:9092"
+                        value: "backend-eventstore-kafka-bootstrap:9092"
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:

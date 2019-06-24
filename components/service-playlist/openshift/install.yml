@@ -111,7 +111,7 @@
                       - name: COMPRESS_RESULT
                         value: "true"
                       - name: KAFKA_HOST
-                        value: "opendj-kafka-kafka-bootstrap:9092"
+                        value: "backend-eventstore-kafka-bootstrap:9092"
                       - name: SPOTIFY_PROVIDER_URL
                         value: "http://provider-spotify:8080/api/provider-spotify/v1/" 
                       - name: DEFAULT_AUTOFILL_EMPTY_PLAYLIST
