@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,6 +13,9 @@ export class EnvService {
   public curatorPassword = '';
   public playlistMaxSize = 10;
   public websocketUrl = '';
+
+  public SPOTIFY_PROVIDER_API = '';
+  public PLAYLIST_PROVIDER_API = '';
 
   constructor() { }
 }

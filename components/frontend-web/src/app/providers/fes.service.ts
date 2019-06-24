@@ -2,6 +2,7 @@ import { Track, TrackDTO } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { EnvService } from './env.service';
 
 
 
@@ -10,11 +11,13 @@ import { Observable } from 'rxjs';
 })
 export class FEService {
 
-    // TODO: MAKE THIS CONFIGURABLE !!!!
-    SPOTIFY_PROVIDER_API =  'http://dev.opendj.io/api/provider-spotify/v1';
-    PLAYLIST_PROVIDER_API =  'http://dev.opendj.io/api/service-playlist/v1';
+    private SPOTIFY_PROVIDER_API;
+    private PLAYLIST_PROVIDER_API;
 
-    constructor( public http: HttpClient ) {}
+    constructor( public http: HttpClient, public envService: EnvService ) {
+        this.SPOTIFY_PROVIDER_API = this.envService.SPOTIFY_PROVIDER_API;
+        this.PLAYLIST_PROVIDER_API = this.envService.SPOTIFY_PROVIDER_API;
+    }
 
     searchTracks(queryString: string): Observable<Track[]> {
         if (queryString === null || queryString === undefined || queryString.length < 2 ) {
