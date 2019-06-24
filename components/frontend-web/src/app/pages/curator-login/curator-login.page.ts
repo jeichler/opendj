@@ -1,18 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Events } from '@ionic/angular';
-import { UserDataService } from '../../providers/user-data.service';
-import { EnvService } from '../../providers/env.service';
-
-import { PopoverController } from '@ionic/angular';
-import { MoreOptionsComponent } from '../../components/more-options/more-options.component';
+import { Events, PopoverController } from '@ionic/angular';
+import { UserDataService } from 'src/app/providers/user-data.service';
+import { EnvService } from 'src/app/providers/env.service';
+import { MoreOptionsComponent } from 'src/app/components/more-options/more-options.component';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss'],
+  selector: 'app-curator-login',
+  templateUrl: './curator-login.page.html',
+  styleUrls: ['./curator-login.page.scss'],
 })
-export class LoginPage implements OnInit {
+export class CuratorLoginPage implements OnInit {
 
   login = { username: '', curatorPassword: '' };
   submitted = false;

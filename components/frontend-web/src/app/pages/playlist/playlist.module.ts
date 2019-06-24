@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
 import { PlaylistPage, PlaylistAddModalComponent } from './playlist.page';
+import { CurrentTrackComponent } from 'src/app/components/current-track/current-track.component';
 
 @NgModule({
   imports: [
@@ -18,7 +19,13 @@ import { PlaylistPage, PlaylistAddModalComponent } from './playlist.page';
       }
     ])
   ],
-  declarations: [PlaylistPage, PlaylistAddModalComponent],
-  entryComponents: [PlaylistAddModalComponent]
+  declarations: [
+    PlaylistPage,
+    PlaylistAddModalComponent,
+    CurrentTrackComponent],
+  entryComponents: [
+    PlaylistAddModalComponent,
+    CurrentTrackComponent
+  ]
 })
-export class PlaylistPageModule {}
+export class PlaylistPageModule { }

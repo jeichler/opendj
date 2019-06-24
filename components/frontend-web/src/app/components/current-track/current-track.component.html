@@ -1,0 +1,34 @@
+<ion-card no-margin color="medium">
+  <ion-row align-items-center>
+    <!-- <ion-col></ion-col> -->
+    <ion-col sise="4">
+      <!-- <ion-thumbnail> -->
+      <ion-img [src]="track.image_url"></ion-img>
+      <!-- </ion-thumbnail> -->
+    </ion-col>
+    <ion-col size="8">
+      <ion-title no-padding margin-top>{{ track.name }}</ion-title>
+      <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
+
+      <ion-buttons>
+        <ion-button  color="light" shape="block" fill="outline">
+          <ion-icon name="square"></ion-icon>
+        </ion-button>
+        <ion-button padding-horizontal  color="success"
+          shape="block">
+          <ion-icon name="pause"></ion-icon>
+        </ion-button>
+        <ion-button  color="light" shape="block" fill="outline">
+          <ion-icon name="skip-forward"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <div padding>
+        <ion-progress-bar color="secondary" value="0.5"></ion-progress-bar>
+      </div>
+    </ion-col>
+  </ion-row>
+</ion-card>

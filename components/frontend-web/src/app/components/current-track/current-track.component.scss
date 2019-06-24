@@ -1,0 +1,25 @@
+ion-card {
+  --background: linear-gradient(0deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+  border-radius: 0;
+  // max-width: 98vw;;
+}
+
+ion-title {
+  // margin-bottom: 1%;
+}
+// @media only screen and (min-width: 900px) {
+//   ion-card {
+//     max-width: 50%;
+//     margin: 0 auto;
+//   }
+// }
+ion-img {
+  max-width: 80%;
+  margin-top: 10%;
+  margin-left: 10%;
+}
+
+ion-buttons {
+  margin-top: 8%;
+  margin-left: 35%;
+}

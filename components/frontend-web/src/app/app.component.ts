@@ -9,10 +9,10 @@ import { EnvService } from './providers/env.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html'
+  templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss']
 })
 export class AppComponent implements OnInit {
-
   loggedIn = false;
   userDetails = { username: '', isCurator: false };
 
@@ -53,9 +53,13 @@ export class AppComponent implements OnInit {
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
+    this.platform.ready().then((readySource) => {
+      console.log(`Platform: ${readySource}`);
+
+      if (readySource === 'cordova') {
+        this.statusBar.styleDefault();
+        this.splashScreen.hide();
+      }
     });
   }
 
@@ -84,7 +88,7 @@ export class AppComponent implements OnInit {
       this.loggedIn = loggedIn;
       if (this.loggedIn) {
         this.appPages = this.appPagesLoggedIn;
-        this.router.navigateByUrl('/home');
+        this.router.navigateByUrl('/playlist');
       } else {
         this.appPages = this.appPagesLoggedOut;
         this.userDetails = { username: '', isCurator: false };
@@ -94,7 +98,7 @@ export class AppComponent implements OnInit {
   }
 
   listenForLoginEvents() {
-    this.events.subscribe('user:login', (data) => {
+    this.events.subscribe('user:login', data => {
       if (data !== null && data.length === 2) {
         this.userDetails.username = data[0];
         this.userDetails.isCurator = data[1];
@@ -114,9 +118,7 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit() {
-    console.log('onInit');
     this.checkLoginStatus();
     this.listenForLoginEvents();
   }
-
 }

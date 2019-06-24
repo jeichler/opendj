@@ -5,7 +5,8 @@ const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadChildren: './pages/login/login.module#LoginPageModule' },
   { path: 'home', loadChildren: './pages/home/home.module#HomePageModule' },
-  { path: 'playlist', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule'}
+  { path: 'playlist', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule' },
+  { path: 'curator-login', loadChildren: './pages/curator-login/curator-login.module#CuratorLoginPageModule' }
 ];
 
 @NgModule({
@@ -16,4 +17,4 @@ const routes: Routes = [
   exports: [RouterModule]
 
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

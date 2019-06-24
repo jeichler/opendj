@@ -5,13 +5,12 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { LoginPage } from './login.page';
-import { MoreOptionsComponent } from 'src/app/components/more-options/more-options.component';
+import { CuratorLoginPage } from './curator-login.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: LoginPage
+    component: CuratorLoginPage
   }
 ];
 
@@ -22,12 +21,6 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  entryComponents: [
-    MoreOptionsComponent
-  ],
-  declarations: [
-    LoginPage,
-    MoreOptionsComponent
-  ]
+  declarations: [CuratorLoginPage]
 })
-export class LoginPageModule {}
+export class CuratorLoginPageModule {}
