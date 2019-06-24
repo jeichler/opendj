@@ -1,4 +1,4 @@
-import { Track, TrackDTO } from './../models/track';
+import { Track } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -27,46 +27,28 @@ export class FEService {
     }
 
     addTrack(trackId: string, musicProvider: string, addedBy: string): Observable<any> {
-        if (trackId === null || trackId === undefined) {
+
+        if ( trackId === null || trackId === undefined || musicProvider === null || musicProvider === undefined || addedBy === null || addedBy === undefined ) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        // DanielF: I only need the Provider and TrackID .
-        // Response is the full playlist object, as the track might not be added to the end
-        // (if a future AI/ML implmentation decides to move it somewhere else).
-        // But you could also ignore the resonse, as that upate of the playlist
-        // will also be broadcasted via websocket:
-        // And I need the user!
-        // tslint:disable-next-line:max-line-length
-        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: musicProvider, id: trackId, user: addedBy});
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', { provider: musicProvider, id: trackId, user: addedBy });
     }
 
-    deleteTrack(trackId: string): Observable<any> {
-        if (trackId === null || trackId === undefined) {
+    deleteTrack(trackId: string, index: number): Observable<any> {
+        if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
-        // HEADSUP: DanielF says: trackId might not be unique here, as a track can
-        // occur more then once in a single playlist, if the event owner permits duplicates.
-        // So an additional ordinal position argument would be good:.
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId));
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId) + '?index=' + encodeURIComponent(index));
     }
 
-    reorderTrack(fromIndex: number, toIndex: number): Observable<any> {
-        if (fromIndex === null || fromIndex === undefined) {
+    reorderTrack(trackId: string, fromIndex: number, toIndex: number): Observable<any> {
+        if (trackId === null || trackId === undefined || fromIndex === null || fromIndex === undefined || toIndex === null || toIndex === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-
-        // TODO: DanielF says: I need not only the fromIndex, but also the trackID, because the fromIndex might have changed
-        // meanwhile on the server side (imagine two concurrent edits). adding an syntax error here for ortwin to notice!
-        // TODO: DanielF: GET is not suitable for a mutator, I suggest to use patch(preferred, because of MODIFY semantic),put or post here:
-        return this.http.patch(this.PLAYLIST_PROVIDER_API +
-            '/events/0/playlists/0/reorder', {from: fromIndex, to:toIndex, provider: "fixme", id: "fixme"} );
+        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId });
     }
 
-    playTrack(trackId: string): Observable<any> {
-        if (trackId === null || trackId === undefined) {
-            throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
-        }
-        // DanielF says: you only can start playing of the playlist, not a specific track.
+    playTrack(): Observable<any> {
         return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/play', {});
     }
 
@@ -74,12 +56,6 @@ export class FEService {
         return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/pause', {});
     }
 
- /*   DanielF says: there is no difference between "pause" and "stop". Lets make it play/pause, because sounds more like music then start/stop
-    stopTrack(): Observable<any> {
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/stop', {});
-    }
-*/
- 
     playNextTrack(): Observable<any> {
         return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/next', {});
     }
