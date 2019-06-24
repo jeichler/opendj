@@ -38,7 +38,7 @@ export class FEService {
         if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId) + '?index=' + encodeURIComponent(index));
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId) + '?index=' + encodeURIComponent(""+index));
     }
 
     reorderTrack(trackId: string, fromIndex: number, toIndex: number): Observable<any> {
