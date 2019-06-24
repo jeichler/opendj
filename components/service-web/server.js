@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').createServer(app);
 var cors = require('cors');
-var io = require('socket.io')(http);
+var io = require('socket.io')(http, { origins: '*:*'} );
 var kafka = require('kafka-node');
 var port = process.env.PORT || 3000;
 var kafkaURL = process.env.KAFKA_HOST || "localhost:9092";
