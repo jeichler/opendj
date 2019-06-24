@@ -23,8 +23,8 @@ export class FEService {
         return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=4711&q=' + encodeURIComponent(queryString));
     }
 
-    addTrack(track: TrackDTO): Observable<any> {
-        if (track === null || track === undefined) {
+    addTrack(trackId: string, musicProvider: string, addedBy: string): Observable<any> {
+        if (trackId === null || trackId === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
         // DanielF: I only need the Provider and TrackID .
@@ -33,7 +33,8 @@ export class FEService {
         // But you could also ignore the resonse, as that upate of the playlist
         // will also be broadcasted via websocket:
         // And I need the user!
-        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id, user: "AnonSquirrel"});
+        // tslint:disable-next-line:max-line-length
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: musicProvider, id: trackId, user: addedBy});
     }
 
     deleteTrack(trackId: string): Observable<any> {
