@@ -12,7 +12,8 @@ export class EnvService {
   public enableDebug = true;
   public curatorPassword = '';
   public playlistMaxSize = 10;
-  public websocketUrl = '';
+  public websocketHost = '';
+  public websocketPath = '';
 
   public SPOTIFY_PROVIDER_API = '';
   public PLAYLIST_PROVIDER_API = '';

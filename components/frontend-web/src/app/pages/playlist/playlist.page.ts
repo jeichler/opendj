@@ -12,7 +12,7 @@ import { FEService } from './../../providers/fes.service';
 export class PlaylistPage implements OnInit {
   private selectedItem: any;
 
-  playlist: any = [];
+  currentPlaylist = {};
 
   constructor(
     public modalController: ModalController,
@@ -26,8 +26,8 @@ export class PlaylistPage implements OnInit {
 
   onRenderItems(event) {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
-    const draggedItem = this.playlist.splice(event.detail.from, 1)[0];
-    this.playlist.splice(event.detail.to, 0, draggedItem);
+    const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
+    this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
     /*
     this.feSevice.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
       data => {},
@@ -46,7 +46,7 @@ export class PlaylistPage implements OnInit {
       console.log(res);
       if (res.data) {
         // TODO: send to backend
-        this.playlist.push(res.data);
+        this.currentPlaylist.nextTracks.push(res.data);
         this.presentToast('Song added to playlist.');
       }
     });
@@ -120,7 +120,7 @@ export class PlaylistPage implements OnInit {
     */
     this.websocketService.getPlaylist().subscribe(data => {
       console.log(JSON.stringify(data));
-      this.playlist = data;
+      this.currentPlaylist = data;
     });
   }
 

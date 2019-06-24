@@ -22,11 +22,10 @@
 
       <ion-col>
         <ion-card class="welcome-card" color="medium">
-          <ion-img src="https://www.verti-music-hall.de/assets/img/iStock-627183716_medium-5bb5fa97ca.jpg">
-          </ion-img>
+          <img src="{{currentPlaylist?.currentTrack?.image_url}}">
           <ion-card-header style="text-align: center;">
-            <ion-card-subtitle>Flying Lotus</ion-card-subtitle>
-            <ion-card-title>Flamagra</ion-card-title>
+            <ion-card-subtitle>{{currentPlaylist?.currentTrack?.artist}}</ion-card-subtitle>
+            <ion-card-title>{{currentPlaylist?.currentTrack?.name}}</ion-card-title>
             <br />
             <ion-button color="light" shape="round" fill="outline">
               <ion-icon name="square"></ion-icon>
@@ -49,7 +48,7 @@
         <ion-list color="light">
           <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
 
-            <ion-item-sliding *ngFor="let item of playlist;  trackBy: trackElement">
+            <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  trackBy: trackElement">
 
               <ion-item color="light" (click)="presentActionSheet(item.title)">
                 <ion-thumbnail slot="start">
@@ -57,8 +56,7 @@
                 </ion-thumbnail>
                 <ion-label text-wrap>{{item.name}}<br />
                   <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
-                  <ion-badge color="medium" style="margin-top: 10px;">oschneid</ion-badge> &nbsp;
-                  <ion-badge color="success">22 Likes</ion-badge>
+                  <ion-badge color="medium" style="margin-top: 10px;">{{item.added_by}}</ion-badge> &nbsp;
                 </ion-label>
                 <ion-reorder slot="end">
                   <ion-icon name="menu"></ion-icon>
