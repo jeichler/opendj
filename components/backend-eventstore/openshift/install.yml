@@ -1,5 +1,8 @@
 ---
 - hosts: localhost
+  vars_files:
+    - ../../../install/openshift/vars_common.yml
+    - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: Deploy Kafka via Operator
       k8s:

@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
-  vars:
-    NAMESPACE: "dfroehli-opendj-dev"
-    DNS_BASENAME: "dev.opendj.io"
+  vars_files:
+    - ../../../install/openshift/vars_common.yml
+    - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
 #    - name: Create kafka topic 
 #      command: kafka-topics --bootstrap-server localhost:9092  --create --topic opendj-spotifyprovider-internal  --partitions 1 --replication-factor 1 --config retention.ms=43200000 

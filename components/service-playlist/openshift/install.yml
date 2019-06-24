@@ -1,8 +1,8 @@
 ---
 - hosts: localhost
-  vars:
-    NAMESPACE: "dfroehli-opendj-dev"
-    DNS_BASENAME: "dev.opendj.io"
+  vars_files:
+    - ../../../install/openshift/vars_common.yml
+    - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: Create kafka topics 
       command: echo "TODO!!!"
