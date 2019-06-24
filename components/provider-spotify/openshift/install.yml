@@ -4,6 +4,9 @@
     NAMESPACE: "dfroehli-opendj-dev"
     DNS_BASENAME: "dev.opendj.io"
   tasks:
+#    - name: Create kafka topic 
+#      command: kafka-topics --bootstrap-server localhost:9092  --create --topic opendj-spotifyprovider-internal  --partitions 1 --replication-factor 1 --config retention.ms=43200000 
+      
     # Create Secret Manually:
     #  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
     # - name: Create Spotify secret
@@ -30,7 +33,6 @@
             annotations:
             labels:
               app: provider-spotify
-              template: opendj-nodejs-provider-spotify
             name: provider-spotify
             namespace: "{{NAMESPACE}}"
           spec:
@@ -47,7 +49,6 @@
             annotations:
             labels:
               app: provider-spotify
-              template: opendj-nodejs-provider-spotify
             name: provider-spotify
             namespace: "{{NAMESPACE}}"
           spec:
@@ -63,6 +64,7 @@
             source:
               contextDir: components/provider-spotify
               git:
+                ref: master
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -71,7 +73,7 @@
                 - name: NPM_MIRROR
                 from:
                   kind: ImageStreamTag
-                  name: nodejs:8
+                  name: nodejs:10
                   namespace: openshift
               type: Source
             successfulBuildsHistoryLimit: 2
