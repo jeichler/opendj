@@ -34,7 +34,7 @@ export class FEService {
         return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', { provider: musicProvider, id: trackId, user: addedBy });
     }
 
-    deleteTrack(trackId: string, index: number): Observable<any> {
+    deleteTrack(trackId: string, index: string): Observable<any> {
         if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
