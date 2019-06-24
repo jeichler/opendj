@@ -21,7 +21,7 @@
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
 
-      <ion-item-sliding *ngFor="let item of playlist;  trackBy: trackElement">
+      <ion-item-sliding *ngFor="let item of currentPlaylist;  trackBy: trackElement">
 
         <ion-item color="light" (click)="presentActionSheet(item.title)">
           <ion-thumbnail slot="start">

@@ -12,7 +12,7 @@ import { Playlist } from 'src/app/models/playlist';
   styleUrls: ['playlist.page.scss']
 })
 export class PlaylistPage implements OnInit {
-  private selectedItem: any;
+  public selectedItem: any;
 
   currentPlaylist: Playlist;
 
