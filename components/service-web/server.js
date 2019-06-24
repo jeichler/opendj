@@ -13,6 +13,8 @@ log.level = "trace";
 
 app.use(cors());
 
+var currentPlaylist = {};
+
 /**
  * Kafka Client Setup
  */
@@ -57,7 +59,8 @@ function startKafkaConsumer() {
 
             var msg = JSON.parse(JSON.stringify(message));
             var msgPayload = JSON.parse(msg.value);
-            io.emit('current-playlist', msgPayload);
+            currentPlaylist = msgPayload;
+            io.emit('current-playlist', currentPlaylist);
 
         } catch (e) {
             log.error("kafkaConsumer Exception %s while processing message", e);
@@ -75,7 +78,7 @@ function startKafkaConsumer() {
 function onConnection(socket) {
 
     log.info('socket.io user connected');
-    // socket.emit('current-playlist', currentPlaylist);
+    socket.emit('current-playlist', currentPlaylist);
 
     socket.on('disconnect', function () {
         log.info('socket.io disconnected');
