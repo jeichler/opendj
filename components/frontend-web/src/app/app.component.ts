@@ -54,8 +54,11 @@ export class AppComponent implements OnInit {
   initializeApp() {
     this.platform.ready().then((readySource) => {
       console.log(`Platform: ${readySource}`);
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
+
+      if (readySource === 'cordova') {
+        this.statusBar.styleDefault();
+        this.splashScreen.hide();
+      }
     });
   }
 
