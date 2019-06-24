@@ -18,11 +18,6 @@ export class AppComponent implements OnInit {
 
   public appPagesLoggedIn = [
     {
-      title: 'Home',
-      url: '/home',
-      icon: 'home'
-    },
-    {
       title: 'Playlist',
       url: '/playlist',
       icon: 'play-circle'
