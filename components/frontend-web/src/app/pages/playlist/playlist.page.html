@@ -133,6 +133,51 @@
         </ion-reorder-group>
       </ion-list>
 
+      <ion-col>
+        <ion-card class="welcome-card" color="medium">
+          <img src="{{currentPlaylist?.currentTrack?.image_url}}">
+          <ion-card-header style="text-align: center;">
+            <ion-card-subtitle>{{currentPlaylist?.currentTrack?.artist}}</ion-card-subtitle>
+            <ion-card-title>{{currentPlaylist?.currentTrack?.name}}</ion-card-title>
+            <br />
+            <ion-button color="success" shape="round">
+              <ion-icon name="pause"></ion-icon>
+            </ion-button>
+            <ion-button color="light" shape="round" fill="outline">
+              <ion-icon name="skip-forward"></ion-icon>
+            </ion-button>
+          </ion-card-header>
+          <ion-card-content>
+
+          </ion-card-content>
+        </ion-card>
+
+      </ion-col>
+
+      <ion-col>
+        <ion-list color="light">
+          <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
+
+            <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  trackBy: trackElement">
+
+              <ion-item color="light" (click)="presentActionSheet(item.title)">
+                <ion-thumbnail slot="start">
+                  <img src="{{item.image_url}}">
+                </ion-thumbnail>
+                <ion-label text-wrap>{{item.name}}<br />
+                  <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
+                  <ion-badge color="medium" style="margin-top: 10px;">{{item.added_by}}</ion-badge> &nbsp;
+                </ion-label>
+                <ion-reorder slot="end">
+                  <ion-icon name="menu"></ion-icon>
+                </ion-reorder>
+              </ion-item>
+
+            </ion-item-sliding>
+          </ion-reorder-group>
+        </ion-list>
+
+      </ion-col>
     </ion-row>
   </ion-col>
 </ion-grid>

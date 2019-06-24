@@ -4,6 +4,7 @@ import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
 import { Track } from 'src/app/models/track';
+import { Playlist } from 'src/app/models/playlist';
 
 @Component({
   selector: 'app-playlist',
@@ -13,7 +14,7 @@ import { Track } from 'src/app/models/track';
 export class PlaylistPage implements OnInit {
   private selectedItem: any;
 
-  playlist: any = [];
+  currentPlaylist: Playlist;
 
   track: Track = {
     id: '543bCW2ruMPmxUBWirQ3MR',
@@ -40,8 +41,8 @@ export class PlaylistPage implements OnInit {
 
   onRenderItems(event) {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
-    const draggedItem = this.playlist.splice(event.detail.from, 1)[0];
-    this.playlist.splice(event.detail.to, 0, draggedItem);
+    const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
+    this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
     /*
     this.feSevice.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
       data => {},
@@ -60,7 +61,7 @@ export class PlaylistPage implements OnInit {
       console.log(res);
       if (res.data) {
         // TODO: send to backend
-        this.playlist.push(res.data);
+        this.currentPlaylist.nextTracks.push(res.data);
         this.presentToast('Song added to playlist.');
       }
     });
@@ -134,7 +135,7 @@ export class PlaylistPage implements OnInit {
     */
     this.websocketService.getPlaylist().subscribe(data => {
       console.log(JSON.stringify(data));
-      this.playlist = data;
+      this.currentPlaylist = data as Playlist;
     });
   }
 
@@ -151,7 +152,7 @@ export class PlaylistPage implements OnInit {
   <ion-header>
   <ion-toolbar color="dark">
     <ion-buttons slot="start">
-      <ion-button (click)="dismiss()">
+      <ion-button (click)="dismiss(null)">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -186,7 +187,7 @@ export class PlaylistPage implements OnInit {
 })
 export class PlaylistAddModalComponent implements OnInit {
   queryText = '';
-  tracks: any;
+  tracks: Array<Track>;
 
   constructor(
     public modalController: ModalController,

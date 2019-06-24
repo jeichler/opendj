@@ -42,8 +42,9 @@ Responsibilities:
 1. Taking care of all the user interactions
 1. Providing the different views for the different users
 
-## service-bffweb
-The backend for frontend for the frontent-web component. The entry point to the system for the web client. For async updates (e.g. of the playlist), websockets are used. These allow the bffweb to push updates to the web client.  
+## service-web
+Provides the server side services for the frontent-web component. The entry point to the system for the web client.  
+For async updates (e.g. of the playlist), websockets are used. These allow the service-web to push updates to all web clients. The main responsibility is to map/bridge between the server side kafka events and the client side websockets. In future, this might evolve into a gateway or backend-for-frontend component.  
 
 Responsibilities:
 1. Aggregate internal services so that they can be easily consumed. 

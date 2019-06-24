@@ -11,7 +11,7 @@ together {
 
 component [frontend-web] as frontendweb 
 
-component [service-bffweb] as servicebffweb 
+component [service-web] as serviceweb 
 
 together {
       component [service-playlist] as serviceplaylist 
@@ -37,13 +37,13 @@ user -down-> frontendweb
 curator -down-> frontendweb
 eventowner -down-> frontendweb
 
-frontendweb -down-> servicebffweb
+frontendweb -down-> serviceweb
 frontendweb .down.> backendspotify
 
-servicebffweb -down-> serviceuser
-servicebffweb -down-> serviceevent
-servicebffweb -down-> serviceplaylist
-'servicebffweb -down-> backendeventstore
+serviceweb -down-> serviceuser
+serviceweb -down-> serviceevent
+serviceweb -down-> serviceplaylist
+'serviceweb -down-> backendeventstore
 
 
 serviceplaylist -down-> backendspotify

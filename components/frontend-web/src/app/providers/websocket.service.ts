@@ -12,8 +12,9 @@ export class WebsocketService {
     private socket;
 
     constructor(private envService: EnvService) {
-        this.socket = io(envService.websocketUrl, {
-            reconnectionAttempts: 10
+        this.socket = io(envService.websocketHost, {
+            reconnectionAttempts: 10,
+            path: envService.websocketPath
         });
     }
 
@@ -25,10 +26,6 @@ export class WebsocketService {
             });
         });
         return observable;
-    }
-
-    updatePlaylist(playlist) {
-        this.socket.emit('update-playlist', playlist);
     }
 
 }
