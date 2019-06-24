@@ -1,8 +1,10 @@
+import { Track } from './../../models/track';
 import { Component, OnInit } from '@angular/core';
 import { ModalController, ActionSheetController, ToastController } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
+import { Playlist } from 'src/app/models/playlist';
 
 @Component({
   selector: 'app-playlist',
@@ -12,7 +14,7 @@ import { FEService } from './../../providers/fes.service';
 export class PlaylistPage implements OnInit {
   private selectedItem: any;
 
-  currentPlaylist = {};
+  currentPlaylist: Playlist;
 
   constructor(
     public modalController: ModalController,
@@ -120,7 +122,7 @@ export class PlaylistPage implements OnInit {
     */
     this.websocketService.getPlaylist().subscribe(data => {
       console.log(JSON.stringify(data));
-      this.currentPlaylist = data;
+      this.currentPlaylist = data as Playlist;
     });
   }
 
@@ -172,7 +174,7 @@ export class PlaylistPage implements OnInit {
 })
 export class PlaylistAddModalComponent implements OnInit {
   queryText = '';
-  tracks: any;
+  tracks: Array<Track>;
 
   constructor(
     public modalController: ModalController,

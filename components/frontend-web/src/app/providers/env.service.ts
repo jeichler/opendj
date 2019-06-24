@@ -11,12 +11,12 @@ export class EnvService {
 
   public enableDebug = true;
   public curatorPassword = '';
-  public playlistMaxSize = 10;
-  public websocketHost = '';
-  public websocketPath = '';
+  public playlistMaxSize = 50;
+  public websocketHost = 'http://dev.opendj.io';
+  public websocketPath = '/api/service-web/socket.io';
 
-  public SPOTIFY_PROVIDER_API = '';
-  public PLAYLIST_PROVIDER_API = '';
+  public SPOTIFY_PROVIDER_API = 'http://dev.opendj.io/api/provider-spotify/v1';
+  public PLAYLIST_PROVIDER_API = 'http://dev.opendj.io/api/service-playlist/v1';
 
   constructor() { }
 }

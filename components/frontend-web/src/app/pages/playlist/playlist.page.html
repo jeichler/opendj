@@ -27,9 +27,6 @@
             <ion-card-subtitle>{{currentPlaylist?.currentTrack?.artist}}</ion-card-subtitle>
             <ion-card-title>{{currentPlaylist?.currentTrack?.name}}</ion-card-title>
             <br />
-            <ion-button color="light" shape="round" fill="outline">
-              <ion-icon name="square"></ion-icon>
-            </ion-button>
             <ion-button color="success" shape="round">
               <ion-icon name="pause"></ion-icon>
             </ion-button>
@@ -48,7 +45,7 @@
         <ion-list color="light">
           <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
 
-            <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  trackBy: trackElement">
+            <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  trackBy: trackElement">
 
               <ion-item color="light" (click)="presentActionSheet(item.title)">
                 <ion-thumbnail slot="start">
