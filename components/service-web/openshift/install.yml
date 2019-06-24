@@ -1,0 +1,186 @@
+---
+- hosts: localhost
+  vars_files:
+    - ../../../install/openshift/vars_common.yml
+    - ../../../install/openshift/vars_env_{{ STAGE }}.yml
+  tasks:
+    -  debug: 
+        msg: GIT_REF={{ GIT_REF }}
+
+    - name: Create ImageStream
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: service-web
+            name: service-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            lookupPolicy:
+              local: false
+    - name: Create BuildConfig
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: BuildConfig
+          apiVersion: build.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: service-web
+            name: service-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            failedBuildsHistoryLimit: 5
+            nodeSelector: null
+            output:
+              to:
+                kind: ImageStreamTag
+                name: service-web:latest
+            postCommit: {}
+            resources: {}
+            runPolicy: Serial
+            source:
+              contextDir: components/service-web
+              git:
+                ref: "{{ GIT_REF }}"
+                uri: https://github.com/opendj/opendj.git
+              type: Git
+            strategy:
+              sourceStrategy:
+                env:
+                - name: NPM_MIRROR
+                from:
+                  kind: ImageStreamTag
+                  name: nodejs:10
+                  namespace: openshift
+              type: Source
+            successfulBuildsHistoryLimit: 2
+            triggers:
+            - imageChange:
+              type: ImageChange
+            - type: ConfigChange
+            - github:
+                secret: f8020eeb6055607a
+              type: GitHub
+            - generic:
+                secret: 86c8f4979ce31b6c
+              type: Generic
+    - name: Create DeploymentConfig
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: DeploymentConfig
+          apiVersion: apps.openshift.io/v1
+          metadata:
+            annotations:
+              template.alpha.openshift.io/wait-for-ready: 'true'
+            labels:
+              app: service-web
+              template: opendj-nodejs-service-web
+            name: service-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            replicas: 1
+            revisionHistoryLimit: 10
+            selector:
+              name: service-web
+            strategy:
+              activeDeadlineSeconds: 21600
+              resources: {}
+              rollingParams:
+                intervalSeconds: 1
+                maxSurge: 25%
+                maxUnavailable: 25%
+                timeoutSeconds: 600
+                updatePeriodSeconds: 1
+              type: Rolling
+            template:
+              metadata:
+                labels:
+                  name: service-web
+                name: service-web
+              spec:
+                containers:
+                  - env:
+                      - name: KAFKA_HOST
+                        value: "opendj-kafka-kafka-bootstrap:9092"
+                    imagePullPolicy: IfNotPresent
+                    name: service-web
+                    ports:
+                      - containerPort: 8080
+                        protocol: TCP
+                    resources:
+                      limits:
+                        memory: 512Mi
+                    terminationMessagePath: /dev/termination-log
+                    terminationMessagePolicy: File
+                dnsPolicy: ClusterFirst
+                restartPolicy: Always
+                schedulerName: default-scheduler
+                securityContext: {}
+                terminationGracePeriodSeconds: 30
+            test: false
+            triggers:
+              - imageChangeParams:
+                  automatic: true
+                  containerNames:
+                    - service-web
+                  from:
+                    kind: ImageStreamTag
+                    name: 'service-web:latest'
+                    namespace: "{{NAMESPACE}}"
+                type: ImageChange
+              - type: ConfigChange
+    - name: Create Service
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: Service
+          apiVersion: v1
+          metadata:
+            annotations:
+            labels:
+              app: service-web
+            name: service-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            ports:
+              - name: web
+                port: 8080
+                protocol: TCP
+                targetPort: 8080
+            selector:
+              name: service-web
+            sessionAffinity: None
+            type: ClusterIP
+    - name: Create Route
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: Route
+          apiVersion: route.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: service-web
+            name: service-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            host: "{{DNS_BASENAME}}"
+            path: /api/service-web
+            to:
+              kind: Service
+              name: service-web
+              weight: 100
+            wildcardPolicy: None
+            
