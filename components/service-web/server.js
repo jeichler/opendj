@@ -1,7 +1,7 @@
 var app = require('express')();
 var http = require('http').createServer(app);
 var cors = require('cors');
-var io = require('socket.io')(http, { origins: '*:*'} );
+var io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket.io'} );
 var kafka = require('kafka-node');
 var port = process.env.PORT || 3000;
 var kafkaURL = process.env.KAFKA_HOST || "localhost:9092";
@@ -88,6 +88,6 @@ function onConnection(socket) {
 io.on('connection', onConnection);
 
 http.listen(port, function () {
-    log.info('listening on *:3000');
+    log.info('listening on *: '+port);
     startKafkaConsumer();
 });
