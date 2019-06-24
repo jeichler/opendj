@@ -46,7 +46,7 @@ export class FEService {
         return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId));
     }
 
-    // reorderTrack(fromIndex: number, toIndex: number): Observable<any> {
+    reorderTrack(fromIndex: number, toIndex: number): Observable<any> {
     //     if (fromIndex === null || fromIndex === undefined) {
     //         throw new Error('Required parameter track was null or undefined when calling addTrack.');
     //     }
