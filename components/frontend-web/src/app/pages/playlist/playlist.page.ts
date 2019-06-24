@@ -137,7 +137,7 @@ export class PlaylistPage implements OnInit {
   <ion-header>
   <ion-toolbar color="dark">
     <ion-buttons slot="start">
-      <ion-button (click)="dismiss()">
+      <ion-button (click)="dismiss(null)">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
