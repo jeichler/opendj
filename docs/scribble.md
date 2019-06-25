@@ -103,6 +103,7 @@ http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 # third: Searches, currentTrack, AvailDevices:
 http://localhost:8080/api/provider-spotify/v1/searchTrack?event=4711&q=Michael+Jackson
 http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
+http://localhost:8080/api/provider-spotify/v1/trackDetails?id=4711
 http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=4711
 
 http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
@@ -112,14 +113,19 @@ http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
 
 # Access Playlist
 http://localhost:8081/api/service-playlist/v1/events/0/
+http://localhost:8081/api/service-playlist/v1/events/0/playlists/0
+
+
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/play
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
 
-# Add TracK
+# Add Track
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 
+# Move Track:
+curl -d '{"provider":"spotify", "id":"XXXXX3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/reorder
 
 
 # Cleanup:

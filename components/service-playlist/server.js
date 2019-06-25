@@ -253,7 +253,10 @@ async function addTrack(event, playlist, provider, trackID, user) {
     if (pos >= 0) {
         log.debug("ADD rejected because in playlist at pos %s", pos);
         var eta = getETADateForTrackInPlayList(playlist, pos);
-        throw { code: "PLYLST-110", msg: "Sorry, this track is already in the playlist at position #" + (pos + 1) + " and is expected to be played around " + eta.getHours() + ":" + eta.getMinutes() + "!" };
+        eta = eta.toTimeString().split(' ')[0];
+        eta = eta.substring(0, 5);
+
+        throw { code: "PLYLST-110", msg: "Sorry, this track is already in the playlist at position #" + (pos + 1) + " and is expected to be played around " + eta + "!" };
     }
 
     if (!event.allowDuplicateTracks) {
@@ -274,6 +277,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
             track.added_by = "?";
 
         // TODO: Insert AI/ML Code here to find the best position for this new track in the playlist
+        // Until this is available, we simply added to the end:
         playlist.nextTracks.push(track);
     } catch (err) {
         log.error("getTrackDetailsForTrackID failed!", err);
@@ -281,6 +285,29 @@ async function addTrack(event, playlist, provider, trackID, user) {
     }
 
     log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+}
+
+function moveTrack(event, playlist, provider, trackID, newPos) {
+    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s, newPos=%s", event.eventID, playlist.playlistID, provider, trackID, newPos);
+
+    var currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
+    if (currentPos < 0) {
+        throw { code: "PLYLST-200", msg: "Track not found in playlist - maybe somebody else has deleted it meanwhile?" };
+    }
+
+    // Sanity check of new pos:
+    var len = playlist.nextTracks.length;
+    if (newPos < 0) newPos = 0;
+    if (newPos >= len) newPos = len - 1;
+
+    // Remove at current pos:
+    var track = playlist.nextTracks.splice(currentPos, 1)[0];
+
+    // Insert at new pos;
+    playlist.nextTracks.splice(newPos, 0, track);
+
+
+    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
 }
 
 function updateCurrentTrackProgress(playlist) {
@@ -502,14 +529,20 @@ router.get('/events/:eventID/playlists/:listID', function(req, res) {
     uglyTrackProgressUpdater();
     res.status(200).send(getPlaylistForRequest(req));
 });
+
 router.get('/events/:eventID/playlists/:listID/currentTrack', function(req, res) {
-    log.trace("begin GET playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    log.trace("begin GET currentTrack eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     uglyTrackProgressUpdater();
     res.status(200).send(getPlaylistForRequest(req).currentTrack);
 });
+router.get('/events/:eventID/playlists/:listID/tracks', function(req, res) {
+    log.trace("begin GET tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    uglyTrackProgressUpdater();
+    res.status(200).send(getPlaylistForRequest(req).nextTracks);
+});
 
 router.get('/events/:eventID/playlists/:listID/play', function(req, res) {
-    log.trace("begin PLAY playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    log.trace("begin PLAY tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
     play(event, playlist);
@@ -535,6 +568,7 @@ router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     res.status(200).send(playlist);
 });
 
+// Add Track:
 router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
     log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     log.trace("body=%s", JSON.stringify(req.body));
@@ -551,6 +585,33 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
         res.status(200).send(playlist);
         log.info("Track ADDED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
     } catch (error) {
+        log.debug(error);
+        // Probably a duplicate or track not found problem:
+        // 406: Not Acceptable
+        res.status(406).send(JSON.stringify(error));
+    }
+});
+
+//return this.http.put(this.PLAYLIST_PROVIDER_API + 
+//           '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: "spotify" });
+// Reorder // move Track:
+router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
+    log.trace("begin MOVE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    log.trace("body=%s", JSON.stringify(req.body));
+
+    try {
+        var event = getEventForRequest(req);
+        var playlist = getPlaylistForRequest(req);
+        var provider = req.body.provider;
+        var trackID = req.body.id;
+        var to = parseInt(req.body.to);
+
+
+        moveTrack(event, playlist, provider, trackID, to);
+        firePlaylistChangedEvent(event, playlist);
+        res.status(200).send(playlist);
+        log.info("Track MOVED eventId=%s, listId=%s, track=%s:%s, to=%s", req.params.eventID, req.params.listID, provider, trackID, to);
+    } catch (error) {
         log.error(error);
         // Probably a duplicate or track not found problem:
         // 406: Not Acceptable
@@ -560,13 +621,9 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
 
 });
 
-// return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id, user: ""});
-
 
 // TODOs:
 //
-// ADD Track:
-// return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', {provider: track.provider, id: track.id});
 // REORDER:
 //    return this.http.patch(this.PLAYLIST_PROVIDER_API +'/events/0/playlists/0/reorder', {from: fromIndex, to:toIndex, provider: "fixme", id: "fixme"} );
 // DELETE Track:
