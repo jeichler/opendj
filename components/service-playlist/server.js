@@ -307,7 +307,22 @@ function moveTrack(event, playlist, provider, trackID, newPos) {
     playlist.nextTracks.splice(newPos, 0, track);
 
 
-    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+}
+
+function deleteTrack(event, playlist, provider, trackID) {
+    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
+
+    var currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
+    if (currentPos < 0) {
+        throw { code: "PLYLST-200", msg: "Track not found in playlist - maybe somebody else has deleted it meanwhile?" };
+    }
+
+    // Remove at current pos:
+    playlist.nextTracks.splice(currentPos, 1);
+
+
+    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
 }
 
 function updateCurrentTrackProgress(playlist) {
@@ -592,8 +607,6 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
     }
 });
 
-//return this.http.put(this.PLAYLIST_PROVIDER_API + 
-//           '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: "spotify" });
 // Reorder // move Track:
 router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
     log.trace("begin MOVE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
@@ -612,23 +625,40 @@ router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
         res.status(200).send(playlist);
         log.info("Track MOVED eventId=%s, listId=%s, track=%s:%s, to=%s", req.params.eventID, req.params.listID, provider, trackID, to);
     } catch (error) {
-        log.error(error);
-        // Probably a duplicate or track not found problem:
+        log.debug(error);
+        // Probably a track not found problem:
         // 406: Not Acceptable
         res.status(406).send(JSON.stringify(error));
     }
-
-
 });
 
-
-// TODOs:
-//
-// REORDER:
-//    return this.http.patch(this.PLAYLIST_PROVIDER_API +'/events/0/playlists/0/reorder', {from: fromIndex, to:toIndex, provider: "fixme", id: "fixme"} );
 // DELETE Track:
-// return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId));
+// return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index));
+router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, res) {
+    log.trace("begin DELETE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    log.trace("body=%s", JSON.stringify(req.body));
 
+    try {
+        var event = getEventForRequest(req);
+        var playlist = getPlaylistForRequest(req);
+
+        // Track is in format <provider>:<trackID>, thus we need to split:
+        var parts = req.params.track.split(':');
+        var provider = parts[0];
+        var trackID = parts[1];
+
+        deleteTrack(event, playlist, provider, trackID);
+
+        firePlaylistChangedEvent(event, playlist);
+        res.status(200).send(playlist);
+        log.info("Track DELETED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
+    } catch (error) {
+        log.debug(error);
+        // Probably a track not found problem:
+        // 406: Not Acceptable
+        res.status(406).send(JSON.stringify(error));
+    }
+});
 
 
 app.use("/api/service-playlist/v1", router);

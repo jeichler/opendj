@@ -125,7 +125,10 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 
 # Move Track:
-curl -d '{"provider":"spotify", "id":"XXXXX3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/reorder
+curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/reorder
+
+# Delete Track
+curl -X DELETE http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:XXX3QTTAj8piyRBfhoPEfJC6y
 
 
 # Cleanup:
