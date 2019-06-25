@@ -13,11 +13,11 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <app-current-track [track]="currentPlaylist.currentTrack" ></app-current-track>
+  <app-current-track *ngIf="currentPlaylist && currentPlaylist.currentTrack" [track]="currentPlaylist.currentTrack" ></app-current-track>
 </ion-header>
 
 <ion-content>
-  <ion-list no-padding *ngIf="currentPlaylist?.nextTracks">
+  <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist.nextTracks">
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
 

@@ -1,21 +1,23 @@
 import { UserDataService } from './../../providers/user-data.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ModalController, ActionSheetController, ToastController, Platform } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-playlist',
   templateUrl: 'playlist.page.html',
   styleUrls: ['playlist.page.scss']
 })
-export class PlaylistPage implements OnInit {
+export class PlaylistPage implements OnInit, OnDestroy {
   public selectedItem: any;
 
   currentPlaylist: Playlist;
+  subscriptions: Subscription[] = [];
 
   constructor(
     public modalController: ModalController,
@@ -128,18 +130,18 @@ export class PlaylistPage implements OnInit {
     // console.log(this.websocketService.disconnect());
   }
 
-  async ngOnInit() {
-    /*
-    this.mockService.getEvents().subscribe(data => {
-      this.playlist = data.tracks;
-      // console.log(JSON.stringify(this.playlist));
-    });
-    */
-    this.websocketService.getPlaylist().subscribe(data => {
+  ngOnInit() {
+    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
       // console.log(`playlist: ${JSON.stringify(data)}`);
       this.currentPlaylist = data as Playlist;
       console.log(`playlist:`, this.currentPlaylist);
     });
+
+    this.subscriptions.push(sub);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
 }
