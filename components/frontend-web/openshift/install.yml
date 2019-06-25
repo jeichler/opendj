@@ -4,7 +4,7 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
-    - name: Create ImageStreamTag
+    - name: Create Image Stream 
       k8s:
         state: present
         wait: true
@@ -20,6 +20,34 @@
           spec:
             lookupPolicy:
               local: false
+    - name: Create Image Stream for Build Image
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: frontend-web
+            name: centos7-s2i-web-app
+            namespace: "{{NAMESPACE}}"
+          spec:
+            lookupPolicy:
+              local: false
+            tags:
+              - annotations: null
+                from:
+                  kind: DockerImage
+                  name: nodeshift/centos7-s2i-web-app
+                generation: 2
+                importPolicy:
+                  scheduled : true
+                name: latest
+                referencePolicy:
+                  type: Local
+            
     - name: Create BuildConfig
       k8s:
         state: present
@@ -46,17 +74,18 @@
             source:
               contextDir: components/frontend-web
               git:
-                ref: {{GIT_REF}}
+                ref: "{{GIT_REF}}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
               sourceStrategy:
                 env:
-                - name: NPM_MIRROR
+                  - name: OUTPUT_DIR
+                    value: www
                 from:
                   kind: ImageStreamTag
-                  name: nodejs:10
-                  namespace: openshift
+                  name: 'centos7-s2i-web-app:latest'
+                incremental: true
               type: Source
             successfulBuildsHistoryLimit: 2
             triggers:
@@ -64,11 +93,36 @@
               type: ImageChange
             - type: ConfigChange
             - github:
-                secret: 1qTuy4R21UDqOMqivTxpwrUN0brGdIONGdyBeCxX
+                secret: h3tRODIyPu7C6Y7Ucxp2bpgViyq32C4ldH5SRaL8
               type: GitHub
             - generic:
                 secret: rEVLkWDcrlBoPuionusPj0CL4A1H1DsFCMYPCdSw
               type: Generic
+
+    - name: Create ConfigMap
+      k8s:
+        state: present
+        wait: true
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: frontend-web-config-map
+            namespace: "{{NAMESPACE}}"
+          data:
+            env.js: |-
+              (function (window) {
+                  window.__env = window.__env || {};
+
+                  window.__env.enableDebug = false;
+                  window.__env.curatorPassword = 'test';
+                  window.__env.playlistMaxSize = 100;
+                  window.__env.websocketUrl = 'http://{{DNS_BASENAME}}/api/service-web';
+
+                  window.__env.SPOTIFY_PROVIDER_API = 'http://{{DNS_BASENAME}}/api/frontend-web/v1';
+                  window.__env.PLAYLIST_PROVIDER_API = 'http://{{DNS_BASENAME}}/api/service-playlist/v1';
+                }(this));
+
     - name: Create DeploymentConfig
       k8s:
         state: present
@@ -81,12 +135,11 @@
               template.alpha.openshift.io/wait-for-ready: 'true'
             labels:
               app: frontend-web
-              template: opendj-nodejs-frontend-web
             name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
-            replicas: 2
-            revisionHistoryLimit: 10
+            replicas: 1
+            revisionHistoryLimit: 5
             selector:
               name: frontend-web
             strategy:
@@ -107,34 +160,6 @@
               spec:
                 containers:
                   - env:
-                      - name: LOG_LEVEL
-                        value: "info"
-                      - name: COMPRESS_RESULT
-                        value: "true"
-                      - name: MOCKUP_ENABLED
-                        value: "false"
-                      - name: MOCKUP_TRACKDURATION_MS
-                        value: "20000"
-                      - name: KAFKA_HOST
-                        value: "backend-eventstore-kafka-bootstrap:9092"
-                      - name: SPOTIFY_CALLBACK_URL
-                        value: "http://{{DNS_BASENAME}}/api/frontend-web/v1/auth_callback"
-                      - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
-                        value: "60000"
-                      - name: SPOTIFY_REFRESH_INITIAL_DELAY
-                        value: "1000"
-                      - name: SPOTIFY_REFRESH_TOKEN_OFFSET
-                        value: "300000"
-                      - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
-                        value: "180000"
-                      - name: SPOTIFY_TRACK_DETAIL_NUM_GENRES
-                        value: "3"     
-                      - name: SPOTIFY_SEARCH_LIMIT
-                        value: "20"     
-                    envFrom:
-                      - prefix: SPOTIFY_
-                        secretRef:
-                          name: spotify-api-credentials
                     imagePullPolicy: IfNotPresent
                     name: frontend-web
                     ports:
@@ -155,11 +180,19 @@
                         memory: 512Mi
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
+                    volumeMounts:
+                      - mountPath: /opt/app-root/output/conf
+                        name: volume-cfgmap
                 dnsPolicy: ClusterFirst
                 restartPolicy: Always
                 schedulerName: default-scheduler
                 securityContext: {}
                 terminationGracePeriodSeconds: 30
+                volumes:
+                  - configMap:
+                      defaultMode: 420
+                      name: frontend-web-config-map
+                    name: volume-cfgmap
             test: false
             triggers:
               - imageChangeParams:
@@ -172,6 +205,7 @@
                     namespace: "{{NAMESPACE}}"
                 type: ImageChange
               - type: ConfigChange
+
     - name: Create Service
       k8s:
         state: present
@@ -210,7 +244,7 @@
             namespace: "{{NAMESPACE}}"
           spec:
             host: "{{DNS_BASENAME}}"
-            path: /api/frontend-web
+#            path: /api/frontend-web
             to:
               kind: Service
               name: frontend-web

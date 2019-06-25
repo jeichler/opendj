@@ -34,21 +34,21 @@ export class FEService {
         if ( trackId === null || trackId === undefined || musicProvider === null || musicProvider === undefined || addedBy === null || addedBy === undefined ) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', { provider: musicProvider, id: trackId, user: addedBy });
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', { provider: musicProvider, id: trackId, user: addedBy, provider: "spotify" });
     }
 
     deleteTrack(trackId: string, index: string): Observable<any> {
         if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(trackId) + '?index=' + encodeURIComponent(""+index));
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent("spotify:"trackId) + '?index=' + encodeURIComponent(""+index));
     }
 
     reorderTrack(trackId: string, fromIndex: number, toIndex: number): Observable<any> {
         if (trackId === null || trackId === undefined || fromIndex === null || fromIndex === undefined || toIndex === null || toIndex === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId });
+        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: "spotify" });
     }
 
     playTrack(): Observable<any> {
