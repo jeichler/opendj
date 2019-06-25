@@ -634,6 +634,48 @@ router.get('/trackDetails', async function(req, res) {
 
 });
 
+
+router.get('/play', async function(req, res) {
+    log.trace("begin play ");
+
+    try {
+        var eventID = req.query.event;
+        var trackID = req.query.track;
+        var pos = req.query.pos;
+        var api = getSpotifyApiForEvent(eventID);
+        var event = getEventStateForEvent(eventID);
+
+        log.debug("play eventID=%s, trackID=%s, pos=%s", eventID, trackID, pos);
+
+
+        // If TrackID contains a "spotify:track:" prefix, we need to remove it:
+        var colonPos = trackID.lastIndexOf(":");
+        if (colonPos != -1) {
+            trackID = trackID.substring(colonPos + 1);
+        }
+        var uris = ["spotify:track:" + trackID];
+        var options = { uris: uris };
+
+        if (event.currentDevice) {
+            options.device_id = event.currentDevice;
+        }
+
+        if (pos) {
+            options.position_ms = pos;
+        }
+
+        log.trace("play options: ", JSON.stringify(options));
+        await api.play(options);
+
+        res.status(200).send("ok");
+    } catch (err) {
+        handleError(err, res);
+    }
+
+    log.trace("end play");
+
+});
+
 router.get('/ready', function(req, res) {
     log.trace("ready begin");
     // Default: not ready:

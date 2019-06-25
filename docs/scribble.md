@@ -101,10 +101,19 @@ http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
 
 # third: Searches, currentTrack, AvailDevices:
-http://localhost:8080/api/provider-spotify/v1/searchTrack?event=4711&q=Michael+Jackson
-http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=4711
-http://localhost:8080/api/provider-spotify/v1/trackDetails?id=4711
-http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=4711
+http://localhost:8080/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
+http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=0
+http://localhost:8080/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDoDRpEvlZinDuNNW
+http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=0
+
+
+
+# PLay
+http://localhost:8080/api/provider-spotify/v1/play?event=0&track=5ftamIDoDRpEvlZinDuNNW
+
+
+http://localhost:8080/api/provider-spotify/v1/play?event=0&track=47&pos=2000
+
 
 http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
 http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
@@ -124,11 +133,15 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
 # Add Track
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 
+curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks
+
 # Move Track:
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/reorder
 
 # Delete Track
 curl -X DELETE http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:XXX3QTTAj8piyRBfhoPEfJC6y
+
+curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:3QTTAj8piyRBfhoPEfJC6y
 
 
 # Cleanup:
