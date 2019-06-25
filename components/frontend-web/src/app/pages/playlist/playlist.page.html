@@ -13,16 +13,30 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <app-current-track [track]="track"></app-current-track>
+  <app-current-track [track]="currentPlaylist.currentTrack" ></app-current-track>
 </ion-header>
 
 <ion-content>
-  <ion-list no-padding *ngIf="currentPlaylist">
-    <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
+  <ion-list no-padding *ngIf="currentPlaylist?.nextTracks">
+    <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
+      disabled="false">
 
-      <ion-item-sliding  *ngFor="let item of currentPlaylist.nextTracks;  trackBy: trackElement">
+      <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  trackBy: trackElement">
 
-
+        <ion-item color="light" (click)="presentActionSheet(item.title)">
+          <ion-thumbnail slot="start">
+            <img src="{{item.image_url}}">
+          </ion-thumbnail>
+          <ion-label text-wrap>{{item.name}}<br />
+            <span style="font-size: 14px; color: #666;">{{item.artist}},
+              {{item.year}}</span><br />
+            <ion-badge color="medium" style="margin-top: 10px;">{{item.added_by}}
+            </ion-badge>
+          </ion-label>
+          <ion-reorder slot="end" *ngIf="isCurator()">
+            <ion-icon name="menu"></ion-icon>
+          </ion-reorder>
+        </ion-item>
 
       </ion-item-sliding>
     </ion-reorder-group>
@@ -35,9 +49,6 @@
     </ion-fab-button>
   </ion-fab>
 
-  <div *ngIf="selectedItem" padding>
-    You navigated here from <b>{{selectedItem.title }}</b>
-  </div>
 </ion-content>
 
 <!-- </div> -->

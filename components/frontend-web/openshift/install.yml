@@ -4,24 +4,6 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
-#    - name: Create kafka topic 
-#      command: kafka-topics --bootstrap-server localhost:9092  --create --topic opendj-spotifyprovider-internal  --partitions 1 --replication-factor 1 --config retention.ms=43200000 
-      
-    # Create Secret Manually:
-    #  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
-    # - name: Create Spotify secret
-    #   k8s:
-    #     state: present
-    #     wait: true
-    #     definition:
-    #       apiVersion: v1
-    #       kind: Secret
-    #       data:
-    #         CLIENT_ID: <SECRET>
-    #         CLIENT_SECRET: <SECRET>
-    #       metadata:
-    #         name: spotify-api-credentials
-    #         namespace: "{{NAMESPACE}}"
     - name: Create ImageStreamTag
       k8s:
         state: present
@@ -32,8 +14,8 @@
           metadata:
             annotations:
             labels:
-              app: provider-spotify
-            name: provider-spotify
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             lookupPolicy:
@@ -48,8 +30,8 @@
           metadata:
             annotations:
             labels:
-              app: provider-spotify
-            name: provider-spotify
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             failedBuildsHistoryLimit: 5
@@ -57,14 +39,14 @@
             output:
               to:
                 kind: ImageStreamTag
-                name: provider-spotify:latest
+                name: frontend-web:latest
             postCommit: {}
             resources: {}
             runPolicy: Serial
             source:
-              contextDir: components/provider-spotify
+              contextDir: components/frontend-web
               git:
-                ref: "{{ GIT_REF }}"
+                ref: {{GIT_REF}}
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -98,15 +80,15 @@
             annotations:
               template.alpha.openshift.io/wait-for-ready: 'true'
             labels:
-              app: provider-spotify
-              template: opendj-nodejs-provider-spotify
-            name: provider-spotify
+              app: frontend-web
+              template: opendj-nodejs-frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             replicas: 2
             revisionHistoryLimit: 10
             selector:
-              name: provider-spotify
+              name: frontend-web
             strategy:
               activeDeadlineSeconds: 21600
               resources: {}
@@ -120,8 +102,8 @@
             template:
               metadata:
                 labels:
-                  name: provider-spotify
-                name: provider-spotify
+                  name: frontend-web
+                name: frontend-web
               spec:
                 containers:
                   - env:
@@ -136,7 +118,7 @@
                       - name: KAFKA_HOST
                         value: "backend-eventstore-kafka-bootstrap:9092"
                       - name: SPOTIFY_CALLBACK_URL
-                        value: "http://{{DNS_BASENAME}}/api/provider-spotify/v1/auth_callback"
+                        value: "http://{{DNS_BASENAME}}/api/frontend-web/v1/auth_callback"
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
                         value: "60000"
                       - name: SPOTIFY_REFRESH_INITIAL_DELAY
@@ -154,14 +136,14 @@
                         secretRef:
                           name: spotify-api-credentials
                     imagePullPolicy: IfNotPresent
-                    name: provider-spotify
+                    name: frontend-web
                     ports:
                       - containerPort: 8080
                         protocol: TCP
                     readinessProbe:
                       failureThreshold: 3
                       httpGet:
-                        path: /api/provider-spotify/v1/ready
+                        path: /api/frontend-web/v1/ready
                         port: 8080
                         scheme: HTTP
                       initialDelaySeconds: 1
@@ -183,10 +165,10 @@
               - imageChangeParams:
                   automatic: true
                   containerNames:
-                    - provider-spotify
+                    - frontend-web
                   from:
                     kind: ImageStreamTag
-                    name: 'provider-spotify:latest'
+                    name: 'frontend-web:latest'
                     namespace: "{{NAMESPACE}}"
                 type: ImageChange
               - type: ConfigChange
@@ -200,8 +182,8 @@
           metadata:
             annotations:
             labels:
-              app: provider-spotify
-            name: provider-spotify
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             ports:
@@ -210,7 +192,7 @@
                 protocol: TCP
                 targetPort: 8080
             selector:
-              name: provider-spotify
+              name: frontend-web
             sessionAffinity: None
             type: ClusterIP
     - name: Create Route
@@ -223,15 +205,15 @@
           metadata:
             annotations:
             labels:
-              app: provider-spotify
-            name: provider-spotify
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             host: "{{DNS_BASENAME}}"
-            path: /api/provider-spotify
+            path: /api/frontend-web
             to:
               kind: Service
-              name: provider-spotify
+              name: frontend-web
               weight: 100
             wildcardPolicy: None
             

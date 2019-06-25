@@ -10,7 +10,7 @@ export class EnvService {
   // be overridden by env.js
 
   public enableDebug = true;
-  public curatorPassword = '';
+  public curatorPassword = 'test';
   public playlistMaxSize = 50;
   public websocketHost = 'http://dev.opendj.io';
   public websocketPath = '/api/service-web/socket.io';

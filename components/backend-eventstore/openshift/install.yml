@@ -1,5 +1,8 @@
 ---
 - hosts: localhost
+  vars_files:
+    - ../../../install/openshift/vars_common.yml
+    - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: Deploy Kafka via Operator
       k8s:
@@ -9,8 +12,8 @@
           apiVersion: kafka.strimzi.io/v1alpha1
           kind: Kafka
           metadata:
-            name: opendj-kafka
-            namespace: "{{ namespace }}"
+            name: backend-eventstore
+            namespace: "{{ NAMESPACE }}"
           spec:
             kafka:
               version: 2.1.1

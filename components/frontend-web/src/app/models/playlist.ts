@@ -1,6 +1,6 @@
 export class Playlist {
     playlistID: number;
     isPlaying: boolean;
-    currentTrack = {};
+    currentTrack: any;
     nextTracks = [];
 }

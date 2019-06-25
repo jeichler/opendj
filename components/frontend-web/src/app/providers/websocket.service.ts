@@ -28,4 +28,16 @@ export class WebsocketService {
         return observable;
     }
 
+    isConnected() {
+        return this.socket.connected;
+    }
+
+    disconnect() {
+        return this.socket.disconnect();
+    }
+
+    connect() {
+        return this.socket.connect();
+    }
+
 }
