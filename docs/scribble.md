@@ -118,100 +118,13 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
 
 # Add TracK
-
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 
 
 
+# Cleanup:
+oc adm prune builds --confirm
+oc adm prune deployments --confirm
+oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/
 
-
-
-
-# playlist API RESTfull:
-http://localhost:8081/api/service-playlist/v1/events/4711/playlists/42/tracks
-
-
-
-## Retrieve current Playlist:
-GET dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
-Response: Array of Track Objects:
-[{
-  "id": "4pbJqGIASGPr0ZpGpnWkDn",
-  "name": "We Will Rock You - Remastered",
-  "artist": "Queen",
-  "year": 1977,
-  "image_url": "https://i.scdn.co/image/3b745272b2865b71822c5c6c2727ccdcade6aa9f",
-  "duration_ms": 122066,
-  "preview": "https://p.scdn.co/mp3-preview/1d423eaa321c18b53fa2b857bcb60b8aa92cca04?cid=ae5f9971dec243f98cf746c496181712",
-  "popularity": 79,
-  "provider": "spotify",
-  "genre": "glam rock, rock",
-  "danceability": 69,
-  "energy": 50,
-  "acousticness": 68,
-  "instrumentalness": 0,
-  "liveness": 26,
-  "happiness": 48,
-  "bpm": 81,
-  "added_by": "dfroehli"
-}]
-
-## start, stop,skip current Playlist (Curators Only)
-POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/play
-
-## Add Track to to List:
-POST dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks
-Input:(Body: provider, id as received from search, userID)
-Response: 200 OK
-
-## Move Track to new Position:
-PATCH dev.opendj.io/api/service-playlist/v1/playlists/{eventId}/{playlistId}/tracks/{trackId}
-Input Body: newPos, zero based integer of new desired position in the playlist of that track
-Response: 200 OK
-
-
-# playlist API Old School::
-
-## Retrieve current Playlist:
-GET dev.opendj.io/api/service-playlist/v1/read?event={eventId}&playlist={playlistId}
-Response: Array of Track Objects:
-[{
-  "id": "4pbJqGIASGPr0ZpGpnWkDn",
-  "name": "We Will Rock You - Remastered",
-  "artist": "Queen",
-  "year": 1977,
-  "image_url": "https://i.scdn.co/image/3b745272b2865b71822c5c6c2727ccdcade6aa9f",
-  "duration_ms": 122066,
-  "preview": "https://p.scdn.co/mp3-preview/1d423eaa321c18b53fa2b857bcb60b8aa92cca04?cid=ae5f9971dec243f98cf746c496181712",
-  "popularity": 79,
-  "provider": "spotify",
-  "genre": "glam rock, rock",
-  "danceability": 69,
-  "energy": 50,
-  "acousticness": 68,
-  "instrumentalness": 0,
-  "liveness": 26,
-  "happiness": 48,
-  "bpm": 81,
-  "added_by": "dfroehli"
-}]
-
-## start, stop,skip current Playlist (Curators Only)
-POST dev.opendj.io/api/service-playlist/v1/play?event={eventId}&playlist={playlistId}&cmd=play
-Other cmds: stop, skip
-
-## Add Track to to List:
-POST dev.opendj.io/api/service-playlist/v1/addTrack?event={eventId}&playlist={playlistId}
-Input:(Body: provider, id as received from search, userID)
-Response: 200 OK
-
-## Move Track to new Position:
-POST dev.opendj.io/api/service-playlist/v1/moveTrack?event={eventId}&playlist={playlistId}
-Input Body: provider,id as received from search, newPo (zero based integer of new desired position in the playlist of that track)
-Response: 200 OK
-
-
-# Ortwin says:
-GET /events/0/playlists/0/
-PUT /events/0/playlists/0/play'
 
