@@ -64,7 +64,7 @@
             source:
               contextDir: components/provider-spotify
               git:
-                ref: master
+                ref: "{{ GIT_REF }}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:

@@ -4,7 +4,7 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
-    - name: Create ImageStream
+    - name: Create ImageStreamTag
       k8s:
         state: present
         wait: true
@@ -14,8 +14,8 @@
           metadata:
             annotations:
             labels:
-              app: service-web
-            name: service-web
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             lookupPolicy:
@@ -30,8 +30,8 @@
           metadata:
             annotations:
             labels:
-              app: service-web
-            name: service-web
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             failedBuildsHistoryLimit: 5
@@ -39,14 +39,14 @@
             output:
               to:
                 kind: ImageStreamTag
-                name: service-web:latest
+                name: frontend-web:latest
             postCommit: {}
             resources: {}
             runPolicy: Serial
             source:
-              contextDir: components/service-web
+              contextDir: components/frontend-web
               git:
-                ref: "{{ GIT_REF }}"
+                ref: {{GIT_REF}}
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -64,10 +64,10 @@
               type: ImageChange
             - type: ConfigChange
             - github:
-                secret: f8020eeb6055607a
+                secret: 1qTuy4R21UDqOMqivTxpwrUN0brGdIONGdyBeCxX
               type: GitHub
             - generic:
-                secret: 86c8f4979ce31b6c
+                secret: rEVLkWDcrlBoPuionusPj0CL4A1H1DsFCMYPCdSw
               type: Generic
     - name: Create DeploymentConfig
       k8s:
@@ -80,15 +80,15 @@
             annotations:
               template.alpha.openshift.io/wait-for-ready: 'true'
             labels:
-              app: service-web
-              template: opendj-nodejs-service-web
-            name: service-web
+              app: frontend-web
+              template: opendj-nodejs-frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
-            replicas: 1
+            replicas: 2
             revisionHistoryLimit: 10
             selector:
-              name: service-web
+              name: frontend-web
             strategy:
               activeDeadlineSeconds: 21600
               resources: {}
@@ -102,20 +102,54 @@
             template:
               metadata:
                 labels:
-                  name: service-web
-                name: service-web
+                  name: frontend-web
+                name: frontend-web
               spec:
                 containers:
                   - env:
                       - name: LOG_LEVEL
                         value: "info"
+                      - name: COMPRESS_RESULT
+                        value: "true"
+                      - name: MOCKUP_ENABLED
+                        value: "false"
+                      - name: MOCKUP_TRACKDURATION_MS
+                        value: "20000"
                       - name: KAFKA_HOST
                         value: "backend-eventstore-kafka-bootstrap:9092"
+                      - name: SPOTIFY_CALLBACK_URL
+                        value: "http://{{DNS_BASENAME}}/api/frontend-web/v1/auth_callback"
+                      - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
+                        value: "60000"
+                      - name: SPOTIFY_REFRESH_INITIAL_DELAY
+                        value: "1000"
+                      - name: SPOTIFY_REFRESH_TOKEN_OFFSET
+                        value: "300000"
+                      - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
+                        value: "180000"
+                      - name: SPOTIFY_TRACK_DETAIL_NUM_GENRES
+                        value: "3"     
+                      - name: SPOTIFY_SEARCH_LIMIT
+                        value: "20"     
+                    envFrom:
+                      - prefix: SPOTIFY_
+                        secretRef:
+                          name: spotify-api-credentials
                     imagePullPolicy: IfNotPresent
-                    name: service-web
+                    name: frontend-web
                     ports:
                       - containerPort: 8080
                         protocol: TCP
+                    readinessProbe:
+                      failureThreshold: 3
+                      httpGet:
+                        path: /api/frontend-web/v1/ready
+                        port: 8080
+                        scheme: HTTP
+                      initialDelaySeconds: 1
+                      periodSeconds: 10
+                      successThreshold: 1
+                      timeoutSeconds: 1
                     resources:
                       limits:
                         memory: 512Mi
@@ -131,10 +165,10 @@
               - imageChangeParams:
                   automatic: true
                   containerNames:
-                    - service-web
+                    - frontend-web
                   from:
                     kind: ImageStreamTag
-                    name: 'service-web:latest'
+                    name: 'frontend-web:latest'
                     namespace: "{{NAMESPACE}}"
                 type: ImageChange
               - type: ConfigChange
@@ -148,8 +182,8 @@
           metadata:
             annotations:
             labels:
-              app: service-web
-            name: service-web
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             ports:
@@ -158,7 +192,7 @@
                 protocol: TCP
                 targetPort: 8080
             selector:
-              name: service-web
+              name: frontend-web
             sessionAffinity: None
             type: ClusterIP
     - name: Create Route
@@ -171,15 +205,15 @@
           metadata:
             annotations:
             labels:
-              app: service-web
-            name: service-web
+              app: frontend-web
+            name: frontend-web
             namespace: "{{NAMESPACE}}"
           spec:
             host: "{{DNS_BASENAME}}"
-            path: /api/service-web
+            path: /api/frontend-web
             to:
               kind: Service
-              name: service-web
+              name: frontend-web
               weight: 100
             wildcardPolicy: None
             
