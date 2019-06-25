@@ -283,16 +283,21 @@ function updateEventTokensFromSpotifyBody(eventState, body) {
 
 // step1: - generate the login URL / redirect...
 router.get('/getSpotifyLoginURL', function(req, res) {
-    log.debug("getSpotifyLoginURL");
+        log.debug("getSpotifyLoginURL");
 
-    // TODO: Error handling if EventID is not presenet
-    var eventID = req.query.event;
-    var spotifyApi = getSpotifyApiForEvent(eventID);
-    var authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
-    log.debug("authorizeURL=%s", authorizeURL);
+        // TODO: Error handling if EventID is not presenet
+        var eventID = req.query.event;
+        var spotifyApi = getSpotifyApiForEvent(eventID);
+        var authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
+        log.debug("authorizeURL=%s", authorizeURL);
 
-    res.send(authorizeURL);
-});
+        // Unless we have an event regisgration page, we
+        // redirect for convience:
+        res.redirect(authorizeURL);
+
+        // If we go for the real thing, we need to send the URL:
+    } //   res.send(authorizeURL);
+);
 
 // This is Step 2 of the Authorization Code Flow: 
 // Redirected from Spotiy AccountsService after user Consent.
@@ -545,77 +550,86 @@ var mapOfTrackDetails = new Map();
 router.get('/trackDetails', async function(req, res) {
     log.trace("trackDetails begin");
 
-    // TODO: Error handling if EventID is not present
-    var eventID = req.query.event;
-    var trackID = req.query.track
-    var trackResult = null;
-    var audioFeaturesResult = null;
-    var albumResult = null;
-    var artistResult = null;
-    var result = null;
+    try {
 
-    // TODO: Error handling if API is not defined:
-    var api = getSpotifyApiForEvent(eventID);
+        // TODO: Error handling if EventID is not present
+        var eventID = req.query.event;
+        var trackID = req.query.track
+        var trackResult = null;
+        var audioFeaturesResult = null;
+        var albumResult = null;
+        var artistResult = null;
+        var result = null;
 
-    log.debug("trackDetails eventID=%s, trackID=%s", eventID, trackID);
+        // TODO: Error handling if API is not defined:
+        var api = getSpotifyApiForEvent(eventID);
 
-    // If TrackID contains a "spotify:track:" prefix, we need to remove it:
-    var colonPos = trackID.lastIndexOf(":");
-    if (colonPos != -1) {
-        trackID = trackID.substring(colonPos + 1);
-    }
+        log.debug("trackDetails eventID=%s, trackID=%s", eventID, trackID);
 
-    // CACHING, as the following is quite Expensive, and we would like
-    // to avoid to run into Spotify API rate limits:
-    result = mapOfTrackDetails.get(trackID);
-    if (result) {
-        log.debug("trackDetails cache hit");
-    } else {
-        log.debug("trackDetails cache miss");
-
-        // We have to make four calls - we do that in parallel to speed things up
-        // The problem is the "Genre" Result - it's not stored with the track, but with
-        // either the album or the artist. So here we go:
-        // #1: Get basic Track Result:
-        trackResult = api.getTrack(trackID);
-
-        // #2: Get get Track Audio Features (danceability, energy and stuff):
-        audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
-
-        // When we have trackResult we get the album and artist ID , and with that, we can make call 
-        // #3 to get album details and ...
-        trackResult = await trackResult;
-        if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
-            albumResult = api.getAlbum(trackResult.body.album.id);
+        // If TrackID contains a "spotify:track:" prefix, we need to remove it:
+        var colonPos = trackID.lastIndexOf(":");
+        if (colonPos != -1) {
+            trackID = trackID.substring(colonPos + 1);
         }
 
-        // ... call #4 to get Artist Result:
-        if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
-            artistResult = api.getArtist(trackResult.body.artists[0].id);
+        // CACHING, as the following is quite Expensive, and we would like
+        // to avoid to run into Spotify API rate limits:
+        result = mapOfTrackDetails.get(trackID);
+        if (result) {
+            log.debug("trackDetails cache hit");
+        } else {
+            log.debug("trackDetails cache miss");
+
+            // We have to make four calls - we do that in parallel to speed things up
+            // The problem is the "Genre" Result - it's not stored with the track, but with
+            // either the album or the artist. So here we go:
+            // #1: Get basic Track Result:
+            trackResult = api.getTrack(trackID);
+
+            // #2: Get get Track Audio Features (danceability, energy and stuff):
+            audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
+
+            // When we have trackResult we get the album and artist ID , and with that, we can make call 
+            // #3 to get album details and ...
+            trackResult = await trackResult;
+
+            if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
+                albumResult = api.getAlbum(trackResult.body.album.id);
+            }
+
+            // ... call #4 to get Artist Result:
+            if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
+                artistResult = api.getArtist(trackResult.body.artists[0].id);
+            }
+
+            // Wait for all results to return:
+            albumResult = await albumResult;
+            audioFeaturesResult = await audioFeaturesResult;
+            artistResult = await artistResult;
+
+            // TODO: Merge responses into OpenDJ TrackResult 
+            // For now (and debugging), we send the raw: spotify objects:
+            result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
+
+            // Cache result:
+            mapOfTrackDetails.set(trackID, result);
         }
 
-        // Wait for all results to return:
-        albumResult = await albumResult;
-        audioFeaturesResult = await audioFeaturesResult;
-        artistResult = await artistResult;
+        res.send(result);
+        /*
+            res.send({
+                track: trackResult,
+                album: albumResult,
+                artist: artistResult,
+                audioFeaturesResult: audioFeaturesResult,
+                result: result,
+            });
+         */
 
-        // TODO: Merge responses into OpenDJ TrackResult 
-        // For now (and debugging), we send the raw: spotify objects:
-        result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
-
-        mapOfTrackDetails.set(trackID, result);
+    } catch (err) {
+        handleError(err, res);
     }
-    res.send(result);
 
-    /*
-        res.send({
-            track: trackResult,
-            album: albumResult,
-            artist: artistResult,
-            audioFeaturesResult: audioFeaturesResult,
-            result: result,
-        });
-     */
     log.trace("trackDetails end");
 
 });
