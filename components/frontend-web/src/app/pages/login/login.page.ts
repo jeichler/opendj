@@ -36,8 +36,8 @@ export class LoginPage implements OnInit {
     } else {
       this.userDataService.login(this.loginForm.value.username, false).then(data => {
         this.events.publish('user:login', [this.loginForm.value.username, false]);
+        this.loginForm.reset();
       });
-      this.loginForm.reset();
     }
   }
 
