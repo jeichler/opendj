@@ -122,6 +122,8 @@
                         value: "false"
                       - name: MOCKUP_AUTOSKIP
                         value: "0"
+                      - name: MOCKUP_NO_ACTUAL_PLAYING
+                        value: "false"
                       - name: INTERNAL_POLL_INTERVAL
                         value: "100"
                     imagePullPolicy: IfNotPresent

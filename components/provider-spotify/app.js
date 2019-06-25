@@ -667,6 +667,18 @@ router.get('/play', async function(req, res) {
         log.trace("play options: ", JSON.stringify(options));
         await api.play(options);
 
+        // Todo: Catch Exceptions. 
+
+        // Catch and retry this one:
+        //  Error: WebapiError: Not Found 
+        // { message:
+        //    { name: 'WebapiError', message: 'Not Found', statusCode: 404 },
+        //   code: 500 },
+
+        // If playback fails, check for active device and autoSelect the first one.
+
+        // Todo: verify via currentTrack that player is actually playing!
+
         res.status(200).send("ok");
     } catch (err) {
         handleError(err, res);

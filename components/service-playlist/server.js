@@ -158,6 +158,7 @@ var DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
 var DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
 var DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS || 'false') == 'true';
 var MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
+var MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
 var INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
 
 
@@ -180,17 +181,16 @@ var mapOfEvents = new Map([
 ]);
 
 var emergencyTrackIDs = [
-    "spotify:029NqmIySn1kOY305AAhxT", // Sledgehammer by Peter Gabrial
-    "spotify:0DfG1ltJnZyq4Tx3ZLL7ZU", // Rock me Amadeus by Falco
+    "spotify:4u7EnebtmKWzUH433cf5Qv", // Bohemian Rhapsody by Queen
     "spotify:4pbJqGIASGPr0ZpGpnWkDn", // We Will Rock You by Queen
+    "spotify:0DfG1ltJnZyq4Tx3ZLL7ZU", // Rock me Amadeus by Falco
     "spotify:5ftamIDoDRpEvlZinDuNNW", // Flip Ya Lid by Nightmares on Wax
     "spotify:6u7jPi22kF8CTQ3rb9DHE7", // Old Town Road by Lil Nas X, Billy Ray Cyrus
     "spotify:1NaxD6BhOQ69C4Cdcx5jrP", // Coming Down by KIDDO, GASHI
+    "spotify:3Wz5JAW46aCFe1BwZIePu6", // Hold On by OLSSON
     "spotify:720dTtTyYAD9TKSAd9lwrt", // Jimmy Mathis by "Bubba Sparxxx
     "spotify:72GtVxWzQSeF7xT4wr3fE0", // Shadow On The Wall by Mike Oldfield
     "spotify:3vkQ5DAB1qQMYO4Mr9zJN6", // Gimme! Gimme! Gimme!  by ABBA
-    "spotify:3Wz5JAW46aCFe1BwZIePu6", // Old On by OLSSON
-
 ];
 
 async function getTrackDetailsForTrackID(eventID, trackID) {
@@ -357,7 +357,19 @@ function play(event, playlist) {
 
     updateCurrentTrackProgress(playlist);
 
-    // TODO: Call Spotify-Provider to play at currentTrack.progress_ms
+    // Fire and Forget  Call Spotify-Provider to play at currentTrack.progress_ms
+    // TODO: Make this truly async, i.e. sent a message, and provider fires a "PLAY_STARTED" event when action succeded
+    if (MOCKUP_NO_ACTUAL_PLAYING) {
+        log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - play request is NOT actually being executed");
+    } else {
+        log.debug("Play it, Sam. Play %s", playlist.currentTrack.id);
+        request(SPOTIFY_PROVIDER_URL + "play?event=" + event.eventID + "&track=" + playlist.currentTrack.id + "&pos=" + playlist.currentTrack.progress_ms, { json: true })
+            .catch(function(err) {
+                log.fatal("play request to provider failed!", err);
+            });
+    }
+
+
     log.info("PLAY event=%s, playlist=%s, track=%s, startAt=%s", event.eventID, playlist.playlistID, playlist.currentTrack.id, playlist.currentTrack.progress_ms);
 
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
@@ -663,7 +675,8 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, 
 
 app.use("/api/service-playlist/v1", router);
 
-checkEvents();
+if (INTERNAL_POLL_INTERVAL > 5000)
+    checkEvents();
 setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
 
 
