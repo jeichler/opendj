@@ -126,7 +126,7 @@ export class PlaylistPage implements OnInit {
     return element ? element.id : null;
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     /*
     this.mockService.getEvents().subscribe(data => {
       this.playlist = data.tracks;
@@ -134,8 +134,9 @@ export class PlaylistPage implements OnInit {
     });
     */
     this.websocketService.getPlaylist().subscribe(data => {
-      console.log(JSON.stringify(data));
+      // console.log(`playlist: ${JSON.stringify(data)}`);
       this.currentPlaylist = data as Playlist;
+      console.log(`playlist:`, this.currentPlaylist);
     });
   }
 

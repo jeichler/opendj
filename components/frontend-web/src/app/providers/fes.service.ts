@@ -1,8 +1,10 @@
+
 import { Track } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { EnvService } from './env.service';
+import { query } from '@angular/core/src/render3';
 
 
 
@@ -20,6 +22,7 @@ export class FEService {
     }
 
     searchTracks(queryString: string): Observable<Track[]> {
+        console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2 ) {
             throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
         }

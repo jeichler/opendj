@@ -25,11 +25,12 @@
 }
 
 ion-header {
- @include gradient-bottom;
+//  @include gradient-bottom;
+--ion-background-color: rgba(56, 70, 108, .8) 15%;
 }
 
 ion-content {
-@include gradient-top;
+// @include gradient-top;
     // --ion-background-color: inherit;
 
 }

@@ -1,0 +1,15 @@
+<ion-item color="light" (click)="presentActionSheet(item.title)">
+  <ion-thumbnail slot="start">
+    <img src="{{item.image_url}}">
+  </ion-thumbnail>
+  <ion-label text-wrap>{{item.name}}<br />
+    <span style="font-size: 14px; color: #666;">{{item.artist}},
+      {{item.year}}</span><br />
+    <ion-badge color="medium" style="margin-top: 10px;">oschneid
+    </ion-badge> &nbsp;
+    <ion-badge color="success">22 Likes</ion-badge>
+  </ion-label>
+  <ion-reorder slot="end">
+    <ion-icon name="menu"></ion-icon>
+  </ion-reorder>
+</ion-item>
