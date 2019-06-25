@@ -3,9 +3,11 @@ import { Router } from '@angular/router';
 import { Events } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { EnvService } from '../../providers/env.service';
-
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopoverController } from '@ionic/angular';
 import { MoreOptionsComponent } from '../../components/more-options/more-options.component';
+const ung = require('username-generator');
+
 
 @Component({
   selector: 'app-login',
@@ -14,26 +16,29 @@ import { MoreOptionsComponent } from '../../components/more-options/more-options
 })
 export class LoginPage implements OnInit {
 
-  login = { username: '', curatorPassword: '' };
-  submitted = false;
+  loginForm: FormGroup;
+  submitAttempt: boolean;
 
   constructor(
     public router: Router,
     private events: Events,
     public userDataService: UserDataService,
     public envService: EnvService,
-    public popOverCtrl: PopoverController
+    public popOverCtrl: PopoverController,
+    public formBuilder: FormBuilder
   ) { }
 
-  onLogin() {
-    console.log('login...' + JSON.stringify(this.login));
-    let isCurator = false;
-    if (this.login.curatorPassword === this.envService.curatorPassword) {
-      isCurator = true;
+   loginAction() {
+    this.submitAttempt = true;
+    if (!this.loginForm.valid) {
+      this.loginForm.reset();
+      return;
+    } else {
+      this.userDataService.login(this.loginForm.value.username, false).then(data => {
+        this.events.publish('user:login', [this.loginForm.value.username, false]);
+        this.loginForm.reset();
+      });
     }
-    this.userDataService.login(this.login.username, isCurator).then(data => {
-      this.events.publish('user:login', [this.login.username, isCurator]);
-    });
   }
 
   async presentMoreOptions(ev: any) {
@@ -45,7 +50,16 @@ export class LoginPage implements OnInit {
     return await popover.present();
   }
 
+  generateUsername() {
+    this.loginForm.patchValue({
+      username: ung.generateUsername()
+    });
+  }
+
   ngOnInit() {
+    this.loginForm = this.formBuilder.group({
+      username: ['', Validators.compose([Validators.minLength(3), Validators.required])]
+    });
   }
 
 }
