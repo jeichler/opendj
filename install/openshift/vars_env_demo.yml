@@ -1,2 +1,7 @@
+# Demo Env is running in employee openshift
+# Due to kafka constraints with certs, the namespace MUST
+# be dfroehli-opendj-dev
 kafkaOperatorIsAvailable: false
+NAMESPACE: "dfroehli-opendj-dev"
+DNS_BASENAME: "{{STAGE}}.opendj.io"
 
