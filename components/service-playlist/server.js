@@ -4,9 +4,10 @@ const compression = require('compression');
 const express = require('express');
 const app = express();
 var request = require('request-promise-native');
-var kafka = require('kafka-node')
+var cors = require('cors');
+var kafka = require('kafka-node');
 var router = new express.Router();
-var log4js = require('log4js')
+var log4js = require('log4js');
 var log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
@@ -22,6 +23,7 @@ if (COMPRESS_RESULT == 'true') {
     log.info("compression disabled");
 
 }
+app.use(cors());
 // Required for POST operations with body:
 app.use(express.json());
 
