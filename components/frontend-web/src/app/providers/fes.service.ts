@@ -26,7 +26,7 @@ export class FEService {
         if (queryString === null || queryString === undefined || queryString.length < 2) {
             throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
         }
-        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=4711&q=' + encodeURIComponent(queryString));
+        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=0&q=' + encodeURIComponent(queryString));
     }
 
     addTrack(trackId: string, musicProvider: string, addedBy: string): Observable<any> {

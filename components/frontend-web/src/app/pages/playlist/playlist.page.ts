@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
 export class PlaylistPage implements OnInit, OnDestroy {
   public selectedItem: any;
 
-  currentPlaylist: Playlist;
+  currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
 
   constructor(
@@ -42,10 +42,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
     */
     event.detail.complete();
 
-  }
-
-  async isCurator() {
-    return await this.userDataService.getCurator();
   }
 
   async presentModal() {
