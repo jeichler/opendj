@@ -181,8 +181,9 @@
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                     volumeMounts:
-                      - mountPath: /opt/app-root/output/conf
+                      - mountPath: /opt/app-root/output/conf/env.js
                         name: volume-cfgmap
+                        subPath: env.js
                 dnsPolicy: ClusterFirst
                 restartPolicy: Always
                 schedulerName: default-scheduler
@@ -190,7 +191,7 @@
                 terminationGracePeriodSeconds: 30
                 volumes:
                   - configMap:
-                      defaultMode: 420
+                      defaultMode: 438
                       name: frontend-web-config-map
                     name: volume-cfgmap
             test: false
