@@ -5,6 +5,7 @@
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: Deploy Kafka via Operator
+      when: kafkaOperatorIsAvailable
       k8s:
         state: present
         wait: true
@@ -36,3 +37,19 @@
                 type: persistent-claim
                 size: 1Gi
                 deleteClaim: true
+
+# Ugly as hell, but i dont care.
+# Need to ignore errors as no idempotency here:
+    - name: Deploy Kafka via ugly workaround (errors can be ignored)
+      block:
+        - name: Deploy zookepper
+          command: oc create -f -
+          args:
+            stdin: "{{ lookup('template', 'noOperator_zookeeper.yml') }}"
+          ignore_errors: yes
+        - name: Deploy broker
+          command: oc create -f -
+          args:
+            stdin: "{{ lookup('template', 'noOperator_broker.yml') }}"
+          ignore_errors: yes
+      when: not kafkaOperatorIsAvailable

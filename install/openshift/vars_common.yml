@@ -1,3 +1,4 @@
 NAMESPACE: "dfroehli-opendj-{{STAGE}}"
 DNS_BASENAME: "{{STAGE}}.opendj.io"
 GIT_REF: "master"
+kafkaOperatorIsAvailable: true

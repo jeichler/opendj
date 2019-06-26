@@ -148,5 +148,3 @@ curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 oc adm prune builds --confirm
 oc adm prune deployments --confirm
 oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/
-
-
