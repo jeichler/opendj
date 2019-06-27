@@ -7,16 +7,19 @@ ion-card {
 ion-title {
   // margin-bottom: 1%;
 }
-// @media only screen and (min-width: 900px) {
-//   ion-card {
-//     max-width: 50%;
-//     margin: 0 auto;
-//   }
-// }
+
 ion-img {
-  max-width: 65%;
+  max-width: 45%;
   margin-top: 10%;
   margin-left: 10%;
+}
+
+@media only screen and (min-width: 960px) {
+  ion-img {
+    max-width: 45%;
+    margin-top: 10%;
+    margin-left: 10%;
+  }
 }
 
 ion-buttons {

@@ -24,16 +24,8 @@
     --ion-background-color: linear-gradient(270deg,  rgba(56, 70, 108, .8) 15%, rgba(79, 83, 94, 0.8) 80%) !important;
 }
 
-ion-header {
-//  @include gradient-bottom;
---ion-background-color: rgba(56, 70, 108, .8) 15%;
-}
 
-ion-content {
-// @include gradient-top;
-    // --ion-background-color: inherit;
-
-}
+ion-header {}
 
 ion-fab-button {
     --background: rgb(64, 74, 187);

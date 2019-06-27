@@ -1,6 +1,6 @@
 <!-- <div class="context"> -->
-<ion-header no-border>
-  <ion-toolbar>
+<ion-header no-border color="dark">
+  <ion-toolbar color="dark">
     <ion-buttons slot="start">
       <ion-menu-button color="light"></ion-menu-button>
     </ion-buttons>
@@ -16,7 +16,7 @@
   <app-current-track *ngIf="currentPlaylist && currentPlaylist.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator"></app-current-track>
 </ion-header>
 
-<ion-content>
+<ion-content color="dark">
   <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist.nextTracks">
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
@@ -24,8 +24,8 @@
       <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  index as i; trackBy: trackElement">
 
         <ion-item color="light" (click)="presentActionSheet(item, i)">
-          
-          <ion-thumbnail slot="start">           
+
+          <ion-thumbnail slot="start">
             <img src="{{item.image_url}}">
           </ion-thumbnail>
           <ion-label text-wrap>{{item.name}}<br />
@@ -38,7 +38,7 @@
               <ion-chip color="opendj">{{i +1}}</ion-chip>
           </ion-reorder>
           <ion-chip slot="end" *ngIf="!isCurator">{{i +1}}</ion-chip>
-          
+
         </ion-item>
 
       </ion-item-sliding>
@@ -53,9 +53,6 @@
   </ion-fab>
 
 </ion-content>
-
-<!-- </div> -->
-
 <!-- <div class="area">
   <ul class="cicles">
     <li></li>
