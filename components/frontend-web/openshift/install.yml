@@ -69,7 +69,9 @@
                 kind: ImageStreamTag
                 name: frontend-web:latest
             postCommit: {}
-            resources: {}
+            resources: 
+              limits:
+                memory: 1568Mi
             runPolicy: Serial
             source:
               contextDir: components/frontend-web

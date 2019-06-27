@@ -41,7 +41,9 @@
                 kind: ImageStreamTag
                 name: service-web:latest
             postCommit: {}
-            resources: {}
+            resources:
+              limits:
+                  memory: 256Mi
             runPolicy: Serial
             source:
               contextDir: components/service-web

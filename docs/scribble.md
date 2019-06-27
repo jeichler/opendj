@@ -86,8 +86,11 @@ sa-mw-dach/OpenDJ#64
 
 # Spotify API
 Registered Callbacks in Spotify Developer Dashboard for OpenDJ App:
-http://www.opendj.io/backend-spotifyprovider/auth_callback
-http://spotify-provider-boundary-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/backend-spotifyprovider/auth_callback
+http://dev.opendj.io/api/provider-spotify/v1/auth_callback
+http://demo.opendj.io/api/provider-spotify/v1/auth_callback
+http://www.opendj.io/api/provider-spotify/v1/auth_callback
+http://localhost:8081/api/provider-spotify/v1/auth_callback
+
 http://localhost:8081/backend-spotifyprovider/auth_callback
 
 # provider api:
@@ -95,6 +98,7 @@ http://localhost:8081/backend-spotifyprovider/auth_callback
 # first: get login url:
 http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
 # second: (copy paste that URL to another tab and see spotify consent screen, then call back
 # Success full if you see a "1" response
@@ -106,6 +110,8 @@ http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=0
 http://localhost:8080/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDoDRpEvlZinDuNNW
 http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=0
 
+
+http://demo.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
 
 
 # PLay
@@ -123,6 +129,8 @@ http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
 http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
 
 
+http://demo.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
+
 # Access Playlist
 http://localhost:8081/api/service-playlist/v1/events/0/
 http://localhost:8081/api/service-playlist/v1/events/0/playlists/0
@@ -132,6 +140,9 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/play
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
+
+http://demo.opendj.io/api/service-playlist/v1/events/0/playlists/0
+
 
 # Add Track
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
