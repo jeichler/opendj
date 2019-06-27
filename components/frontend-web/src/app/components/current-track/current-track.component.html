@@ -9,7 +9,7 @@
     <ion-col size="8">
       <ion-title no-padding margin-top>{{ track.name }}</ion-title>
       <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
-
+      <p>{{currentTime}} / {{totalTime}}</p>
       <ion-buttons *ngIf="isCurator">
         <ion-button  color="light" shape="block" fill="outline">
           <ion-icon name="square"></ion-icon>

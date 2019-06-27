@@ -16,34 +16,27 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     }
     this.track = value;
     this.progress = this.track.progress_ms / 1000;
+    this.calculateTotalTime();
     this.intervalHandle = setInterval(() => this.countdown(), 1000);
   }
 
   track;
   timeRemaining = 0;
+  currentTime = null;
+  totalTime = null;
   progress;
   intervalHandle = null;
 
   constructor() { }
 
-  calculateTime() {
-
-    let duration = this.track.duration_ms / 1000;
-    let currentTime = this.track.progress_ms / 1000;
-    let timeLeft = duration - currentTime;
-    let s, m;
-
-    console.log(1 - (timeLeft / duration));
-    this.timeRemaining = 1 - (timeLeft / duration);
-
-    s = timeLeft % 60;
-    m = Math.floor(timeLeft / 60) % 60;
-
+  calculateTotalTime() {
+    const duration = this.track.duration_ms / 1000;
+    let s = duration % 60;
+    let m = Math.floor(duration / 60) % 60;
+    s = Math.round(s);
     s = s < 10 ? '0' + s : s;
     m = m < 10 ? '0' + m : m;
-
-    console.log(m + ':' + s + ' remaining...');
-
+    this.totalTime = m + ':' + s;
   }
 
   countdown() {
@@ -52,6 +45,12 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     const timeLeft = duration - this.progress;
     this.timeRemaining = 1 - (timeLeft / duration);
     // console.log(1 - (timeLeft / duration));
+    let s = timeLeft % 60;
+    s = Math.round(s);
+    let m = Math.floor(timeLeft / 60) % 60;
+    s = s < 10 ? '0' + s : s;
+    m = m < 10 ? '0' + m : m;
+    this.currentTime = m + ':' + s;
   }
 
   ngOnInit() {
