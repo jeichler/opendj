@@ -148,3 +148,18 @@ curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 oc adm prune builds --confirm
 oc adm prune deployments --confirm
 oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/
+
+
+
+[2019-06-27T05:45:19.373] [DEBUG] default - ReferenceError: track is not defined
+    at deleteTrack (/opt/app-root/src/server.js:327:127)
+    at /opt/app-root/src/server.js:664:9
+    at Layer.handle [as handle_request] (/opt/app-root/src/node_modules/express/lib/router/layer.js:95:5)
+    at next (/opt/app-root/src/node_modules/express/lib/router/route.js:137:13)
+    at Route.dispatch (/opt/app-root/src/node_modules/express/lib/router/route.js:112:3)
+    at Layer.handle [as handle_request] (/opt/app-root/src/node_modules/express/lib/router/layer.js:95:5)
+    at /opt/app-root/src/node_modules/express/lib/router/index.js:281:22
+    at param (/opt/app-root/src/node_modules/express/lib/router/index.js:354:14)
+    at param (/opt/app-root/src/node_modules/express/lib/router/index.js:365:14)
+at param (/opt/app-root/src/node_modules/express/lib/router/index.js:365:14)
+

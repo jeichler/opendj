@@ -10,7 +10,7 @@
       <ion-title no-padding margin-top>{{ track.name }}</ion-title>
       <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
 
-      <ion-buttons>
+      <ion-buttons *ngIf="isCurator">
         <ion-button  color="light" shape="block" fill="outline">
           <ion-icon name="square"></ion-icon>
         </ion-button>
@@ -27,7 +27,7 @@
   <ion-row>
     <ion-col>
       <div padding>
-        <ion-progress-bar color="secondary" value="0.5"></ion-progress-bar>
+        <ion-progress-bar color="secondary" value="{{timeRemaining}}"></ion-progress-bar>
       </div>
     </ion-col>
   </ion-row>

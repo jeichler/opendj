@@ -18,7 +18,7 @@ export class FEService {
 
     constructor(public http: HttpClient, public envService: EnvService) {
         this.SPOTIFY_PROVIDER_API = this.envService.SPOTIFY_PROVIDER_API;
-        this.PLAYLIST_PROVIDER_API = this.envService.SPOTIFY_PROVIDER_API;
+        this.PLAYLIST_PROVIDER_API = this.envService.PLAYLIST_PROVIDER_API;
     }
 
     searchTracks(queryString: string): Observable<Track[]> {
@@ -42,13 +42,14 @@ export class FEService {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
         return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index));
+        // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`));
     }
 
     reorderTrack(trackId: string, fromIndex: number, toIndex: number): Observable<any> {
         if (trackId === null || trackId === undefined || fromIndex === null || fromIndex === undefined || toIndex === null || toIndex === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify' });
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify' });
     }
 
     playTrack(): Observable<any> {

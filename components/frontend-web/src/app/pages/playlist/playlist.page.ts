@@ -18,6 +18,8 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
+  username: string = null;
+  isCurator = false;
 
   constructor(
     public modalController: ModalController,
@@ -35,15 +37,19 @@ export class PlaylistPage implements OnInit, OnDestroy {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
     const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
     this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
-    /*
+
     this.feSevice.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
-      data => {},
-      err => console.log(err));
-    */
+      data => {
+        this.presentToast('Track successfully reordered in playlist.');
+      },
+      err => console.log(err)
+    );
+
     event.detail.complete();
 
   }
 
+  // searchTrackModal
   async presentModal() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
@@ -52,9 +58,13 @@ export class PlaylistPage implements OnInit, OnDestroy {
     modal.onDidDismiss().then(res => {
       console.log(res);
       if (res.data) {
-        // TODO: send to backend
-        this.currentPlaylist.nextTracks.push(res.data);
-        this.presentToast('Song added to playlist.');
+        this.feSevice.addTrack(res.data.id, 'spotify', this.username).subscribe(
+          data => {
+            console.log(data);
+            this.presentToast('Track added to playlist.');
+          },
+          err => console.log(err)
+        );
       }
     });
     return await modal.present();
@@ -70,9 +80,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
     toast.present();
   }
 
-  async presentActionSheet(data) {
+  async presentActionSheet(data, index) {
     const actionSheet = await this.actionSheetController.create({
-      header: data,
+      header: data.title,
       buttons: [
         {
           text: 'Play (preview mode)',
@@ -80,27 +90,20 @@ export class PlaylistPage implements OnInit, OnDestroy {
           handler: () => {
             console.log('Play clicked');
           }
-        }, {
-          text: 'Like',
-          icon: 'heart',
-          handler: () => {
-            console.log('Favorite clicked');
-            this.presentToast('Your Like has been saved.');
-          }
-        }, {
-          text: 'Share',
-          icon: 'share',
-          handler: () => {
-            console.log('Share clicked');
-            this.presentToast('You have shared the song');
-          }
-        }, {
+        },
+        {
           text: 'Delete',
           role: 'destructive',
           icon: 'trash',
           handler: () => {
             console.log('Delete clicked');
-            this.presentToast('You have deleted the song.');
+            this.feSevice.deleteTrack(data.id, index).subscribe(
+              res => {
+                console.log(res);
+                this.presentToast('You have deleted the track.');
+              },
+              err => console.log(err)
+            );
           }
         }, {
           text: 'Cancel',
@@ -111,7 +114,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
           }
         }]
     });
-    await actionSheet.present();
+    if (this.isCurator) {
+      await actionSheet.present();
+    }
+
   }
 
   trackElement(index: number, element: any) {
@@ -132,8 +138,13 @@ export class PlaylistPage implements OnInit, OnDestroy {
       this.currentPlaylist = data as Playlist;
       console.log(`playlist:`, this.currentPlaylist);
     });
-
     this.subscriptions.push(sub);
+    this.userDataService.getUsername().then(data =>
+      this.username = data
+    );
+    this.userDataService.getCurator().then(data =>
+      this.isCurator = data
+    );
   }
 
   ngOnDestroy() {

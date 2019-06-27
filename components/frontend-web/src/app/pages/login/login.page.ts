@@ -31,12 +31,10 @@ export class LoginPage implements OnInit {
    loginAction() {
     this.submitAttempt = true;
     if (!this.loginForm.valid) {
-      this.loginForm.reset();
       return;
     } else {
       this.userDataService.login(this.loginForm.value.username, false).then(data => {
         this.events.publish('user:login', [this.loginForm.value.username, false]);
-        this.loginForm.reset();
       });
     }
   }
@@ -60,6 +58,7 @@ export class LoginPage implements OnInit {
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])]
     });
+    this.generateUsername();
   }
 
 }

@@ -4,6 +4,7 @@ const compression = require('compression');
 const express = require('express');
 const app = express();
 var cors = require('cors');
+var promiseRetry = require('promise-retry');
 var router = new express.Router();
 var log4js = require('log4js')
 var log = log4js.getLogger();
@@ -657,6 +658,7 @@ router.get('/play', async function(req, res) {
         var options = { uris: uris };
 
         if (event.currentDevice) {
+            log.debug("event has currentDevice set - using it");
             options.device_id = event.currentDevice;
         }
 
@@ -665,28 +667,81 @@ router.get('/play', async function(req, res) {
         }
 
         log.trace("play options: ", JSON.stringify(options));
-        await api.play(options);
+        //    await api.play(options);
 
-        // Todo: Catch Exceptions. 
-
-        // Catch and retry this one:
-        //  Error: WebapiError: Not Found 
-        // { message:
-        //    { name: 'WebapiError', message: 'Not Found', statusCode: 404 },
-        //   code: 500 },
-
-        // If playback fails, check for active device and autoSelect the first one.
+        // play sometimes fails on first try, probably due to comm issues
+        // with the device. Thus we re-try 
+        // before getting into fancy error handling:
+        promiseRetry(function(retry, number) {
+                log.debug("call spotify play, try #", number);
+                return api.play(options).catch(retry);
+            }, { retries: 3, minTimeout: 5000 })
+            .then(function() { res.status(200).send("ok"); })
+            .catch(function(err) {
+                try {
+                    handlePlayError(err, res, options, event, api)
+                } catch (err2) {
+                    res.status(500).send(err2);
+                }
+            });
 
         // Todo: verify via currentTrack that player is actually playing!
 
-        res.status(200).send("ok");
     } catch (err) {
         handleError(err, res);
     }
-
     log.trace("end play");
-
 });
+
+function handlePlayError(err, res, options, event, api) {
+    log.debug("Play failed despite retry. err=" + err);
+    if (("" + err).includes("Not Found")) {
+        log.debug("device not found issue - try autoselect a device");
+        if (autoSelectDevice(api, event)) {
+            // AutoSelect did change device setting, so play it again, Sam:
+            playItAgainSam(event, options);
+        } else {
+            log.error("handlePlayError: autoSelectDevice did not change device setting, escalating initial problem");
+            throw err;
+        }
+    } else {
+        // We are fucked:
+        throw err;
+    }
+}
+
+
+function autoSelectDevice(api, event) {
+    devices = api.getMyDevices().then(function(data) {
+        var devices = data.body.devices;
+        var result = false;
+        if (devices.length == 0) {
+            throw { code: "SPTFY-100", msg: "No devices available - Please start spotify on the desired playback device" };
+        }
+        // Per default, we take the first device. If there is an active
+        // one, we prefer that:
+        var deviceId = devices[0].id;
+        for (let device of devices) {
+            if (device.is_active) {
+                log.debug("selecting active device", device.id);
+                deviceId = device.id;
+                break;
+            }
+        }
+        if (deviceId != event.currentDevice) {
+            log.info("AUTOSELECT device %s for event %s", deviceId, event.eventID);
+            event.currentDevice = deviceId;
+            fireEventStateChange(event);
+            result = true;
+        } else {
+            log.info("AUTOSELECT: no (new) device found");
+            result = false;
+        }
+
+        return result;
+    });
+}
+
 
 router.get('/ready', function(req, res) {
     log.trace("ready begin");

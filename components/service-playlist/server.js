@@ -4,9 +4,10 @@ const compression = require('compression');
 const express = require('express');
 const app = express();
 var request = require('request-promise-native');
-var kafka = require('kafka-node')
+var cors = require('cors');
+var kafka = require('kafka-node');
 var router = new express.Router();
-var log4js = require('log4js')
+var log4js = require('log4js');
 var log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
@@ -22,6 +23,7 @@ if (COMPRESS_RESULT == 'true') {
     log.info("compression disabled");
 
 }
+app.use(cors());
 // Required for POST operations with body:
 app.use(express.json());
 
@@ -160,6 +162,7 @@ var DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS
 var MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
 var MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
 var INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
+var PAUSE_ON_PLAYERROR = (process.env.PAUSE_ON_PLAYERROR || 'true') == 'true';
 
 
 // Key: EventID: Object: Event
@@ -337,7 +340,7 @@ function updateCurrentTrackProgress(playlist) {
     }
 }
 
-function play(event, playlist) {
+async function play(event, playlist) {
     log.trace("play begin event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
     playlist.isPlaying = true;
@@ -363,29 +366,38 @@ function play(event, playlist) {
         log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - play request is NOT actually being executed");
     } else {
         log.debug("Play it, Sam. Play %s", playlist.currentTrack.id);
-        request(SPOTIFY_PROVIDER_URL + "play?event=" + event.eventID + "&track=" + playlist.currentTrack.id + "&pos=" + playlist.currentTrack.progress_ms, { json: true })
-            .catch(function(err) {
-                log.fatal("play request to provider failed!", err);
-            });
+        try {
+            await request(SPOTIFY_PROVIDER_URL + "play?event=" + event.eventID + "&track=" + playlist.currentTrack.id + "&pos=" + playlist.currentTrack.progress_ms, { json: true });
+        } catch (err) {
+            log.fatal("!!! PLAY FAILED err=" + err);
+            if (PAUSE_ON_PLAYERROR) {
+                log.debug("Pressing pause to avoid damage after play failed!");
+                pause(event, playlist, err);
+            }
+            throw { code: "PLYLST-300", msg: "Could not play track. Err=" + err };
+        }
     }
-
 
     log.info("PLAY event=%s, playlist=%s, track=%s, startAt=%s", event.eventID, playlist.playlistID, playlist.currentTrack.id, playlist.currentTrack.progress_ms);
 
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
 }
 
-function pause(event, playlist) {
+function pause(event, playlist, err) {
     log.info("PAUSE event=%s, playlist=%s", event.eventID, playlist.playlistID);
     // Make sure we take note of the current progress:
     updateCurrentTrackProgress(playlist);
     playlist.isPlaying = false;
 
-    // TODO: Call Spotify-Provider to pause
+    if (err) {
+        log.debug("pause called due to error - do NOT call spotify");
+    } else {
+        log.fatal("need to call Spotify-Provider to stop playback here ");
+    }
 }
 
 
-function skip(event, playlist) {
+async function skip(event, playlist) {
     log.trace("skip begin");
     log.info("SKIP event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
@@ -405,7 +417,7 @@ function skip(event, playlist) {
     if (playlist.currentTrack) {
         playlist.currentTrack.progress_ms = 0;
         if (playlist.isPlaying) {
-            play(event, playlist);
+            await play(event, playlist);
         }
     } else {
         log.info("SKIP: reached end of playlist");
@@ -464,16 +476,17 @@ async function checkPlaylist(event, playlist) {
     if (playlist.nextTracks.length == 0) {
         log.trace("playlist is empty");
         if (event.autoFillEmptyPlaylist) {
-            log.info("AutoFilling Playlist %s of event %s", playlist.playlistID, event.eventID);
+            log.info("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
             playlist.nextTracks = await createAutofillPlayList(event.eventID);
             stateChanged = true;
+            log.debug("AutoFilling Playlist %s of event %s....DONE", playlist.playlistID, event.eventID);
         }
     } else {
         log.trace("playlist has tracks");
     }
 
     if (playlist.isPlaying && !isTrackPlaying(playlist)) {
-        skip(event, playlist);
+        await skip(event, playlist);
         stateChanged = true;
     }
 
@@ -484,9 +497,8 @@ async function checkPlaylist(event, playlist) {
     return stateChanged;
 }
 
-async function checkEvent(event) {
+function checkEvent(event) {
     log.trace("checkEvent begin");
-    var stateChanged = false;
 
     if (event.playlists == null) {
         log.trace("creating playlists");
@@ -502,9 +514,10 @@ async function checkEvent(event) {
     }
 
     for (let playlist of event.playlists) {
-        stateChanged = stateChanged || await checkPlaylist(event, playlist);
+        checkPlaylist(event, playlist)
+            .catch(err => log.error("check playlist failed err=" + JSON.stringify(err)))
     }
-    log.trace("checkEvent end stateChanged=%s", stateChanged);
+    log.trace("checkEvent end");
 }
 
 function checkEvents() {
@@ -568,14 +581,22 @@ router.get('/events/:eventID/playlists/:listID/tracks', function(req, res) {
     res.status(200).send(getPlaylistForRequest(req).nextTracks);
 });
 
+
 router.get('/events/:eventID/playlists/:listID/play', function(req, res) {
     log.trace("begin PLAY tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
-    play(event, playlist);
-    firePlaylistChangedEvent(event, playlist);
-    res.status(200).send(playlist);
+    play(event, playlist)
+        .then(function() {
+            firePlaylistChangedEvent(event, playlist);
+            res.status(200).send(playlist);
+        }).catch(function(err) {
+            log.debug("play failed with err", err);
+            res.status(500).send(err);
+        });
 });
+
 
 router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
     log.trace("begin PAUSE playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
@@ -678,7 +699,6 @@ app.use("/api/service-playlist/v1", router);
 if (INTERNAL_POLL_INTERVAL > 5000)
     checkEvents();
 setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
-
 
 app.listen(8081, function() {
     log.info('listening on port 8081!');
