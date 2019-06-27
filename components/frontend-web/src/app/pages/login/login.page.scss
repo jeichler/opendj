@@ -46,7 +46,6 @@
     border-bottom: #fff !important;
   }
 
-
   ion-content {
     --background-color: transparent;
     --ion-color-base: transparent !important;
@@ -59,6 +58,10 @@
   }
 
   ion-input {
+    color: white;
+  }
+
+  .input-clear-icon {
     color: white;
   }
 
