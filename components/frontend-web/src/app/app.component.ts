@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
   public appPages = [];
 
   constructor(
-    private platform: Platform,
+    public platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private events: Events,
