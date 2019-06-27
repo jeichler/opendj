@@ -34,9 +34,9 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     let s = duration % 60;
     let m = Math.floor(duration / 60) % 60;
     s = Math.round(s);
-    s = s < 10 ? '0' + s : s;
-    m = m < 10 ? '0' + m : m;
-    this.totalTime = m + ':' + s;
+    let sStr = s < 10 ? '0' + s : ''+s;
+    let mStr = m < 10 ? '0' + m :''+ m;
+    this.totalTime = mStr + ':' + sStr;
   }
 
   countdown() {
