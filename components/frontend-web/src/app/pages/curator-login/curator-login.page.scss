@@ -46,6 +46,11 @@ ion-list {
   // background-image: URL('./../../assets/imgs/logo_transparent.png') center center !important;
 }
 
+ion-input {
+  // border-bottom: solid 2px white;
+  color: white;
+}
+
 ion-toolbar {
   --background: transparent !important;
   --background-color: transparent;
