@@ -48,9 +48,9 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     let s = timeLeft % 60;
     s = Math.round(s);
     let m = Math.floor(timeLeft / 60) % 60;
-    s = s < 10 ? '0' + s : s;
-    m = m < 10 ? '0' + m : m;
-    this.currentTime = m + ':' + s;
+    let sStr = s < 10 ? '0' + s : ''+s;
+    let mStr = m < 10 ? '0' + m : ''+m;
+    this.currentTime = mStr + ':' + sStr;
   }
 
   ngOnInit() {
