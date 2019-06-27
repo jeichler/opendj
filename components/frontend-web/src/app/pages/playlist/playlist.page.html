@@ -13,7 +13,7 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <app-current-track *ngIf="currentPlaylist && currentPlaylist.currentTrack" [track]="currentPlaylist.currentTrack" ></app-current-track>
+  <app-current-track *ngIf="currentPlaylist && currentPlaylist.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator"></app-current-track>
 </ion-header>
 
 <ion-content>
@@ -21,10 +21,11 @@
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
 
-      <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  trackBy: trackElement">
+      <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  index as i; trackBy: trackElement">
 
-        <ion-item color="light" (click)="presentActionSheet(item.title)">
-          <ion-thumbnail slot="start">
+        <ion-item color="light" (click)="presentActionSheet(item, i)">
+          
+          <ion-thumbnail slot="start">           
             <img src="{{item.image_url}}">
           </ion-thumbnail>
           <ion-label text-wrap>{{item.name}}<br />
@@ -33,9 +34,11 @@
             <ion-badge color="medium" style="margin-top: 10px;">{{item.added_by}}
             </ion-badge>
           </ion-label>
-          <ion-reorder slot="end">
-            <ion-icon name="menu"></ion-icon>
+          <ion-reorder slot="end" *ngIf="isCurator">
+              <ion-chip color="opendj">{{i +1}}</ion-chip>
           </ion-reorder>
+          <ion-chip slot="end" *ngIf="!isCurator">{{i +1}}</ion-chip>
+          
         </ion-item>
 
       </ion-item-sliding>
