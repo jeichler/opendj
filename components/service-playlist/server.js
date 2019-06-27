@@ -355,6 +355,12 @@ async function play(event, playlist) {
     if (playlist.currentTrack.progress_ms > 0) {
         log.debug("PLAY: actually it is a resume, adjusting started_at");
         now -= playlist.currentTrack.progress_ms;
+
+        // DUE TO A BUG IN SPOTIY PROVIDER WE CANT RESUME  
+        // Play will actually start at the beginning.
+        // WORKAROUND:
+        playlist.currentTrack.progress_ms = 0;
+        now = Date.now();
     }
     playlist.currentTrack.started_at = new Date(now).toISOString();
 
@@ -372,7 +378,7 @@ async function play(event, playlist) {
             log.fatal("!!! PLAY FAILED err=" + err);
             if (PAUSE_ON_PLAYERROR) {
                 log.debug("Pressing pause to avoid damage after play failed!");
-                pause(event, playlist, err);
+                await pause(event, playlist, err);
             }
             throw { code: "PLYLST-300", msg: "Could not play track. Err=" + err };
         }
@@ -383,16 +389,23 @@ async function play(event, playlist) {
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
 }
 
-function pause(event, playlist, err) {
+async function pause(event, playlist, err) {
     log.info("PAUSE event=%s, playlist=%s", event.eventID, playlist.playlistID);
     // Make sure we take note of the current progress:
     updateCurrentTrackProgress(playlist);
     playlist.isPlaying = false;
 
-    if (err) {
+    if (MOCKUP_NO_ACTUAL_PLAYING) {
+        log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request is NOT actually being executed");
+    } else if (err) {
         log.debug("pause called due to error - do NOT call spotify");
     } else {
-        log.fatal("need to call Spotify-Provider to stop playback here ");
+        try {
+            await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+        } catch (err) {
+            log.warn("pause failed while calling spotify. This error is ignored: " + err);
+            // throw { code: "PLYLST-400", msg: "Could not pause track. Err=" + err };
+        }
     }
 }
 
@@ -602,9 +615,14 @@ router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
     log.trace("begin PAUSE playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
-    pause(event, playlist);
-    firePlaylistChangedEvent(event, playlist);
-    res.status(200).send(playlist);
+    pause(event, playlist).then(function() {
+        firePlaylistChangedEvent(event, playlist);
+        res.status(200).send(playlist);
+    }).catch(function(err) {
+        log.debug("pause failed with err", err);
+        res.status(500).send(err);
+    });
+
 });
 
 router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
@@ -696,9 +714,13 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, 
 
 app.use("/api/service-playlist/v1", router);
 
-if (INTERNAL_POLL_INTERVAL > 5000)
-    checkEvents();
-setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
+log.debug("Initial check of Events");
+checkEvents();
+
+log.debug("Starting checkEvents() poll");
+//setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
+
+
 
 app.listen(8081, function() {
     log.info('listening on port 8081!');

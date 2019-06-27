@@ -109,7 +109,10 @@ http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=0
 
 
 # PLay
-http://localhost:8080/api/provider-spotify/v1/play?event=0&track=5ftamIDoDRpEvlZinDuNNW
+http://localhost:8080/api/provider-spotify/v1/play?event=0&track=5ftamIDoDRpEvlZinDuNNW&pos=0
+
+# Pause
+http://localhost:8080/api/provider-spotify/v1/pause?event=0
 
 
 http://localhost:8080/api/provider-spotify/v1/play?event=0&track=47&pos=2000
@@ -149,17 +152,4 @@ oc adm prune builds --confirm
 oc adm prune deployments --confirm
 oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/
 
-
-
-[2019-06-27T05:45:19.373] [DEBUG] default - ReferenceError: track is not defined
-    at deleteTrack (/opt/app-root/src/server.js:327:127)
-    at /opt/app-root/src/server.js:664:9
-    at Layer.handle [as handle_request] (/opt/app-root/src/node_modules/express/lib/router/layer.js:95:5)
-    at next (/opt/app-root/src/node_modules/express/lib/router/route.js:137:13)
-    at Route.dispatch (/opt/app-root/src/node_modules/express/lib/router/route.js:112:3)
-    at Layer.handle [as handle_request] (/opt/app-root/src/node_modules/express/lib/router/layer.js:95:5)
-    at /opt/app-root/src/node_modules/express/lib/router/index.js:281:22
-    at param (/opt/app-root/src/node_modules/express/lib/router/index.js:354:14)
-    at param (/opt/app-root/src/node_modules/express/lib/router/index.js:365:14)
-at param (/opt/app-root/src/node_modules/express/lib/router/index.js:365:14)
 

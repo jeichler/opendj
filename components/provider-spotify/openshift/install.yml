@@ -149,6 +149,14 @@
                         value: "3"     
                       - name: SPOTIFY_SEARCH_LIMIT
                         value: "20"     
+                      - name: "SPOTIFY_AUTOSELECT_DEVICE"
+                        value: "true"
+                      - name: SPOTIFY_RETRIES 
+                        value: "1"
+                      - name: SPOTIFY_RETRY_TIMEOUT_MIN
+                        value: "1000"
+                      - name:  SPOTIFY_RETRY_TIMEOUT_MAX
+                        value: "1000"
                     envFrom:
                       - prefix: SPOTIFY_
                         secretRef:

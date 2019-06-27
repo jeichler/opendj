@@ -184,6 +184,11 @@ var SPOTIFY_TRACK_DETAIL_NUM_GENRES = process.env.SPOTIFY_TRACK_DETAIL_NUM_GENRE
 
 var SPOTIFY_SEARCH_LIMIT = process.env.SPOTIFY_SEARCH_LIMIT || "20";
 
+var SPOTIFY_AUTOSELECT_DEVICE = (process.env.SPOTIFY_AUTOSELECT_DEVICE || 'true') == 'true';
+var SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
+var SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1000";
+var SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "1000";
+
 
 // Map of Spotify API Objects:
 // Key: EventID
@@ -635,6 +640,25 @@ router.get('/trackDetails', async function(req, res) {
 
 });
 
+router.get('/pause', async function(req, res) {
+    log.trace("begin pause ");
+
+    try {
+        var eventID = req.query.event;
+        var api = getSpotifyApiForEvent(eventID);
+        var event = getEventStateForEvent(eventID);
+
+        await api.pause({ device_id: event.currentDevice });
+        res.status(200).send("ok");
+        log.info("PAUSE eventID=%s", eventID);
+    } catch (err) {
+        log.warn("pause failed: " + err);
+        res.status(500).send(err);
+    }
+    log.trace("end pause");
+});
+
+
 
 router.get('/play', async function(req, res) {
     log.trace("begin play ");
@@ -672,74 +696,96 @@ router.get('/play', async function(req, res) {
         // play sometimes fails on first try, probably due to comm issues
         // with the device. Thus we re-try 
         // before getting into fancy error handling:
-        promiseRetry(function(retry, number) {
+        try {
+            await promiseRetry(function(retry, number) {
                 log.debug("call spotify play, try #", number);
                 return api.play(options).catch(retry);
-            }, { retries: 3, minTimeout: 5000 })
-            .then(function() { res.status(200).send("ok"); })
-            .catch(function(err) {
-                try {
-                    handlePlayError(err, res, options, event, api)
-                } catch (err2) {
-                    res.status(500).send(err2);
-                }
-            });
+            }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
+
+            log.debug("sending 200 ok");
+            res.status(200).send("ok");
+        } catch (err) {
+            log.trace("begin first catch");
+            try {
+                await handlePlayError(err, res, options, event, api)
+                res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
+            } catch (err2) {
+                log.debug("catching 2nd error -send 500 err", err2)
+                    // res.status(500).send({ code: "SPTFY-500", msg: "play failed despite retries! InitialErr=" + err + " SecondErr=" + JSON.stringify(err2 });
+                res.status(500).send(err2);
+
+            }
+            log.trace("end first catch");
+        }
+
+        log.debug("after promiseRetry");
+
 
         // Todo: verify via currentTrack that player is actually playing!
 
     } catch (err) {
+        log("handleError " + err);
         handleError(err, res);
     }
     log.trace("end play");
 });
 
-function handlePlayError(err, res, options, event, api) {
+async function handlePlayError(err, res, options, event, api) {
     log.debug("Play failed despite retry. err=" + err);
-    if (("" + err).includes("Not Found")) {
-        log.debug("device not found issue - try autoselect a device");
-        if (autoSelectDevice(api, event)) {
-            // AutoSelect did change device setting, so play it again, Sam:
-            playItAgainSam(event, options);
+    if (SPOTIFY_AUTOSELECT_DEVICE && ("" + err).includes("Not Found")) {
+        log.debug("expected shit happend - device not found - try autoselect a device");
+        var deviceChanged = await autoSelectDevice(api, event);
+        if (deviceChanged) {
+            log.debug("AutoSelect did change device setting, so play it again, same!");
+            options.device_id = event.currentDevice;
+            await promiseRetry(function(retry, number) {
+                log.debug("call spotify play, try #", number);
+                return api.play(options).catch(retry);
+            }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
         } else {
             log.error("handlePlayError: autoSelectDevice did not change device setting, escalating initial problem");
             throw err;
         }
     } else {
-        // We are fucked:
+        log.debug("unexpected shit happend, or autoplay is disabled - we can do nothing here");
         throw err;
     }
 }
 
 
-function autoSelectDevice(api, event) {
-    devices = api.getMyDevices().then(function(data) {
-        var devices = data.body.devices;
-        var result = false;
-        if (devices.length == 0) {
-            throw { code: "SPTFY-100", msg: "No devices available - Please start spotify on the desired playback device" };
-        }
-        // Per default, we take the first device. If there is an active
-        // one, we prefer that:
-        var deviceId = devices[0].id;
-        for (let device of devices) {
-            if (device.is_active) {
-                log.debug("selecting active device", device.id);
-                deviceId = device.id;
-                break;
-            }
-        }
-        if (deviceId != event.currentDevice) {
-            log.info("AUTOSELECT device %s for event %s", deviceId, event.eventID);
-            event.currentDevice = deviceId;
-            fireEventStateChange(event);
-            result = true;
-        } else {
-            log.info("AUTOSELECT: no (new) device found");
-            result = false;
-        }
+async function autoSelectDevice(api, event) {
+    log.trace("begin autoSelectDevice");
 
-        return result;
-    });
+    log.debug("Asking spotify about available devices");
+    var data = await api.getMyDevices()
+    log.debug("Response from spotify getMyDevices: " + JSON.stringify(data.body));
+    var devices = data.body.devices;
+    var result = false;
+    if (devices.length == 0) {
+        log.debug("device list is empty");
+        throw { code: "SPTFY-100", msg: "No devices available - Please start spotify on the desired playback device" };
+    }
+    // Per default, we take the first device. If there is an active
+    // one, we prefer that:
+    var deviceId = devices[0].id;
+    for (let device of devices) {
+        if (device.is_active) {
+            log.debug("selecting active device ", device.id);
+            deviceId = device.id;
+            break;
+        }
+    }
+    if (deviceId != event.currentDevice) {
+        log.info("AUTOSELECT device %s for event %s", deviceId, event.eventID);
+        event.currentDevice = deviceId;
+        fireEventStateChange(event);
+        result = true;
+    } else {
+        log.info("AUTOSELECT: no (new) device found");
+        result = false;
+    }
+    log.trace("end autoSelectDevice result=", result);
+    return result;
 }
 
 
