@@ -119,7 +119,7 @@
                   window.__env.playlistMaxSize = 100;
                   window.__env.websocketUrl = 'http://{{DNS_BASENAME}}/api/service-web';
 
-                  window.__env.SPOTIFY_PROVIDER_API = 'http://{{DNS_BASENAME}}/api/frontend-web/v1';
+                  window.__env.SPOTIFY_PROVIDER_API = 'http://{{DNS_BASENAME}}/api/provider-spotify/v1';
                   window.__env.PLAYLIST_PROVIDER_API = 'http://{{DNS_BASENAME}}/api/service-playlist/v1';
                 }(this));
 
