@@ -718,7 +718,7 @@ log.debug("Initial check of Events");
 checkEvents();
 
 log.debug("Starting checkEvents() poll");
-//setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
+setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
 
 
 
