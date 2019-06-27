@@ -1,13 +1,13 @@
-<ion-card no-margin color="medium">
+<ion-card no-margin no-padding color="medium">
   <ion-row align-items-center>
     <!-- <ion-col></ion-col> -->
-    <ion-col sise="4">
-      <!-- <ion-thumbnail> -->
-      <ion-img [src]="track.image_url"></ion-img>
-      <!-- </ion-thumbnail> -->
+    <ion-col sise="3">
+      <!-- <ion-avatar> -->
+        <ion-img [src]="track.image_url"></ion-img>
+      <!-- </ion-avatar> -->
     </ion-col>
-    <ion-col size="8">
-      <ion-title no-padding margin-top>{{ track.name }}</ion-title>
+    <ion-col size="9">
+      <ion-title no-padding >{{ track.name }}</ion-title>
       <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
 
       <ion-buttons *ngIf="isCurator">

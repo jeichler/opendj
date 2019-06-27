@@ -14,9 +14,17 @@ ion-title {
 //   }
 // }
 ion-img {
-  max-width: 65%;
+  max-width: 45%;
   margin-top: 10%;
   margin-left: 10%;
+}
+
+@media only screen and (min-width: 860px) {
+  ion-img {
+    max-width: 45%;
+    margin-top: 10%;
+    margin-left: 10%;
+  }
 }
 
 ion-buttons {
