@@ -38,13 +38,21 @@
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
+
+        <div *ngIf="!platform.is('desktop')" class="menu-footer" padding>
+            <a href="https://www.openshift.com/"
+              title="Powered by OpenShift Online">
+              <!-- <ion-thumbnail> -->
+              <img alt="Powered by OpenShift Online"
+                title="Powered by OpenShift Online"
+                src="https://www.openshift.com/images/logos/powered_by_openshift_reverse.png" />
+            </a>
+          </div>
       </ion-content>
     </ion-menu>
     <ion-router-outlet main></ion-router-outlet>
 
-</ion-app>
-
-      <div *ngIf="platform.is('desktop')" class="desktop-footer" padding>
+    <div *ngIf="platform.is('desktop')" class="desktop-footer" padding>
         <a href="https://www.openshift.com/"
           title="Powered by OpenShift Online">
           <!-- <ion-thumbnail> -->
@@ -53,3 +61,6 @@
             src="https://www.openshift.com/images/logos/powered_by_openshift_reverse.png" />
         </a>
       </div>
+
+</ion-app>
+

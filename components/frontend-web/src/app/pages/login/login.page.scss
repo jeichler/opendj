@@ -34,8 +34,7 @@
   }
 
   .magic-wand-btn {
-    width: 18vw !important;
-    --background: #887CFF;
+    width: 25% !important;
   }
 
   .invalid{
@@ -72,4 +71,8 @@
   ion-footer {
     position: fixed;
     bottom: 0;
+  }
+
+  p.info-message {
+    color: white !important;
   }
