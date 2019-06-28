@@ -1,13 +1,15 @@
 <ion-card no-margin no-padding color="medium">
   <ion-row align-items-center>
 
-    <ion-col sise="3">
+    <ion-col size="3">
         <ion-img [src]="track.image_url"></ion-img>
     </ion-col>
-    <ion-col size="9">
+    <ion-col size="9" text-wrap>
+
       <ion-title no-padding >{{ track.name }}</ion-title>
+
       <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
-      <p>{{currentTime}} / {{totalTime}}</p>
+
       <ion-buttons *ngIf="isCurator">
         <ion-button  color="light" shape="block" fill="outline">
           <ion-icon name="square"></ion-icon>
@@ -20,12 +22,16 @@
           <ion-icon name="skip-forward"></ion-icon>
         </ion-button>
       </ion-buttons>
+
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
       <div>
-        <ion-progress-bar color="secondary" value="{{timeRemaining}}"></ion-progress-bar>
+        <ion-progress-bar color="dark" value="{{timeRemaining}}"></ion-progress-bar>
+        <div>
+          {{ playingTime }} <span style="float: right"> - {{ currentTime }}</span>
+        </div>
       </div>
     </ion-col>
   </ion-row>
