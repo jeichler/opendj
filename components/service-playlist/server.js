@@ -325,7 +325,7 @@ function deleteTrack(event, playlist, provider, trackID) {
     playlist.nextTracks.splice(currentPos, 1);
 
 
-    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 }
 
 function updateCurrentTrackProgress(playlist) {
