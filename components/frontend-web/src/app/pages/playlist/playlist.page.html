@@ -5,7 +5,7 @@
       <ion-menu-button color="light"></ion-menu-button>
     </ion-buttons>
     <ion-title color="light">
-      Red Hat - Playlist
+      RH Playlist - {{currentPlaylist?.nextTracks.length}} Tracks
     </ion-title>
     <ion-buttons *ngIf="platform.is('ios')" color="light" slot="end">
       <ion-button shape="round" (click)="presentModal()">
@@ -13,10 +13,13 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-  <app-current-track *ngIf="currentPlaylist && currentPlaylist.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator"></app-current-track>
+  <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
 </ion-header>
 
 <ion-content color="dark">
+
+  <ion-button *ngIf="isCurator && currentPlaylist?.nextTracks.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
+
   <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist.nextTracks">
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
@@ -37,11 +40,10 @@
           <ion-reorder slot="end" *ngIf="isCurator">
               <ion-chip color="opendj">{{i +1}}</ion-chip>
           </ion-reorder>
-          <ion-chip slot="end" *ngIf="!isCurator">{{i +1}}</ion-chip>
 
         </ion-item>
 
-        <ion-item-options side="end">
+        <ion-item-options side="end" *ngIf="isCurator">
           <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
         </ion-item-options>
 

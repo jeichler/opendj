@@ -27,14 +27,20 @@ export class PlaylistPage implements OnInit, OnDestroy {
     public toastController: ToastController,
     public websocketService: WebsocketService,
     public mockService: MockService,
-    public feSevice: FEService,
+    public feService: FEService,
     public userDataService: UserDataService,
     public platform: Platform
   ) {
   }
 
+  playTrack() {
+    this.feService.playTrack().subscribe(data => {
+      console.log(data);
+    });
+  }
+
   deleteTrack(track, index) {
-    this.feSevice.deleteTrack(track.id, index).subscribe(
+    this.feService.deleteTrack(track.id, index).subscribe(
       res => {
         console.log(res);
         this.presentToast('You have deleted the track.');
@@ -48,7 +54,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
     this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
 
-    this.feSevice.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
+    this.feService.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
       data => {
         this.presentToast('Track successfully reordered in playlist.');
       },
@@ -68,7 +74,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     modal.onDidDismiss().then(res => {
       console.log(res);
       if (res.data) {
-        this.feSevice.addTrack(res.data.id, 'spotify', this.username).subscribe(
+        this.feService.addTrack(res.data.id, 'spotify', this.username).subscribe(
           data => {
             console.log(data);
             this.presentToast('Track added to playlist.');
@@ -107,7 +113,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
           icon: 'trash',
           handler: () => {
             console.log('Delete clicked');
-            this.feSevice.deleteTrack(data.id, index).subscribe(
+            this.feService.deleteTrack(data.id, index).subscribe(
               res => {
                 console.log(res);
                 this.presentToast('You have deleted the track.');

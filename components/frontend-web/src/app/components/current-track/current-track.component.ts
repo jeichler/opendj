@@ -1,3 +1,4 @@
+import { FEService } from './../../providers/fes.service';
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Track } from 'src/app/models/track';
 
@@ -5,19 +6,25 @@ import { Track } from 'src/app/models/track';
   selector: 'app-current-track',
   templateUrl: './current-track.component.html',
   styleUrls: ['./current-track.component.scss'],
+  providers: [ FEService ]
 })
 export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   @Input() isCurator: boolean;
+  @Input() isPlaying: boolean;
   @Input() set trackInput(value: any) {
     if (this.intervalHandle) {
       console.log('clear interval');
       clearInterval(this.intervalHandle);
     }
-    this.track = value;
-    this.progress = this.track.progress_ms / 1000;
-    // this.calculateTotalTime();
-    this.intervalHandle = setInterval(() => this.countdown(), 1000);
+    if (value !== null) {
+      this.track = value;
+      this.progress = this.track.progress_ms / 1000;
+      // this.calculateTotalTime();
+      if (this.isPlaying) {
+        this.intervalHandle = setInterval(() => this.countdown(), 1000);
+      }
+    }
   }
 
   track;
@@ -28,7 +35,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   progress; // temp var for countdown
   intervalHandle = null;
 
-  constructor() { }
+  constructor(public feService: FEService) { }
 
   calculateTotalTime() {
     const duration = this.track.duration_ms / 1000;
@@ -60,6 +67,24 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     const spStr = sP < 10 ? '0' + sP : '' + sP;
     const mpStr = mP < 10 ? '0' + mP : '' + mP;
     this.playingTime = mpStr + ':' + spStr;
+  }
+
+  playTrack() {
+    this.feService.playTrack().subscribe(data => {
+      console.log(data);
+    });
+  }
+
+  pauseTrack() {
+    this.feService.pauseTrack().subscribe(data => {
+      console.log(data);
+    });
+  }
+
+  nextTrack() {
+    this.feService.playNextTrack().subscribe(data => {
+      console.log(data);
+    });
   }
 
   ngOnInit() {

@@ -1,4 +1,4 @@
-<ion-card no-margin no-padding color="medium">
+<ion-card no-margin no-padding color="medium" *ngIf="track !== null">
   <ion-row align-items-center>
 
     <ion-col size="3">
@@ -10,15 +10,14 @@
 
       <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
 
-      <ion-buttons *ngIf="isCurator">
-        <ion-button  color="light" shape="block" fill="outline">
-          <ion-icon name="square"></ion-icon>
-        </ion-button>
-        <ion-button padding-horizontal  color="success"
-          shape="block">
+      <ion-buttons *ngIf="isCurator"> 
+          <ion-button padding-horizontal  color="success" shape="block" *ngIf="!isPlaying" (click)="playTrack()">
+              <ion-icon name="play"></ion-icon>
+            </ion-button>
+        <ion-button padding-horizontal  color="success" shape="block" *ngIf="isPlaying" (click)="pauseTrack()">
           <ion-icon name="pause"></ion-icon>
         </ion-button>
-        <ion-button  color="light" shape="block" fill="outline">
+        <ion-button  color="light" shape="block" fill="outline" (click)="nextTrack()">
           <ion-icon name="skip-forward"></ion-icon>
         </ion-button>
       </ion-buttons>

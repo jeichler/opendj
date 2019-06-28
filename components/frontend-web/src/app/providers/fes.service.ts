@@ -54,15 +54,15 @@ export class FEService {
     }
 
     playTrack(): Observable<any> {
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/play', {});
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/play', {});
     }
 
     pauseTrack(): Observable<any> {
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/pause', {});
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/pause', {});
     }
 
     playNextTrack(): Observable<any> {
-        return this.http.put(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/next', {});
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/next', {});
     }
 
     deletePlaylist(playlistId: string): Observable<any> {
