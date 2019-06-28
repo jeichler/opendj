@@ -498,7 +498,7 @@ async function checkPlaylist(event, playlist) {
         log.trace("playlist has tracks");
     }
 
-    if (playlist.isPlaying && !isTrackPlaying(playlist)) {
+    if (playlist.isPlaying && !isTrackPlaying(playlist) && playlist.nextTracks.length > 0) {
         await skip(event, playlist);
         stateChanged = true;
     }
