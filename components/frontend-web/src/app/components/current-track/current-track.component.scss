@@ -1,5 +1,5 @@
 ion-card {
-  --background: linear-gradient(0deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+  --background: linear-gradient(0deg,  rgba(42, 44, 48, 0.8) 30%, rgba(44, 46, 49, 0.8) 100%) !important;
   border-radius: 0;
   // max-width: 98vw;;
 }
@@ -9,20 +9,20 @@ ion-title {
 }
 
 ion-img {
-  max-width: 45%;
-  margin-top: 10%;
-  margin-left: 10%;
+  max-width: 100%;
+  margin-top: 0%;
+  margin-left: 0%;
 }
 
 @media only screen and (min-width: 960px) {
   ion-img {
-    max-width: 45%;
-    margin-top: 10%;
-    margin-left: 10%;
+    max-width: 100%;
+    margin-top: 0%;
+    margin-left: 0%;
   }
 }
 
 ion-buttons {
-  margin-top: 5%;
-  margin-left: 35%;
+  margin-top: 15%;
+  margin-left: 0%;
 }

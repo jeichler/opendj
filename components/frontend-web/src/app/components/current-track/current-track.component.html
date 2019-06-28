@@ -1,33 +1,33 @@
-<ion-card no-margin no-padding color="medium" *ngIf="track !== null">
-  <ion-row align-items-center>
-
+<ion-card no-margin no-padding color="opendj" *ngIf="track !== null">
+  <ion-row>
     <ion-col size="3">
         <ion-img [src]="track.image_url"></ion-img>
     </ion-col>
     <ion-col size="9" text-wrap>
-
-      <ion-title no-padding >{{ track.name }}</ion-title>
-
-      <ion-label no-padding color="dark">{{ track.artist }}</ion-label>
-
-      <ion-buttons *ngIf="isCurator"> 
-          <ion-button padding-horizontal  color="success" shape="block" *ngIf="!isPlaying" (click)="playTrack()">
-              <ion-icon name="play"></ion-icon>
-            </ion-button>
-        <ion-button padding-horizontal  color="success" shape="block" *ngIf="isPlaying" (click)="pauseTrack()">
+      <ion-label color="dark" style="font-size: 20px; font-weight: bold; color: white;">{{ track.name }}</ion-label><br/>
+      <ion-label color="dark" style="font-size: 14px;color: #ddd;">{{ track.artist }}</ion-label>
+      <br/>
+      <ion-badge color="medium" style="margin-top: 15px; margin-bottom: 15px;">{{track.added_by}}</ion-badge>
+      <div *ngIf="isCurator">
+        <ion-button color="success" shape="round" *ngIf="!isPlaying" size="small" (click)="playTrack()">
+          Play
+          <ion-icon name="play"></ion-icon>
+        </ion-button>
+        <ion-button color="success" shape="round" *ngIf="isPlaying" size="small" (click)="pauseTrack()">
+          Pause
           <ion-icon name="pause"></ion-icon>
         </ion-button>
-        <ion-button  color="light" shape="block" fill="outline" (click)="nextTrack()">
+        <ion-button  color="light" shape="round" fill="outline" size="small" (click)="nextTrack()">
           <ion-icon name="skip-forward"></ion-icon>
         </ion-button>
-      </ion-buttons>
-
+      </div>
+      
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>
       <div>
-        <ion-progress-bar color="dark" value="{{timeRemaining}}"></ion-progress-bar>
+        <ion-progress-bar color="success" value="{{timeRemaining}}"></ion-progress-bar>
         <div>
           {{ playingTime }} <span style="float: right"> - {{ currentTime }}</span>
         </div>
