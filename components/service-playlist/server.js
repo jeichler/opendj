@@ -325,7 +325,7 @@ function deleteTrack(event, playlist, provider, trackID) {
     playlist.nextTracks.splice(currentPos, 1);
 
 
-    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 }
 
 function updateCurrentTrackProgress(playlist) {
@@ -684,32 +684,35 @@ router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
 });
 
 // DELETE Track:
-// return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index));
-router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, res) {
-    log.trace("begin DELETE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    log.trace("body=%s", JSON.stringify(req.body));
+http: //dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:0DfG1ltJnZyq4Tx3ZLL7ZU?index=1
+    http: //dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:1NaxD6BhOQ69C4Cdcx5jrP
 
-    try {
-        var event = getEventForRequest(req);
-        var playlist = getPlaylistForRequest(req);
+    // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index));
+    router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, res) {
+        log.trace("begin DELETE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+        log.trace("body=%s", JSON.stringify(req.body));
 
-        // Track is in format <provider>:<trackID>, thus we need to split:
-        var parts = req.params.track.split(':');
-        var provider = parts[0];
-        var trackID = parts[1];
+        try {
+            var event = getEventForRequest(req);
+            var playlist = getPlaylistForRequest(req);
 
-        deleteTrack(event, playlist, provider, trackID);
+            // Track is in format <provider>:<trackID>, thus we need to split:
+            var parts = req.params.track.split(':');
+            var provider = parts[0];
+            var trackID = parts[1];
 
-        firePlaylistChangedEvent(event, playlist);
-        res.status(200).send(playlist);
-        log.info("Track DELETED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
-    } catch (error) {
-        log.debug(error);
-        // Probably a track not found problem:
-        // 406: Not Acceptable
-        res.status(406).send(JSON.stringify(error));
-    }
-});
+            deleteTrack(event, playlist, provider, trackID);
+
+            firePlaylistChangedEvent(event, playlist);
+            res.status(200).send(playlist);
+            log.info("Track DELETED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
+        } catch (error) {
+            log.debug(error);
+            // Probably a track not found problem:
+            // 406: Not Acceptable
+            res.status(406).send(JSON.stringify(error));
+        }
+    });
 
 
 app.use("/api/service-playlist/v1", router);
