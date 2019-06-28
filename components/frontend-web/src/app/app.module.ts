@@ -1,5 +1,5 @@
 import { HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -10,9 +10,10 @@ import { IonicStorageModule } from '@ionic/storage';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { EnvServiceProvider } from './providers/env.service.provider';
+// import { EnvServiceProvider } from './providers/env.service.provider';
 import { MockService } from './providers/mock.service';
 import { WebsocketService } from './providers/websocket.service';
+import { ConfigService } from './providers/config.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -24,11 +25,19 @@ import { WebsocketService } from './providers/websocket.service';
     AppRoutingModule
   ],
   providers: [
+    ConfigService,
     StatusBar,
     SplashScreen,
-    EnvServiceProvider,
+    // EnvServiceProvider,
     MockService,
     WebsocketService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (configService: ConfigService) =>
+          () => configService.loadConfigurationData(),
+      deps: [ConfigService],
+      multi: true
+    },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

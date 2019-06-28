@@ -3,8 +3,8 @@ import { Track } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { EnvService } from './env.service';
 import { query } from '@angular/core/src/render3';
+import { ConfigService } from './config.service';
 
 
 
@@ -16,9 +16,10 @@ export class FEService {
     private SPOTIFY_PROVIDER_API;
     private PLAYLIST_PROVIDER_API;
 
-    constructor(public http: HttpClient, public envService: EnvService) {
-        this.SPOTIFY_PROVIDER_API = this.envService.SPOTIFY_PROVIDER_API;
-        this.PLAYLIST_PROVIDER_API = this.envService.PLAYLIST_PROVIDER_API;
+    constructor(public http: HttpClient, public confService: ConfigService) {
+        console.log(this.confService.SPOTIFY_PROVIDER_API);
+        this.SPOTIFY_PROVIDER_API = this.confService.SPOTIFY_PROVIDER_API;
+        this.PLAYLIST_PROVIDER_API = this.confService.PLAYLIST_PROVIDER_API;
     }
 
     searchTracks(queryString: string): Observable<Track[]> {

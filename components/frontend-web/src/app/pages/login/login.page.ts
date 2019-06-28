@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Events } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
-import { EnvService } from '../../providers/env.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PopoverController } from '@ionic/angular';
 import { MoreOptionsComponent } from '../../components/more-options/more-options.component';
@@ -23,7 +22,6 @@ export class LoginPage implements OnInit {
     public router: Router,
     private events: Events,
     public userDataService: UserDataService,
-    public envService: EnvService,
     public popOverCtrl: PopoverController,
     public formBuilder: FormBuilder
   ) { }

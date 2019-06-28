@@ -5,7 +5,6 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { UserDataService } from './providers/user-data.service';
-import { EnvService } from './providers/env.service';
 
 @Component({
   selector: 'app-root',
@@ -41,8 +40,7 @@ export class AppComponent implements OnInit {
     private events: Events,
     private router: Router,
     private menu: MenuController,
-    private userDataService: UserDataService,
-    private envService: EnvService
+    private userDataService: UserDataService
   ) {
     this.initializeApp();
   }

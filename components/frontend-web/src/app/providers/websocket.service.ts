@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as io from 'socket.io-client';
 import { Observable } from 'rxjs';
-import * as Rx from 'rxjs';
-import { environment } from '../../environments/environment';
-import { EnvService } from './env.service';
+import { ConfigService } from './config.service';
 
 @Injectable()
 export class WebsocketService {
@@ -11,10 +9,10 @@ export class WebsocketService {
     // Our socket connection
     private socket;
 
-    constructor(private envService: EnvService) {
-        this.socket = io(envService.websocketHost, {
+    constructor(private confService: ConfigService) {
+        this.socket = io(confService.websocketHost, {
             reconnectionAttempts: 10,
-            path: envService.websocketPath
+            path: confService.websocketPath
         });
     }
 

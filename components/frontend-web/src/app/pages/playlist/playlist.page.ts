@@ -1,5 +1,5 @@
 import { UserDataService } from './../../providers/user-data.service';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ModalController, ActionSheetController, ToastController, Platform } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
@@ -31,6 +31,16 @@ export class PlaylistPage implements OnInit, OnDestroy {
     public userDataService: UserDataService,
     public platform: Platform
   ) {
+  }
+
+  deleteTrack(track, index) {
+    this.feSevice.deleteTrack(track.id, index).subscribe(
+      res => {
+        console.log(res);
+        this.presentToast('You have deleted the track.');
+      },
+      err => console.log(err)
+    );
   }
 
   onRenderItems(event) {

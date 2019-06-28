@@ -5,7 +5,7 @@
       <ion-menu-button color="light"></ion-menu-button>
     </ion-buttons>
     <ion-title color="light">
-      Playlist Name
+      Red Hat - Playlist
     </ion-title>
     <ion-buttons *ngIf="platform.is('ios')" color="light" slot="end">
       <ion-button shape="round" (click)="presentModal()">
@@ -23,7 +23,7 @@
 
       <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  index as i; trackBy: trackElement">
 
-        <ion-item color="light" (click)="presentActionSheet(item, i)">
+        <ion-item color="light">
 
           <ion-thumbnail slot="start">
             <img src="{{item.image_url}}">
@@ -40,6 +40,10 @@
           <ion-chip slot="end" *ngIf="!isCurator">{{i +1}}</ion-chip>
 
         </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
+        </ion-item-options>
 
       </ion-item-sliding>
     </ion-reorder-group>
