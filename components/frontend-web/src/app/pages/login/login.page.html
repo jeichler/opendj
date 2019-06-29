@@ -18,18 +18,21 @@
 
           <ion-list no-lines style="background: transparent !important;">
             <ion-item>
-              <ion-label color="medium">
-                  <p text-wrap text-justify>
-                    Welcome! We would like to know who you are, please enter a name.
-                    But of course, you can stay anonymous and use an alias. Just
-                    click the magic wand!
+              <ion-label color="light">
+                  <p text-wrap text-center>
+                    Welcome!<br>
+                    We would like to know who you are, please enter a name.
+                    Of course, you can stay anonymous and use any alias.
+                    Click the magic wand to generate one.
                   </p>
               </ion-label>
             </ion-item>
-            <ion-item marign-bottom>
-              <ion-label position="stacked" color="light">Your Username
+            <ion-item margin-bottom>
+              <ion-label position="stacked" color="light" text-center>
+                  Username:
               </ion-label>
               <ion-input
+                text-center
                 formControlName="username"
                 type="text"
                 clearInput="true"
@@ -52,7 +55,7 @@
                   expand="full"
                   shape="round"
                   fill="outline">
-                  Enter
+                  Join Event
                 </ion-button>
               <ion-button
                 (click)="generateUsername()"

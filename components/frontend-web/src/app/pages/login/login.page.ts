@@ -56,7 +56,8 @@ export class LoginPage implements OnInit {
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])]
     });
-    this.generateUsername();
+// #51 Do not generate username per default:
+//    this.generateUsername();
   }
 
 }
