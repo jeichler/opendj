@@ -5,9 +5,14 @@ Of course you can branch/fork at any time and submit a pull request  when done.
 # Labels
 Each version get an annotated Tag in the semantic versioning format
 <major>.<minor>.<update>
-Create it using e.g. `git tag -a v0.3.1 -m "During Sprint 03 - After IPO"`
+Create a tag  using 
+```
+git tag -a 0.3.1 -m "During Sprint 03 - After IPO"
+git push origin 0.3.1
+```
 
-For each deployment environment / stage, there is lightweight tag marking the version that is deployed to that environment. these tags move on each deployment.
+For each deployment environment / stage, there is lightweight tag marking the version that is deployed to that environment in the format `env-name`, e.g. `env-dev`,  `env-demo` These tags move on each deployment.
+PLease note that the "dev" env might be build from head of master branch for easy of development.
 
 
 # Github:
