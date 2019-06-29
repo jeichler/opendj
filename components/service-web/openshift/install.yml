@@ -113,6 +113,8 @@
                         value: "info"
                       - name: KAFKA_HOST
                         value: "backend-eventstore-kafka-bootstrap:9092"
+                      - name: PORT
+                        value: "8080"
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:
