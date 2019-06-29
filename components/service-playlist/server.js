@@ -401,6 +401,7 @@ async function pause(event, playlist, err) {
         log.debug("pause called due to error - do NOT call spotify");
     } else {
         try {
+            log.debug("calling spotify provider");
             await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
         } catch (err) {
             log.warn("pause failed while calling spotify. This error is ignored: " + err);
@@ -435,6 +436,11 @@ async function skip(event, playlist) {
     } else {
         log.info("SKIP: reached end of playlist");
         playlist.currentTrack = null;
+
+        log.debug("calling spotify provider to pause");
+        await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+
+        log.debug("")
     }
     log.trace("skip end");
 }
@@ -498,7 +504,7 @@ async function checkPlaylist(event, playlist) {
         log.trace("playlist has tracks");
     }
 
-    if (playlist.isPlaying && !isTrackPlaying(playlist)) {
+    if (playlist.isPlaying && !isTrackPlaying(playlist) && playlist.nextTracks.length > 0) {
         await skip(event, playlist);
         stateChanged = true;
     }

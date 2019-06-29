@@ -129,7 +129,6 @@ http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
 http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
 http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
 
-
 http://demo.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
 
 # Access Playlist
