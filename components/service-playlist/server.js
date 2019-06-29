@@ -438,9 +438,11 @@ async function skip(event, playlist) {
         playlist.currentTrack = null;
 
         log.debug("calling spotify provider to pause");
-        await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
-
-        log.debug("")
+        try {
+            await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+        } catch (err) {
+            log.warn("call to spotify pause at end of playlist failed - ignoring this", err);
+        };
     }
     log.trace("skip end");
 }
