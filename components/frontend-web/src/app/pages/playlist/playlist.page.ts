@@ -61,8 +61,8 @@ export class PlaylistPage implements OnInit, OnDestroy {
         ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
     }
     for (var i = 0; i < playlist.nextTracks.length; i++) {
-        ts += playlist.nextTracks[i].duration_ms;
         playlist.nextTracks[i].eta= this.date2hhmm(new Date(ts));
+        ts += playlist.nextTracks[i].duration_ms;
     }
   }
 
