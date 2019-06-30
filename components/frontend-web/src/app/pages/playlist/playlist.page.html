@@ -61,8 +61,18 @@
     </ion-reorder-group>
   </ion-list>
 
-  <ion-fab *ngIf="platform.is('android') || platform.is('desktop')"
+  <!-- Add button right for normal users -->
+  <ion-fab *ngIf="!isCurator && (platform.is('android') || platform.is('desktop'))"
     vertical="bottom" horizontal="end" slot="fixed" margin>
+    <ion-fab-button (click)="presentModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- Add button center for curators, to avoid clash with re-order know for last track
+       issue#56 -->
+  <ion-fab *ngIf="isCurator && (platform.is('android') || platform.is('desktop'))"
+    vertical="bottom" horizontal="center" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
