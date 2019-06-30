@@ -10,4 +10,13 @@ export class Track {
     preview: string;
     provider: string;
     popularity: number;
+    genre: string;
+    danceability: number;
+    energy: number;
+    acousticness: number;
+    instrumentalness: number;
+    liveness: number;
+    happiness: number;
+    bpm: number;
+    added_by: string;
 }
