@@ -1,9 +1,35 @@
-<ion-card no-margin no-padding color="opendj" *ngIf="track !== null">
+<!-- For Users - (Curator view below)
+-->
+<ion-card no-margin no-padding color="opendj" *ngIf="track !== null && !isCurator">
   <ion-row>
     <ion-col size="1">
         <ion-img [src]="track.image_url"></ion-img>
     </ion-col>
-    <ion-col size="8" text-wrap>
+    <ion-col size="11" text-wrap>
+      <ion-label color="dark" style="font-size: 16px; font-weight: bold; color: white;">{{ track.name }}</ion-label>
+      <br/>
+      <ion-label color="dark" style="font-size: 14px;color: #ddd;">{{ track.artist }} by {{track.added_by}}</ion-label>
+
+      <div>
+        <ion-progress-bar color="success" value="{{timeRemaining}}"></ion-progress-bar>
+      </div>
+      <div>
+        {{ playingTime }} <span style="float: right"> - {{ currentTime }}</span>
+      </div>
+    </ion-col>
+  </ion-row>
+</ion-card>
+
+
+<!-- For Curators: -->
+<ion-card no-margin no-padding color="opendj" *ngIf="track !== null && isCurator">
+  <ion-row>
+<!-- no image for curators, sorry
+    <ion-col size="1">
+        <ion-img [src]="track.image_url"></ion-img>
+    </ion-col>
+-->
+    <ion-col size="9" text-wrap>
       <ion-label color="dark" style="font-size: 16px; font-weight: bold; color: white;">{{ track.name }}</ion-label>
       <br/>
       <ion-label color="dark" style="font-size: 14px;color: #ddd;">{{ track.artist }} by {{track.added_by}}</ion-label>
@@ -16,15 +42,14 @@
       </div>
     </ion-col>
 
-  <ion-col *ngIf="isCurator" size="3">
-    <ion-button color="success" shape="round" *ngIf="!isPlaying" size="medium" (click)="playTrack()">
+  <ion-col size="3">
+    <ion-button color="success" shape="round" *ngIf="!isPlaying" size="small" (click)="playTrack()">
       <ion-icon name="play"></ion-icon>
     </ion-button>
-    <ion-button color="danger" shape="round" *ngIf="isPlaying" size="medium" (click)="pauseTrack()">
+    <ion-button color="danger" shape="round"  *ngIf="isPlaying" size="small" (click)="pauseTrack()">
       <ion-icon name="pause"></ion-icon>
     </ion-button>
-
-    <ion-button  color="danger" shape="round"  size="medium" (click)="nextTrack()">
+    <ion-button  color="warning" shape="round"  float-right size="small" (click)="nextTrack()">
       <ion-icon name="skip-forward"></ion-icon>
     </ion-button>
   </ion-col>
