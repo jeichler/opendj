@@ -26,23 +26,33 @@
 
       <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  index as i; trackBy: trackElement">
 
-        <ion-item color="light">
-
+        <ion-item color="dark">
           <ion-thumbnail slot="start">
             <img src="{{item.image_url}}">
           </ion-thumbnail>
-          <ion-label text-wrap>{{item.name}}<br />
-            <span style="font-size: 14px; color: #666;">{{item.artist}},
-              {{item.year}}</span><br />
-            <ion-badge color="medium" style="margin-top: 10px;">{{item.added_by}}
+          <ion-label>{{item.name}}
+            <br />
+            <span style="font-size: 14px; color: #999;">
+              {{item.artist}}, {{item.year}}</span>
+            <ion-badge color="medium" float-right>
+              {{item.added_by}}
             </ion-badge>
+            <ion-label *ngIf="isCurator">
+              <span style="font-size: 14px; color: #999;">
+              {{item.genre}}</span>
+            </ion-label>
+            <ion-label *ngIf="isCurator">
+              <span style="font-size: 14px; color: #999;">
+              {{item.bpm}} bpm D:{{item.danceability}} E:{{item.energy}} H:{{item.happiness}}</span>
+            </ion-label>
           </ion-label>
           <ion-reorder slot="end" *ngIf="isCurator">
-              <ion-chip color="opendj">{{i +1}}</ion-chip>
+              <ion-chip color="secondary">{{i +1}}</ion-chip>
           </ion-reorder>
 
-        </ion-item>
 
+
+        </ion-item>
         <ion-item-options side="end" *ngIf="isCurator">
           <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
         </ion-item-options>
