@@ -61,7 +61,6 @@ export class CuratorLoginPage implements OnInit {
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       curatorKey: ['', Validators.compose([Validators.required])]
     });
-    this.generateUsername();
   }
 
 }
