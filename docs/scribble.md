@@ -112,6 +112,8 @@ http://localhost:8080/api/provider-spotify/v1/trackDetails?event=0&track=5ftamID
 http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=0
 
 
+http://dev.opendj.io/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDoDRpEvlZinDuNNW
+
 http://demo.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
 
 

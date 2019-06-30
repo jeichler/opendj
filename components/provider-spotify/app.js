@@ -492,20 +492,27 @@ function timesCharExistInString(str, chr) {
 };
 
 function collapseArrayIntoSingleString(currentString, arrayOfStrings, maxEntries) {
+    log.trace("begin collapseArrayIntoSingleString current=%s, array=%s, max=%i", currentString, arrayOfStrings, maxEntries);
     var result = currentString;
 
     if (arrayOfStrings && arrayOfStrings.length > 0) {
-        var i;
-        for (i = 0; i < maxEntries; i++) {
-            if (i >= arrayOfStrings.length || timesCharExistInString(result, ',') + 1 >= maxEntries) break;
+        var numEntries = timesCharExistInString(result, ',');
+        if (numEntries == 0 && currentString.length > 0) numEntries = 1;
+
+        for (let i = 0; i < arrayOfStrings.length; i++) {
+            if (numEntries >= maxEntries) break;
             if (result.length > 0) result += ", ";
+            log.trace("adding %s", arrayOfStrings[i]);
             result += arrayOfStrings[i];
+            numEntries++;
         }
     }
+    log.trace("end collapseArrayIntoSingleString result=%s", result);
     return result;
 }
 
 function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult) {
+    log.trace("begin mapSpotifyTrackResultsToOpenDJTrack");
     var result = {};
     if (trackResult && trackResult.body) {
         result = mapSpotifyTrackToOpenDJTrack(trackResult.body);
@@ -513,11 +520,15 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
 
     result.genre = "";
     if (albumResult && albumResult.body) {
+        log.trace("adding  genres >%s< from album", albumResult.body.genres);
         result.genre = collapseArrayIntoSingleString(result.genre, albumResult.body.genres, SPOTIFY_TRACK_DETAIL_NUM_GENRES);
+        log.trace("genre after album.genres=%s", result.genre);
     }
 
     if (artistResult && artistResult.body) {
+        log.trace("adding  genres >%s< from artist", artistResult.body.genres);
         result.genre = collapseArrayIntoSingleString(result.genre, artistResult.body.genres, SPOTIFY_TRACK_DETAIL_NUM_GENRES);
+        log.trace("genre after artist.genres=%s", result.genre);
     }
 
     if (audioFeaturesResult && audioFeaturesResult.body) {
@@ -530,6 +541,7 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
         result.bpm = Math.round(audioFeaturesResult.body.tempo);
     }
 
+    log.trace("end mapSpotifyTrackResultsToOpenDJTrack");
     return result;
 }
 
