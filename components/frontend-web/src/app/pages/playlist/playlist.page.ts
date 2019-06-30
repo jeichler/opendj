@@ -49,6 +49,23 @@ export class PlaylistPage implements OnInit, OnDestroy {
     );
   }
 
+  date2hhmm(d) {
+    d = d.toTimeString().split(' ')[0];
+    return d.substring(0, 5);
+  }
+
+  computeETAForTracks(playlist) {
+    console.log("computeETAForTracks");
+    var ts = Date.now();
+    if (playlist.currentTrack) {
+        ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
+    }
+    for (var i = 0; i < playlist.nextTracks.length; i++) {
+        ts += playlist.nextTracks[i].duration_ms;
+        playlist.nextTracks[i].eta= this.date2hhmm(new Date(ts));
+    }
+  }
+
   onRenderItems(event) {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
     const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
@@ -152,6 +169,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
     const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
       // console.log(`playlist: ${JSON.stringify(data)}`);
       this.currentPlaylist = data as Playlist;
+
+      this.computeETAForTracks(this.currentPlaylist);
+
       console.log(`playlist:`, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
