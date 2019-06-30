@@ -8,7 +8,9 @@
   }
 
   .login-logo ion-img {
-    max-width: inherit;
+    max-width: 256px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .list {
@@ -20,7 +22,7 @@
 
   .login-form-wrapper {
     text-align: center;
-    max-width: 25vw;
+    max-width: 65vw;
     margin: 0 auto;
   }
 
@@ -35,10 +37,16 @@
 
   .login-btn {
     width: 40vw !important;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .magic-wand-btn {
+    margin-left: auto;
+    margin-right: auto;
+
     width: 25% !important;
+    text-align: center
   }
 
   .invalid{
