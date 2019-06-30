@@ -146,7 +146,9 @@
                       - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
                         value: "180000"
                       - name: SPOTIFY_TRACK_DETAIL_NUM_GENRES
-                        value: "3"     
+                        value: "1"     
+                      - name: SPOTIFY_TRACK_DETAIL_NUM_ARTISTS
+                        value: "1"     
                       - name: SPOTIFY_SEARCH_LIMIT
                         value: "20"     
                       - name: "SPOTIFY_AUTOSELECT_DEVICE"

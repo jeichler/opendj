@@ -180,7 +180,8 @@ var SPOTIFY_REFRESH_TOKEN_OFFSET = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET || "
 var SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM || "180000";
 
 // Number of genres to return for track details:
-var SPOTIFY_TRACK_DETAIL_NUM_GENRES = process.env.SPOTIFY_TRACK_DETAIL_NUM_GENRES || "3";
+var SPOTIFY_TRACK_DETAIL_NUM_GENRES = process.env.SPOTIFY_TRACK_DETAIL_NUM_GENRES || "2";
+var SPOTIFY_TRACK_DETAIL_NUM_ARTISTS = process.env.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS || "2";
 
 var SPOTIFY_SEARCH_LIMIT = process.env.SPOTIFY_SEARCH_LIMIT || "20";
 
@@ -439,13 +440,11 @@ function mapSpotifyTrackToOpenDJTrack(sptTrack) {
     odjTrack.id = sptTrack.id;
     odjTrack.name = sptTrack.name;
 
-    odjTrack.artist = sptTrack.artists[0].name;
-    if (sptTrack.artists.length > 1) {
-        odjTrack.artist += ", ";
-        odjTrack.artist += sptTrack.artists[1].name;
-    }
-    if (sptTrack.artists.length > 2) {
-        odjTrack.artist += ", et al";
+    odjTrack.artist = "";
+    for (let i = 0; i < sptTrack.artists.length; i++) {
+        if (i > SPOTIFY_TRACK_DETAIL_NUM_ARTISTS) break;
+        if (i > 0) odjTrack.artist += ", ";
+        odjTrack.artist += sptTrack.artists[i].name;
     }
 
     if (sptTrack.album.release_date) {

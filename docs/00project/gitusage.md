@@ -12,7 +12,20 @@ git push origin 0.3.1
 ```
 
 For each deployment environment / stage, there is lightweight tag marking the version that is deployed to that environment in the format `env-name`, e.g. `env-dev`,  `env-demo` These tags move on each deployment.
-PLease note that the "dev" env might be build from head of master branch for easy of development.
+Please note that the "dev" env might be build from head of master branch for easy of development.
+```
+# For Dev Env_
+git tag -f env-dev
+git push origin :refs/tags/env-dev
+git push origin master --tags
+
+# For Demo Env:
+git tag -f env-demo
+git push origin :refs/tags/env-demo
+git push origin master --tags
+```
+
+
 
 
 # Github:
