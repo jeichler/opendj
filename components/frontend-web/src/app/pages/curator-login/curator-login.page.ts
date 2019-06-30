@@ -5,7 +5,6 @@ import { Events, PopoverController } from '@ionic/angular';
 import { UserDataService } from 'src/app/providers/user-data.service';
 import { MoreOptionsComponent } from 'src/app/components/more-options/more-options.component';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-const ung = require('username-generator');
 
 @Component({
   selector: 'app-curator-login',
@@ -39,12 +38,6 @@ export class CuratorLoginPage implements OnInit {
         this.events.publish('user:login', [this.loginForm.value.username, true]);
       });
     }
-  }
-
-  generateUsername() {
-    this.loginForm.patchValue({
-      username: ung.generateUsername()
-    });
   }
 
   async presentMoreOptions(ev: any) {

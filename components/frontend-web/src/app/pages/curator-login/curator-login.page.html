@@ -6,16 +6,16 @@
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
-  
+
     <ion-grid>
       <ion-col>
         <div class="login-form-wrapper">
           <div class="login-logo">
             <ion-img src="assets/img/opendj-logo.png" alt="OpenDJ logo"></ion-img>
           </div>
-  
+
           <form [formGroup]="loginForm">
-  
+
             <ion-list no-lines style="background: transparent !important;">
               <ion-item>
                 <ion-label position="stacked" color="light">Your Username</ion-label>
@@ -38,20 +38,17 @@
                   *ngIf="!loginForm.controls.curatorKey.valid  && (loginForm.controls.curatorKey.dirty || submitAttempt)">
                   <p style="color: red;">Your Curator Key is not valid</p>
                 </ion-item>
-  
+
             </ion-list>
-  
+
             <ion-button (click)="loginAction()" type="submit" color="light" expand="block" shape="round" fill="outline">Enter
-            </ion-button>
-            <ion-button (click)="generateUsername()" color="primary" shape="round" fill="outline">
-              <ion-icon name="color-wand"></ion-icon>
             </ion-button>
   
           </form>
-  
+
         </div>
-  
+
       </ion-col>
     </ion-grid>
-  
+
   </ion-content>
