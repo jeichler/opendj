@@ -287,7 +287,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
         throw { code: "PLYLST-130", msg: "Could not get details for track. Err=" + JSON.stringify(err) };
     }
 
-    if (playlist.currentTrack == null) {
+    if (playlist.currentTrack == null && playlist.isPlaying == true) {
         log.debug("Adding while currentTrack is null - the list seems to be empty, so we skip to make it the current track");
         try {
             await skip(event, playlist);
