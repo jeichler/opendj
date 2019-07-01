@@ -34,8 +34,11 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   playTrack() {
-    this.feService.playTrack().subscribe(data => {
+    this.feService.playTrack().subscribe((data) => {
       console.log(data);
+    },
+    (err) => {
+      console.log(err.msg);
     });
   }
 
@@ -174,12 +177,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
-      this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks(this.currentPlaylist);
-      console.log(`playlist: `, this.currentPlaylist);
-    });
-    this.subscriptions.push(sub);
+    setTimeout(() => {
+      this.websocketService.refreshPlaylist();
+    }, 500);
+
     this.userDataService.getUsername().then(data =>
       this.username = data
     );
@@ -194,6 +195,17 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.websocketService.init();
+
+    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
+      this.currentPlaylist = data as Playlist;
+      this.computeETAForTracks(this.currentPlaylist);
+      console.log(`playlist: `, this.currentPlaylist);
+    });
+    this.subscriptions.push(sub);
+
+    setTimeout(() => {
+      this.websocketService.refreshPlaylist();
+    }, 500);
   }
 
   ngOnDestroy() {
