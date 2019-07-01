@@ -6,6 +6,7 @@ In this repo:
 
 Version | Date | Description
 ------- | ---- | ------------
+V0.3.2  | 30.06.209 | Sunday evening before Sales Event
 V0.3.1 | 29.06.2019 | After Initial Public Offering - Go Live in Public Cloud, During Sprint 03 - [MVP](https://github.com/opendj/opendj/projects/1)
 
 

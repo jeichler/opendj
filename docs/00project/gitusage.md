@@ -8,21 +8,22 @@ Each version get an annotated Tag in the semantic versioning format
 Create a tag  using 
 ```
 git tag -a 0.3.1 -m "During Sprint 03 - After IPO"
-git push origin 0.3.1
+git push origin 0.3.2
 ```
 
 For each deployment environment / stage, there is lightweight tag marking the version that is deployed to that environment in the format `env-name`, e.g. `env-dev`,  `env-demo` These tags move on each deployment.
 Please note that the "dev" env might be build from head of master branch for easy of development.
 ```
-# For Dev Env_
+# For Dev Env:
 git tag -f env-dev
 git push origin :refs/tags/env-dev
 git push origin master --tags
 
-# For Demo Env:
+# Create Demo-Env Tag based on the Version in dev:
 git tag -f env-demo
 git push origin :refs/tags/env-demo
 git push origin master --tags
+
 ```
 
 
