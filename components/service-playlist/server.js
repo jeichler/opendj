@@ -652,6 +652,15 @@ router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     res.status(200).send(playlist);
 });
 
+
+router.get('/events/:eventID/playlists/:listID/push', function(req, res) {
+    log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    var event = getEventForRequest(req);
+    var playlist = getPlaylistForRequest(req);
+    firePlaylistChangedEvent(event, playlist);
+    res.status(200).send(playlist);
+});
+
 // Add Track:
 router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
     log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
