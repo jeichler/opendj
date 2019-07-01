@@ -56,14 +56,14 @@
             </ion-label>
           </ion-label>
           <ion-reorder slot="end" *ngIf="isCurator">
-              <ion-chip color="secondary">{{i +1}}</ion-chip>
+              <ion-chip color="secondary" (dblclick)="moveTop(item, i)">{{i +1}}</ion-chip>
           </ion-reorder>
 
 
 
         </ion-item>
         <ion-item-options side="end" *ngIf="isCurator">
-            <ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>
+          <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
           <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
         </ion-item-options>
 
@@ -72,7 +72,7 @@
   </ion-list>
 
   <!-- Add button right for normal users -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" margin>
+  <ion-fab *ngIf="!isCurator" vertical="bottom" horizontal="end" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
@@ -80,13 +80,12 @@
 
 
   <!-- Add button center for curators, to avoid clash with re-order know for last track
-       issue#56 
-  <ion-fab *ngIf="isCurator && (platform.is('android') || platform.is('desktop'))"
+       issue#56 -->
+  <ion-fab *ngIf="isCurator"
     vertical="bottom" horizontal="center" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  -->
 
 </ion-content>
