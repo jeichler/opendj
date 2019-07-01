@@ -48,8 +48,9 @@ function startKafkaConsumer() {
         { topic: TOPIC_INTERNAL } // offset, partition
     ], {
         autoCommit: true,
-        fromOffset: true,
-        offset: 0
+        // Fix #72: Do not start at the beginning
+        // fromOffset: true,
+        // offset: 0
     });
 
     kafkaConsumer.on('message', function(message) {
