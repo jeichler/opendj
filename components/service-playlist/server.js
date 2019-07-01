@@ -446,10 +446,15 @@ async function skip(event, playlist) {
         log.info("SKIP: reached end of playlist");
         playlist.currentTrack = null;
 
-        log.debug("calling spotify provider to pause");
         try {
-            var result = await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
-            log.debug("spotify pause result=" + result);
+            if (MOCKUP_NO_ACTUAL_PLAYING) {
+                log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
+            } else {
+                log.debug("calling spotify provider to pause");
+                var result = await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+                log.debug("spotify pause result=" + result);
+
+            }
         } catch (err) {
             log.warn("call to spotify pause at end of playlist failed - ignoring err=" + err);
         };
