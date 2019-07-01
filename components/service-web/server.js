@@ -80,6 +80,10 @@ function onConnection(socket) {
     log.info('socket.io user connected');
     socket.emit('current-playlist', currentPlaylist);
 
+    socket.on('refresh-playlist', function() {
+        socket.emit('current-playlist', currentPlaylist);
+    });
+
     socket.on('disconnect', function() {
         log.info('socket.io disconnected');
     });
