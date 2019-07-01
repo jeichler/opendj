@@ -61,6 +61,7 @@ function startKafkaConsumer() {
             var msgPayload = JSON.parse(msg.value);
             currentPlaylist = msgPayload;
             io.emit('current-playlist', currentPlaylist);
+            log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
 
         } catch (e) {
             log.error("kafkaConsumer Exception %s while processing message", e);
