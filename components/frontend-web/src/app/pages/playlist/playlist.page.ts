@@ -1,6 +1,6 @@
 import { UserDataService } from './../../providers/user-data.service';
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController, Platform } from '@ionic/angular';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
@@ -34,15 +34,18 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   playTrack() {
-    this.feService.playTrack().subscribe(data => {
-      console.log(data);
+    this.feService.playTrack().subscribe((data) => {
+      // console.log(data);
+    },
+    (err) => {
+      console.log(err.msg);
     });
   }
 
   deleteTrack(track, index) {
     this.feService.deleteTrack(track.id, index).subscribe(
       res => {
-        console.log(res);
+        // console.log(res);
         this.presentToast('You have deleted the track.');
       },
       err => console.log(err)
@@ -76,40 +79,36 @@ export class PlaylistPage implements OnInit, OnDestroy {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
     const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
     this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
-
     this.feService.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
       data => {
         this.presentToast('Track successfully reordered in playlist.');
       },
       err => console.log(err)
     );
-
     event.detail.complete();
-
   }
 
   moveTop(item, index, slidingItem) {
-    this.feService.reorderTrack(item.id, index, 0).subscribe(
-      data => {
-        this.presentToast('Track moved to top.');
-        slidingItem.close();
-      },
-      err => console.log(err)
-    );
+    if (this.isCurator) {
+      this.feService.reorderTrack(item.id, index, 0).subscribe(
+        data => {
+          this.presentToast('Track moved to top.');
+          // slidingItem.close();
+        },
+        err => console.log(err)
+      );
+    }
   }
 
-  // searchTrackModal
   async presentModal() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
       componentProps: { value: 123 }
     });
     modal.onDidDismiss().then(res => {
-      console.log(res);
       if (res.data) {
         this.feService.addTrack(res.data.id, 'spotify', this.username).subscribe(
           data => {
-            console.log(data);
             this.presentToast('Track added to playlist.');
           },
           err => console.log(err)
@@ -170,16 +169,19 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   trackElement(index: number, element: any) {
-    return element ? element.id : null;
+    // return element ? element.id : null;
+    return index;
   }
 
   ionViewDidEnter() {
-    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
-      this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks(this.currentPlaylist);
-      console.log(`playlist: `, this.currentPlaylist);
-    });
-    this.subscriptions.push(sub);
+    console.log('Playlist page enter');
+    setTimeout(() => {
+      if (!this.websocketService.isConnected) {
+        this.websocketService.init();
+      }
+      this.websocketService.refreshPlaylist();
+    }, 500);
+
     this.userDataService.getUsername().then(data =>
       this.username = data
     );
@@ -189,11 +191,20 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
+    console.log('Playlist page leave');
     this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   ngOnInit() {
+    console.log('Playlist page init');
     this.websocketService.init();
+
+    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
+      this.currentPlaylist = data as Playlist;
+      this.computeETAForTracks(this.currentPlaylist);
+      console.log(`playlist subscription: `, this.currentPlaylist);
+    });
+    this.subscriptions.push(sub);
   }
 
   ngOnDestroy() {
@@ -219,7 +230,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     <ion-title>Add song to playlist</ion-title>
   </ion-toolbar>
   <ion-toolbar color="dark">
-    <ion-searchbar [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for songs...">
+    <ion-searchbar  [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for songs..." #myInput>
     </ion-searchbar>
   </ion-toolbar>
 </ion-header>
@@ -248,10 +259,16 @@ export class PlaylistPage implements OnInit, OnDestroy {
 export class PlaylistAddModalComponent implements OnInit {
   queryText = '';
   tracks: Array<Track>;
+  @ViewChild(IonSearchbar) myInput: IonSearchbar;
+
+  setFocus() {
+    this.myInput.setFocus();
+  }
 
   constructor(
     public modalController: ModalController,
     public feService: FEService) { }
+
 
   dismiss(data) {
     this.modalController.dismiss(data);
@@ -266,5 +283,8 @@ export class PlaylistAddModalComponent implements OnInit {
   }
 
   ngOnInit() {
+    setTimeout(() => {
+      this.setFocus();
+    }, 150);
   }
 }

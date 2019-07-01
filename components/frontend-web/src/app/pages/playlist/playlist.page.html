@@ -5,15 +5,20 @@
       <ion-menu-button color="light"></ion-menu-button>
     </ion-buttons>
     <ion-title color="light">
-      RH Summer Party - {{currentPlaylist?.nextTracks.length}}
+      RH Summer Party - {{currentPlaylist?.nextTracks.length}} Tracks
     </ion-title>
-    <ion-buttons color="light" slot="end">
-      <ion-button fill="solid" (click)="presentModal()">
+    <!--
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="primary" (click)="presentModal()">
         Add
       </ion-button>
     </ion-buttons>
+    -->
   </ion-toolbar>
-  <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
+  <ion-toolbar color="dark">
+      <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
+  </ion-toolbar>
+  
 </ion-header>
 
 <ion-content color="dark">
@@ -51,14 +56,14 @@
             </ion-label>
           </ion-label>
           <ion-reorder slot="end" *ngIf="isCurator">
-              <ion-chip color="secondary">{{i +1}}</ion-chip>
+              <ion-chip color="secondary" (dblclick)="moveTop(item, i)">{{i +1}}</ion-chip>
           </ion-reorder>
 
 
 
         </ion-item>
         <ion-item-options side="end" *ngIf="isCurator">
-            <ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>
+          <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
           <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
         </ion-item-options>
 
@@ -66,23 +71,21 @@
     </ion-reorder-group>
   </ion-list>
 
-  <!-- Add button right for normal users 
-  <ion-fab *ngIf="!isCurator && (platform.is('android') || platform.is('desktop'))"
-    vertical="bottom" horizontal="end" slot="fixed" margin>
+  <!-- Add button right for normal users -->
+  <ion-fab *ngIf="!isCurator" vertical="bottom" horizontal="end" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
--->
+
 
   <!-- Add button center for curators, to avoid clash with re-order know for last track
-       issue#56 
-  <ion-fab *ngIf="isCurator && (platform.is('android') || platform.is('desktop'))"
+       issue#56 -->
+  <ion-fab *ngIf="isCurator"
     vertical="bottom" horizontal="center" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-  -->
 
 </ion-content>
