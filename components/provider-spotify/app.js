@@ -539,6 +539,14 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
         result.liveness = Math.round(audioFeaturesResult.body.liveness * 100);
         result.happiness = Math.round(audioFeaturesResult.body.valence * 100);
         result.bpm = Math.round(audioFeaturesResult.body.tempo);
+    } else {
+        result.danceability = -1;
+        result.energy = -1;
+        result.acousticness = -1;
+        result.instrumentalness = -1;
+        result.liveness = -1;
+        result.happiness = -1;
+        result.bpm = -1;
     }
 
     log.trace("end mapSpotifyTrackResultsToOpenDJTrack");
@@ -570,13 +578,13 @@ router.get('/trackDetails', async function(req, res) {
     try {
 
         // TODO: Error handling if EventID is not present
-        var eventID = req.query.event;
-        var trackID = req.query.track
-        var trackResult = null;
-        var audioFeaturesResult = null;
-        var albumResult = null;
-        var artistResult = null;
-        var result = null;
+        let eventID = req.query.event;
+        let trackID = req.query.track
+        let trackResult = null;
+        let audioFeaturesResult = null;
+        let albumResult = null;
+        let artistResult = null;
+        let result = null;
 
         // TODO: Error handling if API is not defined:
         var api = getSpotifyApiForEvent(eventID);
@@ -601,28 +609,63 @@ router.get('/trackDetails', async function(req, res) {
             // The problem is the "Genre" Result - it's not stored with the track, but with
             // either the album or the artist. So here we go:
             // #1: Get basic Track Result:
+            log.trace("getTrack()");
             trackResult = api.getTrack(trackID);
 
             // #2: Get get Track Audio Features (danceability, energy and stuff):
+            log.trace("getAudioFeaturesForTrack()");
             audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
 
             // When we have trackResult we get the album and artist ID , and with that, we can make call 
             // #3 to get album details and ...
-            trackResult = await trackResult;
+            try {
+                log.trace("awaiting trackResult");
+                trackResult = await trackResult;
+            } catch (err) {
+                log.info("getTrack() failed with error:" + err);
+
+                // Need to handle audioFeaturesResult which might repsone later - we can ignore that one.
+                audioFeaturesResult.catch(function(err2) {
+                    log.debug("ignoring concurrent GetaudioFeatureResult error while handling getTrack() err=%s" + err2);
+                });
+                handleError({ code: "SPTFY-512", msg: "get Track  from spotify failed with err=" + err }, res);
+                return;
+            }
 
             if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
+                log.trace("getAlbum()");
                 albumResult = api.getAlbum(trackResult.body.album.id);
             }
 
             // ... call #4 to get Artist Result:
             if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
+                log.trace("getArtist()");
                 artistResult = api.getArtist(trackResult.body.artists[0].id);
             }
 
             // Wait for all results to return:
-            albumResult = await albumResult;
-            audioFeaturesResult = await audioFeaturesResult;
-            artistResult = await artistResult;
+            // Error Handling is a bit ugly, but needs to be done to avoid "Unhandled promise rejections" messages,
+            // which could kill the process in the future of nodejs.
+            try {
+                log.trace("await albumResult")
+                albumResult = await albumResult;
+            } catch (err) {
+                log.info("error while await album for ignoring err=" + err);
+            }
+
+            try {
+                log.trace("await audioFeaturesResult");
+                audioFeaturesResult = await audioFeaturesResult;
+            } catch (err) {
+                log.info("error while await audio features for track- ignoring err=" + err);
+            }
+
+            try {
+                log.trace("await artistResult");
+                artistResult = await artistResult;
+            } catch (err) {
+                log.info("error while await audio artist  for track %s - ignoring err=" + err, trackID);
+            }
 
             // TODO: Merge responses into OpenDJ TrackResult 
             // For now (and debugging), we send the raw: spotify objects:
@@ -644,6 +687,7 @@ router.get('/trackDetails', async function(req, res) {
          */
 
     } catch (err) {
+        log.error("trackDetails() outer catch err=", err);
         handleError(err, res);
     }
 
