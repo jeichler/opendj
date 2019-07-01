@@ -43,10 +43,10 @@
     </ion-col>
 
   <ion-col size="3">
-    <ion-button color="success" shape="round" *ngIf="!isPlaying" size="small" (click)="playTrack()">
+    <ion-button color="success" shape="round" float-right *ngIf="!isPlaying" size="small" (click)="playTrack()">
       <ion-icon name="play"></ion-icon>
     </ion-button>
-    <ion-button color="danger" shape="round"  *ngIf="isPlaying" size="small" (click)="pauseTrack()">
+    <ion-button color="danger" shape="round"  float-right *ngIf="isPlaying" size="small" (click)="pauseTrack()">
       <ion-icon name="pause"></ion-icon>
     </ion-button>
     <ion-button  color="warning" shape="round"  float-right size="small" (click)="nextTrack()">

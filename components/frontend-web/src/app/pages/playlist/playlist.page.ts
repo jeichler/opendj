@@ -49,19 +49,25 @@ export class PlaylistPage implements OnInit, OnDestroy {
     );
   }
 
+  refresh(event) {
+    this.websocketService.refreshPlaylist();
+    event.detail.complete();
+  }
+
   date2hhmm(d) {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
   }
 
   computeETAForTracks(playlist) {
-    console.log("computeETAForTracks");
-    var ts = Date.now();
+    console.log('computeETAForTracks');
+    let ts = Date.now();
     if (playlist.currentTrack) {
         ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
     }
-    for (var i = 0; i < playlist.nextTracks.length; i++) {
-        playlist.nextTracks[i].eta= this.date2hhmm(new Date(ts));
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < playlist.nextTracks.length; i++) {
+        playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
         ts += playlist.nextTracks[i].duration_ms;
     }
   }
@@ -80,6 +86,16 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
     event.detail.complete();
 
+  }
+
+  moveTop(item, index, slidingItem) {
+    this.feService.reorderTrack(item.id, index, 0).subscribe(
+      data => {
+        this.presentToast('Track moved to top.');
+        slidingItem.close();
+      },
+      err => console.log(err)
+    );
   }
 
   // searchTrackModal
@@ -107,7 +123,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     const toast = await this.toastController.create({
       message: data,
       position: 'bottom',
-      color: 'opendj',
+      color: 'light',
       duration: 2000
     });
     toast.present();
@@ -158,21 +174,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    // console.log(this.websocketService.connect());
-  }
-
-  ionViewDidLeave() {
-    // console.log(this.websocketService.disconnect());
-  }
-
-  ngOnInit() {
     const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
-      // console.log(`playlist: ${JSON.stringify(data)}`);
       this.currentPlaylist = data as Playlist;
-
       this.computeETAForTracks(this.currentPlaylist);
-
-      console.log(`playlist:`, this.currentPlaylist);
+      console.log(`playlist: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
     this.userDataService.getUsername().then(data =>
@@ -183,8 +188,15 @@ export class PlaylistPage implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy() {
+  ionViewDidLeave() {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  ngOnInit() {
+    this.websocketService.init();
+  }
+
+  ngOnDestroy() {
   }
 
 }

@@ -7,23 +7,30 @@ import { ConfigService } from './config.service';
 export class WebsocketService {
 
     // Our socket connection
-    private socket;
+    private socket = null;
 
     constructor(private confService: ConfigService) {
-        this.socket = io(confService.websocketHost, {
+    }
+
+    init() {
+        this.socket = io(this.confService.websocketHost, {
             reconnectionAttempts: 10,
-            path: confService.websocketPath
+            path: this.confService.websocketPath
         });
     }
 
     getPlaylist() {
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
-                console.log('Received playlist update from Websocket Server');
+                console.log('WebsocketService: Received playlist update');
                 observer.next(data);
             });
         });
         return observable;
+    }
+
+    refreshPlaylist() {
+        this.socket.emit('refresh-playlist');
     }
 
     isConnected() {
@@ -31,10 +38,12 @@ export class WebsocketService {
     }
 
     disconnect() {
+        console.log('WebsocketService: disconnect');
         return this.socket.disconnect();
     }
 
     connect() {
+        console.log('WebsocketService: connect');
         return this.socket.connect();
     }
 
