@@ -20,8 +20,12 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     if (value !== null) {
       this.track = value;
       this.progress = this.track.progress_ms / 1000;
-      // this.calculateTotalTime();
+
       if (this.isPlaying) {
+        const now = new Date().getTime() / 1000;
+        const startedAt = new Date(this.track.started_at).getTime() / 1000;
+        const diff = (now - startedAt);
+        this.progress = diff;
         this.intervalHandle = setInterval(() => this.countdown(), 1000);
       }
     }
