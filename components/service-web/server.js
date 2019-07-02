@@ -48,8 +48,9 @@ function startKafkaConsumer() {
         { topic: TOPIC_INTERNAL } // offset, partition
     ], {
         autoCommit: true,
-        fromOffset: true,
-        offset: 0
+        // Fix #72: Do not start at the beginning
+        // fromOffset: true,
+        // offset: 0
     });
 
     kafkaConsumer.on('message', function(message) {
@@ -61,6 +62,7 @@ function startKafkaConsumer() {
             var msgPayload = JSON.parse(msg.value);
             currentPlaylist = msgPayload;
             io.emit('current-playlist', currentPlaylist);
+            log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
 
         } catch (e) {
             log.error("kafkaConsumer Exception %s while processing message", e);

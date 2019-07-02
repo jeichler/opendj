@@ -287,7 +287,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
         throw { code: "PLYLST-130", msg: "Could not get details for track. Err=" + JSON.stringify(err) };
     }
 
-    if (playlist.currentTrack == null) {
+    if (playlist.currentTrack == null && playlist.isPlaying == true) {
         log.debug("Adding while currentTrack is null - the list seems to be empty, so we skip to make it the current track");
         try {
             await skip(event, playlist);
@@ -446,10 +446,15 @@ async function skip(event, playlist) {
         log.info("SKIP: reached end of playlist");
         playlist.currentTrack = null;
 
-        log.debug("calling spotify provider to pause");
         try {
-            var result = await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
-            log.debug("spotify pause result=" + result);
+            if (MOCKUP_NO_ACTUAL_PLAYING) {
+                log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
+            } else {
+                log.debug("calling spotify provider to pause");
+                var result = await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+                log.debug("spotify pause result=" + result);
+
+            }
         } catch (err) {
             log.warn("call to spotify pause at end of playlist failed - ignoring err=" + err);
         };
@@ -648,6 +653,15 @@ router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
     skip(event, playlist);
+    firePlaylistChangedEvent(event, playlist);
+    res.status(200).send(playlist);
+});
+
+
+router.get('/events/:eventID/playlists/:listID/push', function(req, res) {
+    log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    var event = getEventForRequest(req);
+    var playlist = getPlaylistForRequest(req);
     firePlaylistChangedEvent(event, playlist);
     res.status(200).send(playlist);
 });
