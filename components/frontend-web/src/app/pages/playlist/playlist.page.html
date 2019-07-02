@@ -36,11 +36,16 @@
       <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
 
         <ion-item color="dark">
-          <ion-thumbnail slot="start">
+          <ion-thumbnail slot="start" (press)="toggleOptions()">
             <img src="{{item.image_url}}">
           </ion-thumbnail>
           <ion-label>{{item.name}}
             <br />
+            <span *ngIf="isCurator && showOptions">
+              <ion-button (click)="moveTop(item, i)">Top</ion-button>
+              <ion-button color="danger" (click)="deleteTrack(item, i)">Delete</ion-button>
+              <br/>
+            </span>
             <span style="font-size: 14px; color: #999;">
               {{item.artist}} {{item.year}} eta {{item.eta}}</span>
             <ion-badge color="medium" float-right>
@@ -56,7 +61,7 @@
             </ion-label>
           </ion-label>
           <ion-reorder slot="end" *ngIf="isCurator">
-              <ion-chip color="secondary" (dblclick)="moveTop(item, i)">{{i +1}}</ion-chip>
+              <ion-chip color="secondary">{{i +1}}</ion-chip>
           </ion-reorder>
 
 

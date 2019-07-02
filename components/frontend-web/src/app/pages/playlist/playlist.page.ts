@@ -20,6 +20,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   subscriptions: Subscription[] = [];
   username: string = null;
   isCurator = false;
+  showOptions = false;
 
   constructor(
     public modalController: ModalController,
@@ -86,6 +87,14 @@ export class PlaylistPage implements OnInit, OnDestroy {
       err => console.log(err)
     );
     event.detail.complete();
+  }
+
+  toggleOptions() {
+    if (this.showOptions) {
+      this.showOptions = false;
+    } else {
+      this.showOptions = true;
+    }
   }
 
   moveTop(item, index, slidingItem) {
