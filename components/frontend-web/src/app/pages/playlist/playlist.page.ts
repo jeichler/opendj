@@ -55,7 +55,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   refresh(event) {
     this.websocketService.refreshPlaylist();
-    event.detail.complete();
+    setTimeout(() => {
+      event.detail.complete();
+    }, 1000);
   }
 
   date2hhmm(d) {
@@ -130,7 +132,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   async presentToast(data) {
     const toast = await this.toastController.create({
       message: data,
-      position: 'bottom',
+      position: 'top',
       color: 'light',
       duration: 2000
     });
@@ -179,7 +181,8 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   trackElement(index: number, element: any) {
     // return element ? element.id : null;
-    return index;
+    // tslint:disable-next-line:no-unused-expression
+    return index + ', ' + element.id;
   }
 
   ionViewDidEnter() {
