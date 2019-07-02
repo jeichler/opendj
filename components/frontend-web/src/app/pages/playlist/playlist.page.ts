@@ -201,7 +201,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
     const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
       this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks(this.currentPlaylist);
+      if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
+        this.computeETAForTracks(this.currentPlaylist);
+      }
       console.log(`playlist subscription: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);

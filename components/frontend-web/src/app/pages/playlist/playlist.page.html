@@ -5,7 +5,7 @@
       <ion-menu-button color="light"></ion-menu-button>
     </ion-buttons>
     <ion-title color="light">
-      RH Summer Party - {{currentPlaylist?.nextTracks.length}} Tracks
+      RH Summer Party - {{currentPlaylist?.nextTracks?.length}} Tracks
     </ion-title>
     <!--
     <ion-buttons slot="end">
@@ -27,13 +27,13 @@
       <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-  <ion-button *ngIf="isCurator && currentPlaylist?.nextTracks.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
+  <ion-button *ngIf="isCurator && currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
 
-  <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist.nextTracks">
+  <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
     <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
       disabled="false">
 
-      <ion-item-sliding *ngFor="let item of currentPlaylist.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
+      <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
 
         <ion-item color="dark">
           <ion-thumbnail slot="start">
