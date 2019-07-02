@@ -81,11 +81,11 @@ export class AppComponent implements OnInit {
       this.loggedIn = loggedIn;
       if (this.loggedIn) {
         this.appPages = this.appPagesLoggedIn;
-        this.router.navigateByUrl('/playlist');
+        this.router.navigateByUrl('/playlist', { replaceUrl: true });
       } else {
         this.appPages = this.appPagesLoggedOut;
         this.userDetails = { username: '', isCurator: false };
-        this.router.navigateByUrl('/login');
+        this.router.navigateByUrl('/login', { replaceUrl: true });
       }
     }, 300);
   }

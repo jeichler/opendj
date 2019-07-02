@@ -20,7 +20,7 @@ import { ConfigService } from './providers/config.service';
   imports: [
     BrowserModule,
     HttpClientModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({animated: true}),
     IonicStorageModule.forRoot(),
     AppRoutingModule
   ],

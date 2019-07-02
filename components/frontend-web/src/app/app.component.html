@@ -50,7 +50,7 @@
           </div>
       </ion-content>
     </ion-menu>
-    <ion-router-outlet main></ion-router-outlet>
+    <ion-router-outlet main [swipeGesture]="false"></ion-router-outlet>
 
     <div *ngIf="platform.is('desktop')" class="desktop-footer" padding>
         <a href="https://www.openshift.com/"

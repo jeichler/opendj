@@ -7,6 +7,42 @@
     </ion-buttons>
   </ion-toolbar>
 
+  <div class="login-form-wrapper">
+      <div class="login-logo">
+        <ion-img src="assets/img/opendj-logo.png" alt="OpenDJ logo"></ion-img>
+      </div>
+  <form [formGroup]="loginForm">
+
+      <ion-list no-lines style="background: transparent !important;">
+          <ion-item lines="none">
+              <p text-wrap text-center style="color: #bbbbbb;">
+                Welcome!<br/>
+                We would like to know who you are, please enter a name.
+                Of course, you can stay anonymous and use any alias.
+                Click the magic wand to generate one.
+              </p>
+          </ion-item>
+        <ion-item lines="none">
+            <ion-input formControlName="username" type="text" clearInput="true" autofocus="true" placeholder="Username">
+            </ion-input>
+            <ion-note slot="end">
+              <ion-button (click)="generateUsername()" shape="round" color="primary" size="small">
+                <ion-icon name="color-wand"></ion-icon>
+              </ion-button>
+            </ion-note>
+        </ion-item>
+        <ion-item *ngIf="!loginForm.controls.username.valid  && (loginForm.controls.username.dirty || submitAttempt)">
+          <p style="color: red;">Minimum length for username is 3.</p>
+        </ion-item>
+        <ion-button text-center (click)="loginAction()" shape="round" type="submit" color="primary" expand="full" fill="outline">
+          Join Event
+        </ion-button>
+      </ion-list>
+
+    </form>
+  </div>
+
+  <!--
   <ion-grid>
     <ion-col>
       <div class="login-form-wrapper">
@@ -19,37 +55,26 @@
           <ion-list no-lines style="background: transparent !important;">
             <ion-item>
               <ion-label color="light">
-                  <p text-wrap text-center>
-                    Welcome!<br>
-                    We would like to know who you are, please enter a name.
-                    Of course, you can stay anonymous and use any alias.
-                    Click the magic wand to generate one.
-                  </p>
+                <p text-wrap text-center>
+                  Welcome!<br>
+                  We would like to know who you are, please enter a name.
+                  Of course, you can stay anonymous and use any alias.
+                  Click the magic wand to generate one.
+                </p>
               </ion-label>
             </ion-item>
-<ion-item center>
-            <ion-button
-              (click)="generateUsername()"
-              color="opendj"
-              shape="round"
-              expand="full"
-              class="magic-wand-btn"
-              fill="outline"
-              >
+            <ion-item center>
+              <ion-button (click)="generateUsername()" color="opendj" shape="round" expand="full" class="magic-wand-btn"
+                fill="outline">
                 <ion-icon name="color-wand"></ion-icon>
-            </ion-button>
-</ion-item>
+              </ion-button>
+            </ion-item>
 
-            <ion-item margin-bottom>
+            <ion-item margin-bottom lines="none">
               <ion-label position="stacked" color="light" text-center>
-                  Username:
+                Username:
               </ion-label>
-              <ion-input
-                text-center
-                formControlName="username"
-                type="text"
-                clearInput="true"
-                autofocus="true"
+              <ion-input text-center formControlName="username" type="text" clearInput="true" autofocus="true"
                 [class.invalid]="!loginForm.controls.username.valid && (loginForm.controls.username.dirty || submitAttempt)">
               </ion-input>
             </ion-item>
@@ -58,19 +83,11 @@
               <p style="color: red;">Minimum length: 3.</p>
             </ion-item>
 
-            <ion-item classs="btn-group">
-              <!-- <ion-buttons class="btn-group">s -->
-                <ion-button text-center
-                  (click)="loginAction()"
-                  type="submit"
-                  color="light"
-                  class="login-btn"
-                  expand="full"
-                  shape="round"
-                  fill="outline">
-                  Join Event
-                </ion-button>
-              <!-- </ion-buttons> -->
+            <ion-item classs="btn-group" lines="none">
+              <ion-button text-center (click)="loginAction()" type="submit" color="light" class="login-btn"
+                expand="full" shape="round" fill="outline">
+                Join Event
+              </ion-button>
             </ion-item>
           </ion-list>
 
@@ -82,17 +99,6 @@
 
     </ion-col>
   </ion-grid>
-  <!-- <ion-footer>
-    <ion-toolbar>
-      <div slot="end" padding> -->
-        <!-- <a href="https://www.openshift.com/"
-          title="Powered by OpenShift Online"> -->
-          <!-- <ion-thumbnail> -->
-          <!-- <img alt="Powered by OpenShift Online"
-            title="Powered by OpenShift Online"
-            src="https://www.openshift.com/images/logos/powered_by_openshift_reverse.png" /> -->
-        <!-- </a>
-      </div> -->
-    <!-- </ion-toolbar>
-  </ion-footer> -->
+-->
+
 </ion-content>
