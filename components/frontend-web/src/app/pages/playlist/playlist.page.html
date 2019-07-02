@@ -7,13 +7,13 @@
     <ion-title color="light">
       RH Summer Party - {{currentPlaylist?.nextTracks?.length}} Tracks
     </ion-title>
-    <!--
-    <ion-buttons slot="end">
-      <ion-button fill="solid" color="primary" (click)="presentModal()">
-        Add
+    
+    <ion-buttons slot="end" *ngIf="isConnected"> 
+      <ion-button color="light">
+          <ion-icon name="wifi"></ion-icon>
       </ion-button>
     </ion-buttons>
-    -->
+    
   </ion-toolbar>
   <ion-toolbar color="dark">
       <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
@@ -77,7 +77,7 @@
   </ion-list>
 
   <!-- Add button right for normal users -->
-  <ion-fab *ngIf="!isCurator" vertical="bottom" horizontal="end" slot="fixed" margin>
+  <ion-fab *ngIf="!isCurator && currentPlaylist?.nextTracks?.length <= configService.playlistMaxSize" vertical="bottom" horizontal="end" slot="fixed" margin>
     <ion-fab-button (click)="presentModal()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

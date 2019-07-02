@@ -1,7 +1,7 @@
 {
     "enableDebug": true,
     "curatorPassword": "test",
-    "playlistMaxSize": 50,
+    "playlistMaxSize": 100,
     "websocketHost": "http://dev.opendj.io",
     "websocketPath": "/api/service-web/socket.io",
     "SPOTIFY_PROVIDER_API": "http://dev.opendj.io/api/provider-spotify/v1",

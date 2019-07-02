@@ -1,3 +1,4 @@
+import { ConfigService } from './../../providers/config.service';
 import { UserDataService } from './../../providers/user-data.service';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
@@ -21,6 +22,8 @@ export class PlaylistPage implements OnInit, OnDestroy {
   username: string = null;
   isCurator = false;
   showOptions = false;
+  isConnected = false;
+  intervalHandle = null;
 
   constructor(
     public modalController: ModalController,
@@ -30,6 +33,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     public mockService: MockService,
     public feService: FEService,
     public userDataService: UserDataService,
+    public configService: ConfigService,
     public platform: Platform
   ) {
   }
@@ -190,9 +194,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         this.websocketService.init();
+        this.websocketService.refreshPlaylist();
       }
-      this.websocketService.refreshPlaylist();
-    }, 500);
+    }, 100);
 
     this.userDataService.getUsername().then(data =>
       this.username = data
@@ -204,14 +208,13 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   ionViewDidLeave() {
     console.log('Playlist page leave');
-    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   ngOnInit() {
     console.log('Playlist page init');
     this.websocketService.init();
 
-    const sub: Subscription = this.websocketService.getPlaylist().subscribe(data => {
+    const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
       this.currentPlaylist = data as Playlist;
       if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
         this.computeETAForTracks(this.currentPlaylist);
@@ -219,9 +222,18 @@ export class PlaylistPage implements OnInit, OnDestroy {
       console.log(`playlist subscription: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
+    this.intervalHandle = setInterval(() => {
+      this.isConnected = this.websocketService.isConnected();
+    }, 3000);
   }
 
   ngOnDestroy() {
+    console.log('Playlist page destroy');
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
+    this.websocketService.disconnect();
+    clearInterval(this.intervalHandle);
   }
 
 }
