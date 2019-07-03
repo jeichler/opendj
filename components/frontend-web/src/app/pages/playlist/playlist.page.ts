@@ -273,7 +273,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
         <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
       </ion-label>
       <p>
-        <ion-button (click)="dismiss(item)">Add</ion-button>
+        <ion-button (tap)="dismiss(item)">Add</ion-button>
       </p>
     </ion-item>
 

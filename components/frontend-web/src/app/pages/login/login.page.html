@@ -26,7 +26,7 @@
             <ion-input formControlName="username" type="text" clearInput="true" autofocus="true" placeholder="Username">
             </ion-input>
             <ion-note slot="end">
-              <ion-button (click)="generateUsername()" shape="round" color="primary" size="small">
+              <ion-button (tap)="generateUsername()" shape="round" color="primary" size="small">
                 <ion-icon name="color-wand"></ion-icon>
               </ion-button>
             </ion-note>
@@ -34,7 +34,7 @@
         <ion-item *ngIf="!loginForm.controls.username.valid  && (loginForm.controls.username.dirty || submitAttempt)">
           <p style="color: red;">Minimum length for username is 3.</p>
         </ion-item>
-        <ion-button text-center (click)="loginAction()" shape="round" type="submit" color="primary" expand="full" fill="outline">
+        <ion-button text-center (tap)="loginAction()"  shape="round" type="submit" color="primary" expand="full" fill="outline">
           Join Event
         </ion-button>
       </ion-list>
