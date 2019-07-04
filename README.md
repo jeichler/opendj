@@ -11,7 +11,9 @@ The vision of OpenDJ is to solve this problem by applying open source principles
 <img src="docs/img/OpenDJExampleViewUser.png" width="25%" align="left"> 
 Participants of an event can contribute to the playlist by adding tracks. Everybody can add the the playlist, no accounts needed, no access to local devices. In a future version, users can like/dislike a track they see on the playlist.  
 <br/><br/>
-<img src="docs/img/OpenDJExampleViewCurator.png" width="25%" align="right"> Curators can edit the playlist (sorting/grouping by genre, deleting) - they are like the maintainer of an open source project. They get more detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There is no special skill needed to be curator, just a sense for music. In a future version, curators will be able to pre-listen to a track in the playlist.  
+
+<img src="docs/img/OpenDJExampleViewCurator.png" width="25%" align="right"> Curators can edit the playlist (sorting/grouping by genre, deleting) - they are like the maintainer of an open source project. They get more detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There is no special skill needed to be curator, just a sense for music. In a future version, curators will be able to pre-listen to a track in the playlist.
+<br/><br/>
 
 The music is being played by a streaming provider, e.g. Spotify. OpenDJ is running in the internet and uses streaming provider APIs to execute the playlist on a local device (which might be connected to the PA system of a party location).  
 
