@@ -1,10 +1,8 @@
 # OpenDJ -Apply Open Source principles to the Dance Floor! 
 
 ## Vision
+<img src="docs/img/Logo_OpenDJ_256.png" width="30%" align="right">
 Have you ever been at an event and disliked the music being played?  
-
-
-
 
 The vision of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event:  
 
@@ -17,14 +15,10 @@ Participants of an event can contribute to the playlist by adding tracks. Everyb
 
 The music is being played by a streaming provider, e.g. Spotify. OpenDJ is running in the internet and uses streaming provider APIs to execute the playlist on a local device (which might be connected to the PA system of a party location).  
 
-
 ## Try it out
 A prototype is up and running: [demo.opendj.io](http://demo.opendj.io)
 You can add tracks by using the blue "Add" button.
 In the demo, tracks are skipped every 20s (they are not actually being played). And if the playlist is empty, it is out-filled with some example tracks.  
-
-<br/><br/>
-<img src="docs/img/Logo_OpenDJ_256.png" width="25%">
 
 ## Learn more about the idea
 Read the user stories in the requirements doc [here](docs/10requirements/100requirements.md)
