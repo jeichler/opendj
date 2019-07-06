@@ -39,112 +39,6 @@ function handleError(err, response) {
 
 
 
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-// ------------------------------ kafka stuff -----------------------------
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-const TOPIC_PLAYLIST = "opendj.data.playlist";
-
-var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
-var kafkaClient = new kafka.KafkaClient({
-    kafkaHost: kafkaURL,
-    connectTimeout: 1000,
-    requestTimeout: 500,
-    autoConnect: true,
-    connectRetryOptions: {
-        retries: 10,
-        factor: 1,
-        minTimeout: 1000,
-        maxTimeout: 1000,
-        randomize: true,
-    },
-    idleConnection: 60000,
-    reconnectOnIdle: true,
-});
-kafkaClient.on('error', function(err) {
-    log.error("kafkaClient error: %s -  reconnecting....", err);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = JSON.stringify(err);
-    kafkaClient.connect();
-});
-
-kafkaClient.on('connect', function(err) {
-    log.info("kafkaClient connect");
-    readyState.kafkaClient = true;
-    readyState.kafkaClientError = "";
-});
-
-kafkaClient.connect();
-
-var kafkaProducer = new kafka.Producer(kafkaClient);
-
-kafkaProducer.on('error', function(err) {
-    log.error("kafkaProducer error: %s", err);
-});
-
-var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-    { topic: TOPIC_PLAYLIST }, // offset, partition
-], {
-    autoCommit: true,
-    fromOffset: true
-});
-
-kafkaConsumer.on('error', function(error) {
-    log.error("kafkaConsumer error: %s", error);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = "Consumer:" + JSON.stringify(error);
-});
-
-kafkaConsumer.on('message', function(message) {
-    return;
-
-    log.debug("kafkaConsumer message: %s", JSON.stringify(message));
-
-    if (message.topic != "IGNORE ME FOR THE MOMENT") {
-        return;
-    }
-    try {
-        var payload = JSON.parse(message.value);
-        if (payload != null && payload.eventID != null) {
-            // Idempotency - check if our internal state is already newer
-            // then we should ignore this message:
-            var currentState = mapOfEventStates.get(payload.eventID);
-            if (currentState && Date.parse(currentState.timestamp) > Date.parse(payload.timestamp)) {
-                log.info("Current state for event %s is newer than state from message - message is ignored", payload.eventID)
-            } else {
-                log.info("Using new state for event %s", payload.eventID);
-                mapOfEventStates.set(payload.eventID, payload);
-            }
-
-            // Ensure we do not loose valuable refresh tokens:
-            if (currentState && currentState.refresh_token && !payload.refresh_token) {
-                log.info("New state has no refresh token, but old one has it - keeping it!");
-                payload.refresh_token = currentState.refresh_token;
-            }
-        }
-    } catch (e) {
-        log.warn(" Exception %s while processing message - ignored", e);
-    }
-});
-
-
-function firePlaylistChangedEvent(event, playlist) {
-    log.debug("firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
-    kafkaProducer.send([{
-        topic: TOPIC_PLAYLIST,
-        key: event.eventID + ":" + playlist.playlistID,
-        messages: [JSON.stringify(playlist)]
-    }], function(err, data) {
-        if (err) {
-            log.error("kafkaProducer.send err=%s", err);
-            readyState.kafkaClient = false;
-            readyState.kafkaClientError = JSON.stringify(err);
-        }
-    });
-    log.trace("end firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
-}
-
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 // ------------------------------ playlist stuff -----------------------------
@@ -177,7 +71,8 @@ var mapOfEvents = new Map([
             playlistID: 0,
             isPlaying: DEFAULT_IS_PLAYING,
             currentTrack: null,
-            nextTracks: []
+            nextTracks: [],
+            timestamp: 0,
         }],
         effectivePlaylist: []
     }],
@@ -535,20 +430,6 @@ async function checkPlaylist(event, playlist) {
 
 function checkEvent(event) {
     log.trace("checkEvent begin");
-
-    if (event.playlists == null) {
-        log.trace("creating playlists");
-        event.playlists = [{
-            playlistID: 0,
-            isPlaying: DEFAULT_IS_PLAYING,
-            currentTrack: null,
-            currentTrackStartedAt: 0,
-            currentTrackPausedAt: 0,
-            nextTracks: []
-        }];
-        stateChanged = true;
-    }
-
     for (let playlist of event.playlists) {
         checkPlaylist(event, playlist)
             .catch(err => log.error("check playlist failed err=" + JSON.stringify(err)))
@@ -746,14 +627,127 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, 
 
 app.use("/api/service-playlist/v1", router);
 
-log.debug("Initial check of Events");
-checkEvents();
-
-log.debug("Starting checkEvents() poll");
-setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
 
 
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// ------------------------------ kafka stuff -----------------------------
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+const TOPIC_PLAYLIST = "opendj.data.playlist";
 
-app.listen(8081, function() {
-    log.info('listening on port 8081!');
+var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
+var kafkaClient = new kafka.KafkaClient({
+    kafkaHost: kafkaURL,
+    connectTimeout: 1000,
+    requestTimeout: 500,
+    autoConnect: true,
+    connectRetryOptions: {
+        retries: 10,
+        factor: 1,
+        minTimeout: 1000,
+        maxTimeout: 1000,
+        randomize: true,
+    },
+    idleConnection: 60000,
+    reconnectOnIdle: true,
 });
+kafkaClient.on('error', function(err) {
+    log.error("kafkaClient error: %s -  reconnecting....", err);
+    readyState.kafkaClient = false;
+    readyState.kafkaClientError = JSON.stringify(err);
+    kafkaClient.connect();
+});
+
+kafkaClient.on('connect', function(err) {
+    log.info("kafkaClient connect");
+    readyState.kafkaClient = true;
+    readyState.kafkaClientError = "";
+});
+
+kafkaClient.connect();
+
+var kafkaProducer = new kafka.Producer(kafkaClient);
+
+kafkaProducer.on('error', function(err) {
+    log.error("kafkaProducer error: %s", err);
+});
+
+var kafkaConsumer = new kafka.Consumer(kafkaClient, [
+    { topic: TOPIC_PLAYLIST }, // offset, partition
+], {
+    autoCommit: true,
+    fromOffset: true
+});
+
+kafkaConsumer.on('error', function(error) {
+    log.error("kafkaConsumer error: %s", error);
+    readyState.kafkaClient = false;
+    readyState.kafkaClientError = "Consumer:" + JSON.stringify(error);
+});
+
+kafkaConsumer.on('message', function(message) {
+    try {
+        //        log.trace("kafkaConsumer message offset=%s, high=%s messsage=%s", message.offset, message.highWaterOffset, JSON.stringify(message));
+
+        if (message.offset == message.highWaterOffset - 1) {
+            log.debug("high water messages: %s", JSON.stringify(message));
+            var payload = JSON.parse(message.value);
+
+            let currentState = mapOfEvents.get("0").playlists[0];
+            if (currentState && currentState.timestamp) {
+                log.trace("we have a current state with a timestamp");
+                if (Date.parse(currentState.timestamp) < Date.parse(payload.timestamp)) {
+                    log.debug("Using new state for event %s", payload.eventID);
+                    mapOfEvents.get("0").playlists[0] = payload;
+                } else {
+                    log.debug("Current state for event is equal or newer than state from message - message is ignored")
+                }
+            } else {
+                log.trace("we have no current state, or current state does not have a timestamp, so we take the one from the message");
+                mapOfEvents.get("0").playlists[0] = payload;
+            }
+        }
+    } catch (e) {
+        log.warn(" Exception while processing message - ignored", e);
+    }
+});
+
+
+function firePlaylistChangedEvent(event, playlist) {
+    log.debug("firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
+    playlist.timestamp = new Date().toISOString();
+    kafkaProducer.send([{
+        topic: TOPIC_PLAYLIST,
+        key: event.eventID + ":" + playlist.playlistID,
+        messages: [JSON.stringify(playlist)]
+    }], function(err, data) {
+        if (err) {
+            log.error("kafkaProducer.send err=%s", err);
+            readyState.kafkaClient = false;
+            readyState.kafkaClientError = JSON.stringify(err);
+        }
+    });
+    log.trace("end firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
+}
+
+// Then: check events, start poll intevall, open port
+
+log.info("Wait 2s sec for messages to be processed....");
+setTimeout(function() {
+    log.info("Initial check of Events....");
+    checkEvents();
+
+    log.info("Starting checkEvents() poll");
+    setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
+
+    log.debug("opening server port");
+    app.listen(8081, function() {
+        log.info('Now listening on port 8081!');
+    });
+
+    log.info("Tell everybody that we are online by firePlaylistChangedEvent");
+    firePlaylistChangedEvent(
+        mapOfEvents.get("0"),
+        mapOfEvents.get("0").playlists[0]);
+}, 2000);
