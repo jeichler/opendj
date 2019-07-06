@@ -288,7 +288,9 @@ export class PlaylistAddModalComponent implements OnInit {
   @ViewChild(IonSearchbar) myInput: IonSearchbar;
 
   setFocus() {
+    console.log('Set search focus');
     this.myInput.setFocus();
+
   }
 
   constructor(
