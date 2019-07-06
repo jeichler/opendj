@@ -309,7 +309,7 @@ router.get('/getSpotifyLoginURL', function(req, res) {
 // This is Step 2 of the Authorization Code Flow: 
 // Redirected from Spotiy AccountsService after user Consent.
 // We receive a code and need to trade that token into tokens:
-router.get('/auth_callback', function(req, res) {
+router.get('/auth_callback', async function(req, res) {
     log.trace("auth_callback start req=%s", JSON.stringify(req.query));
     var code = req.query.code;
     var state = req.query.state;
@@ -330,9 +330,22 @@ router.get('/auth_callback', function(req, res) {
             updateEventTokensFromSpotifyBody(eventState, data.body);
             fireEventStateChange(eventState);
 
-            // TODO: Sent a decent response, actually we need to redirect to a url
-            // given in state!
-            res.send('1');
+            // Update tokens on API by getting fresh:
+            spotifyApi = getSpotifyApiForEvent(eventID);
+
+            // Let's try to start bohemian rhapsody:
+            autoSelectDevice(spotifyApi, eventState)
+                .then(function() {
+                    spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
+                }).then(function() {
+                    res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=/events/" + eventID + "/owner\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
+                    setTimeout(function() {
+                        spotifyApi.pause({ device_id: eventState.currentDevice });
+                    }, 10000);
+                }).catch(function(err) {
+                    res.send("Spotify Authorization was successful, but test playback failed. Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + err);
+                });
+
         },
         function(err) {
             log.debug('authorization code granted  err=%s', err);
@@ -712,7 +725,6 @@ router.get('/pause', async function(req, res) {
     }
     log.trace("end pause");
 });
-
 
 
 router.get('/play', async function(req, res) {
