@@ -4,6 +4,16 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
+# See https://github.com/tnozicka/openshift-acme/tree/master/deploy/letsencrypt-live/single-namespace
+    - name: Deploy opensfhit-acme for lets encrypt certs
+      when: FRONTEND_USE_ACME_CERTS|bool
+      shell: |
+        oc create -fhttps://raw.githubusercontent.com/tnozicka/openshift-acme/master/deploy/letsencrypt-live/single-namespace/{role,serviceaccount,imagestream,deployment}.yaml
+        oc policy add-role-to-user openshift-acme --role-namespace="$(oc project --short)" -z openshift-acme
+        oc patch deployment openshift-acme -p '{"spec": {"template": {"spec": {"containers": [{"name": "openshift-acme","resources": {"limits": {"memory": "80Mi"}}}]}}}}'
+      register: acmedeploy
+      changed_when: "'AlreadyExists' not in acmedeploy.stderr" 
+
     - name: Create Image Stream 
       k8s:
         state: present
@@ -214,7 +224,8 @@
               name: frontend-web
             sessionAffinity: None
             type: ClusterIP
-    - name: Create Route
+    - name: Create Route with Let's Encrypt Certs
+      when: FRONTEND_USE_ACME_CERTS|bool
       k8s:
         state: present
         wait: true
@@ -223,6 +234,7 @@
           apiVersion: route.openshift.io/v1
           metadata:
             annotations:
+              kubernetes.io/tls-acme: "true"
             labels:
               app: frontend-web
             name: frontend-web
@@ -230,6 +242,42 @@
           spec:
             host: "{{DNS_BASENAME}}"
 #            path: /api/frontend-web
+            port:
+              targetPort: web
+              tls:
+                insecureEdgeTerminationPolicy: "Allow"
+                termination: "edge"
+            to:
+              kind: Service
+              name: frontend-web
+              weight: 100
+            wildcardPolicy: None
+            
+    - name: Create Route with provided certs
+      when: not FRONTEND_USE_ACME_CERTS|bool
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: Route
+          apiVersion: route.openshift.io/v1
+          metadata:
+            annotations:
+              kubernetes.io/tls-acme: "true"
+            labels:
+              app: frontend-web
+            name: frontend-web
+            namespace: "{{NAMESPACE}}"
+          spec:
+            host: "{{DNS_BASENAME}}"
+#            path: /api/frontend-web
+            port:
+              targetPort: web
+            tls:
+              insecureEdgeTerminationPolicy: "Allow"
+              termination: "edge"
+              certificate: "{{FRONTEND_TLS_CERT}}"
+              key: "{{FRONTEND_TLS_KEY}}"
             to:
               kind: Service
               name: frontend-web

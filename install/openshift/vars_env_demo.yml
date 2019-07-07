@@ -5,4 +5,5 @@ kafkaOperatorIsAvailable: false
 NAMESPACE: "dfroehli-opendj-dev"
 DNS_BASENAME: "{{STAGE}}.opendj.io"
 GIT_REF: env-{{STAGE}}
+FRONTEND_USE_ACME_CERTS: true
 
