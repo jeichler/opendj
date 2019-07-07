@@ -3,6 +3,8 @@ var http = require('http').createServer(app);
 var cors = require('cors');
 var io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket.io' });
 var kafka = require('kafka-node');
+const uuidv1 = require('uuid/v1');
+
 var port = process.env.PORT || 3000;
 var kafkaURL = process.env.KAFKA_HOST || "localhost:9092";
 var TOPIC_INTERNAL = process.env.topic || "opendj.data.playlist";
@@ -47,6 +49,7 @@ function startKafkaConsumer() {
     var kafkaConsumer = new kafka.Consumer(kafkaClient, [
         { topic: TOPIC_INTERNAL } // offset, partition
     ], {
+        groupId: uuidv1(), // All pods need to consume for now, thus we use a random consumer group
         autoCommit: true,
         // Fix #72: Do not start at the beginning
         // fromOffset: true,
@@ -54,16 +57,20 @@ function startKafkaConsumer() {
     });
 
     kafkaConsumer.on('message', function(message) {
-        log.debug("kafkaConsumer received message: %s", JSON.stringify(message));
+        log.trace("kafkaConsumer received message: %s", JSON.stringify(message));
 
         try {
 
             var msg = JSON.parse(JSON.stringify(message));
-            var msgPayload = JSON.parse(msg.value);
-            currentPlaylist = msgPayload;
-            io.emit('current-playlist', currentPlaylist);
-            log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
-
+            if (msg.offset == msg.highWaterOffset - 1) {
+                log.trace("High Water Message received");
+                var msgPayload = JSON.parse(msg.value);
+                currentPlaylist = msgPayload;
+                io.emit('current-playlist', currentPlaylist);
+                log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
+            } else {
+                log.trace("Ignoring old message");
+            }
         } catch (e) {
             log.error("kafkaConsumer Exception %s while processing message", e);
         }

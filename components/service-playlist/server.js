@@ -3,6 +3,7 @@
 const compression = require('compression');
 const express = require('express');
 const app = express();
+const uuidv1 = require('uuid/v1');
 var request = require('request-promise-native');
 var cors = require('cors');
 var kafka = require('kafka-node');
@@ -676,6 +677,7 @@ kafkaProducer.on('error', function(err) {
 var kafkaConsumer = new kafka.Consumer(kafkaClient, [
     { topic: TOPIC_PLAYLIST }, // offset, partition
 ], {
+    groupId: uuidv1(),
     autoCommit: true,
     fromOffset: true
 });
