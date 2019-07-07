@@ -42,7 +42,7 @@ function handleError(err, response) {
 // ------------------------------ kafka stuff -----------------------------
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
-const TOPIC_INTERNAL = "opendj-spotifyprovider-internal";
+const TOPIC_INTERNAL = "opendj.state.provider-spotify";
 
 var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
 var kafka = require('kafka-node')
@@ -76,24 +76,12 @@ kafkaClient.on('connect', function(err) {
 
 kafkaClient.connect();
 
-// ------- Make sure topics do exit:
-var topicsToCreate = [{
-    topic: TOPIC_INTERNAL,
-    partitions: 1,
-    replicationFactor: 1,
-    configEntries: [
-        { name: "retention.ms", value: "43200000" }, // 12hours for start, should be 48hours!
-    ]
-}, ];
-kafkaClient.createTopics(topicsToCreate, (error, result) => {
-    log.debug("kafkaClient  createTopics error: %s", error);
-    log.debug("kafkaClient  createTopics result: %s", JSON.stringify(result));
-});
 
 var kafkaProducer = new kafka.Producer(kafkaClient);
-
 kafkaProducer.on('error', function(err) {
-    log.error("kafkaProducer error: %s", err);
+    log.fatal("kafkaProducer error: %s", err);
+    readyState.kafkaClient = false;
+    readyState.kafkaClientError = JSON.stringify(err);
 });
 
 var kafkaConsumer = new kafka.Consumer(kafkaClient, [
