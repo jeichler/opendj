@@ -1,6 +1,5 @@
 # Variables specific for DEV stage:
 
-FRONTEND_USE_ACME_CERTS: false
 
 # These cert are valid for dev.opendj.io
 # created using lets encrypt openshift-acme in demo env
@@ -11,6 +10,7 @@ FRONTEND_USE_ACME_CERTS: false
 # Step 3: Openshift acme will create a cert and add it to the dummy route
 # Step 4: Export cert and key from there to here:
 # Step 5: change back dns entry to stormshift
+FRONTEND_USE_ACME_CERTS: false
 FRONTEND_TLS_CERT: |
       -----BEGIN CERTIFICATE-----
       MIIGUjCCBTqgAwIBAgISAzmCQKWQ+SEoC9xloRxd+obPMA0GCSqGSIb3DQEBCwUA

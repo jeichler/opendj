@@ -4,8 +4,11 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
-    - name: Create kafka topics 
-      command: echo "TODO!!!"
+    - name: Create kafka topic 
+      command: "{{KAFKA_TOPIC_CMD}} --create --topic opendj.data.playlist --partitions 1 --replication-factor {{KAFKA_NUM_BROKERS}} --config retention.ms=43200000" 
+      register: topic_result
+      failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
+      changed_when: '"already exists" not in topic_result.stderr'
       
     - name: Create ImageStreamTag
       k8s:

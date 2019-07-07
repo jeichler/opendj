@@ -31,15 +31,18 @@ Rational: Topics config like partitions, replicatioNFactor could depend on the t
 1. If a message cant be consumed or produced to to technical errors, this is probably a major technical problem and allows the component to got into a NOT_READY state or fail totally
 
 
+Topic conventioN::
 
+**Important**: as we use dots (".") in topic names, we need to avoid underscores "_" as using both could create a problem with metrics.
 
 ```
 opendj.<message type>.<data type> 
 opendj: constant prefix
 message type: 
-1. 'data' for business data events, e.g. updates of playlists, events etc.
-1. 'state
-
+1. 'data' for business data objects, updates of playlists, events etc.
+1. 'state' internal component state objects
+1. 'event' for events, e.g. user joined event, track stopped.
+data type: name 
 opendj.data.playlist
 # Key: evendID:playListID
 # Body: Playlist JSON
