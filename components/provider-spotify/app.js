@@ -93,6 +93,8 @@ var kafkaConsumer = new kafka.Consumer(kafkaClient, [
 
 kafkaConsumer.on('error', function(error) {
     log.error("kafkaConsumer error: %s", error);
+    readyState.kafkaClient = false;
+    readyState.kafkaClientError = JSON.stringify(error);
 });
 
 
