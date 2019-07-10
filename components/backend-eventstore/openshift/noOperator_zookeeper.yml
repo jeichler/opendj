@@ -15,7 +15,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-zookeeper-config
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
 - apiVersion: v1
   kind: Secret
   data:
@@ -27,7 +27,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-cluster-ca-cert
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   type: Opaque
 - apiVersion: v1
   kind: Secret
@@ -40,7 +40,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-zookeeper-nodes
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
     ownerReferences:
     - apiVersion: kafka.strimzi.io/v1alpha1
       blockOwnerDeletion: false
@@ -49,7 +49,7 @@ items:
       name: backend-eventstore
       uid: fd859d40-96bd-11e9-a2a2-566fafb8001c
     resourceVersion: "16483768"
-    selfLink: /api/v1/namespaces/{{NAMESPACE}}/secrets/backend-eventstore-zookeeper-nodes
+    selfLink: /api/v1/namespaces/{{ENV.COMMON.NAMESPACE|mandatory}}/secrets/backend-eventstore-zookeeper-nodes
     uid: fde68e5b-96bd-11e9-82e5-566fafb8001b
   type: Opaque
 - apiVersion: apps/v1
@@ -62,7 +62,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-zookeeper
     name: backend-eventstore-zookeeper
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     podManagementPolicy: Parallel
     replicas: 1
@@ -228,7 +228,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-zookeeper-nodes
     name: backend-eventstore-zookeeper-nodes
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     clusterIP: None
     ports:
@@ -264,7 +264,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-zookeeper-client
     name: backend-eventstore-zookeeper-client
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     ports:
     - name: clients

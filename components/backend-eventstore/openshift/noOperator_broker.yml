@@ -27,7 +27,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-kafka-config
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
 - apiVersion: v1
   data:
     ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURMVENDQWhXZ0F3SUJBZ0lKQU5vMWR5ZStvMkRSTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4RXpBUkJnTlYKQkFvTUNtbHZMbk4wY21sdGVta3hGakFVQmdOVkJBTU1EV05zYVdWdWRITXRZMkVnZGpBd0hoY05NVGt3TmpJMApNakF5TXpVMVdoY05NakF3TmpJek1qQXlNelUxV2pBdE1STXdFUVlEVlFRS0RBcHBieTV6ZEhKcGJYcHBNUll3CkZBWURWUVFEREExamJHbGxiblJ6TFdOaElIWXdNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUIKQ2dLQ0FRRUFxMDc1L1dSVzExOXM3S1g4K1ZyQ25wVlFNMFI4UjhxSU5SQjg2YzVzSFZtU09yNmYwZFpNR1QzUAo4di9qUW45dkpDRXRneDZZUS93ZXB1MUUzcS9rNGVoZ0xNdDgxZ3JuMzhpWUZsRllXWWxwNHVibzU2MmxqMlgxCjZPVmlscVQ5T1p3dzJCaGpjK0ZqL1loZFYxRlo0MDlXMEJJeGJtcmNqcTBNWWpuTyt3b0hRNVRZRmtQVlRjZksKNlVlUVJHTVYzNTdEU1VadjJ0dXg5T29HbTVnUVdaR3VleXB5d3JGeHhPVEoxWFVjT1kvMWtUakZmZG5xTEc1VgpPSlAvazRhUlp1NVFvdVI3eTI0RDh3TEdIZnZKNm11NVBXbHIvN0JmdFJPS2J5Vy9MMW00WVNCbVpBR1R6ODhXCnhhblJDRHNOeUNHWU1saU16WC9wK2k3SjA5bmpzUUlEQVFBQm8xQXdUakFkQmdOVkhRNEVGZ1FVZEZaN3czUncKM3Vvay9VcFcxQ2lNRDBBcWo1RXdId1lEVlIwakJCZ3dGb0FVZEZaN3czUnczdW9rL1VwVzFDaU1EMEFxajVFdwpEQVlEVlIwVEJBVXdBd0VCL3pBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUcvQXZNTmg4Ulk0TmFjTWRzcGhWCkQ2NkM2eXdRSmVPRVhkSFM3T2QrM1JWUkl0UWxJNUgraXFQRHlpUVBXbUtLbk1JTjBkbkFuUXFBcW9GS2JNSjMKMUREc3J0UENnZEp4UmQ0WGdRTkJkVFVNa3RoOVg5SUhrZGNqdWdTV0xnN1FXVXJ1V0xMbVJPaWJoaDRSb21CcwpCdW1QM2RxK3dqdFh0OG9mU01MWGYxWEFJYXNQdUQ4eE9JSjU5aE5GblgydUJNaE9jNkFNdUMvckcyd1k1QkQrCmk3L29SYndmVmZjUmM4WkRjcXVHR0pDbkp1bGNRaEpvVUtuZCtOOElXTW4ycjhyNTBnRlU5WHZsSWdEc3U3QzgKYkdTTUJaUjZzWWNFWWFYWmk4T2drNmhmODhPcTlYa05qK1VqTmwvUi9QWlMrSktVOVgwZVk3U2tnanFWblFvMApiQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
@@ -39,7 +39,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-clients-ca-cert
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   type: Opaque
 - apiVersion: v1
   data:
@@ -51,7 +51,7 @@ items:
       strimzi.io/cluster: backend-eventstore
       strimzi.io/kind: Kafka
     name: backend-eventstore-kafka-brokers
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   type: Opaque
 - apiVersion: v1
   data:
@@ -64,7 +64,7 @@ items:
       openshift.io/token-secret.name: backend-eventstore-kafka-token-dtf6s
       openshift.io/token-secret.value: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZnJvZWhsaS1vcGVuZGotZGV2Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImJhY2tlbmQtZXZlbnRzdG9yZS1rYWZrYS10b2tlbi1kdGY2cyIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJiYWNrZW5kLWV2ZW50c3RvcmUta2Fma2EiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIwZmZiZDhlNC05NmJlLTExZTktODJlNS01NjZmYWZiODAwMWIiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGZyb2VobGktb3BlbmRqLWRldjpiYWNrZW5kLWV2ZW50c3RvcmUta2Fma2EifQ.s0NKEZl43kSwtMXglhud9Z6XPHJCHZgyEt0Xss4KJttnAj6r7ue1lYRZKHUB_x3qwJruR9jaYe78gqAkJt_JJzWs8rg1PlSainHPIcNFdi-xX-HpZNioousu3VAunaHcyCgSVhzvEo8cz81cgSdlqd1xPsTe_DHZ8EUH8ttsAWEi7MTLQyLWa2uwLLOdJe1SmZNxZFLTyEKJxASlL_VxK0tnKMwNJkRx8pQ0AnodNzp9jCsbQQmLrwT83usJLRSrqDSc3nPQZS1AMTaQvNQQFlfkAdiiaGNpALmBhrw4Ub0fheWNTQ3nmjp-d1_5qA1HPDMe3Mp_PTu1h2C_Hftu0Q
     name: backend-eventstore-kafka-dockercfg-stqhn
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   type: kubernetes.io/dockercfg
 - apiVersion: v1
   data:
@@ -78,13 +78,13 @@ items:
       kubernetes.io/service-account.name: backend-eventstore-kafka
       kubernetes.io/service-account.uid: 0ffbd8e4-96be-11e9-82e5-566fafb8001b
     name: backend-eventstore-kafka-token-6mxvh
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   type: kubernetes.io/service-account-token
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
     name: backend-eventstore-kafka
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   imagePullSecrets:
   - name: backend-eventstore-kafka-dockercfg-stqhn
   secrets:
@@ -101,7 +101,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-kafka
     name: backend-eventstore-kafka
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     podManagementPolicy: Parallel
     replicas: 1
@@ -285,7 +285,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-kafka-bootstrap
     name: backend-eventstore-kafka-bootstrap
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     ports:
     - name: replication
@@ -316,7 +316,7 @@ items:
       strimzi.io/kind: Kafka
       strimzi.io/name: backend-eventstore-kafka-brokers
     name: backend-eventstore-kafka-brokers
-    namespace: {{NAMESPACE}}
+    namespace: {{ENV.COMMON.NAMESPACE|mandatory}}
   spec:
     clusterIP: None
     ports:

@@ -44,6 +44,7 @@ message type:
 1. 'event' for events, e.g. user joined event, track stopped.
 data type: name 
 opendj.data.playlist
+
 # Key: evendID:playListID
 # Body: Playlist JSON
 # Producers: service-playlist

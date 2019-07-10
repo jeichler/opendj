@@ -1,9 +1,15 @@
-NAMESPACE: "dfroehli-opendj-{{STAGE}}"
-DNS_BASENAME: "{{STAGE}}.opendj.io"
-GIT_REF: "master"
+common:
+  COMMON:
+    NAMESPACE: "dfroehli-opendj-{{STAGE}}"
+    DNS_BASENAME: "{{STAGE}}.opendj.io"
+    TEST1: "from COMMON"
+    TEST2: "from COMMON"
 
-# KAFKA STUFF:
-kafkaOperatorIsAvailable: true
-KAFKA_TOPIC_CMD:  oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
-KAFKA_NUM_BROKERS: 1
-KAFKA_NUM_ZOOKEEPERS: 1
+    GIT:
+      REF: "master"
+  BACKEND_EVENTSTORE:
+    KAFKA:
+      OPERATOR_AVAILABLE: true
+      TOPIC_CMD:  oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+      NUM_BROKERS: 1
+      NUM_ZOOKEPERS: 1

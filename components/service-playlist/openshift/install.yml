@@ -4,8 +4,11 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
+    - name: "Combine env facts"
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create kafka topic 
-      command: "{{KAFKA_TOPIC_CMD}} --create --topic opendj.data.playlist --partitions 1 --replication-factor {{KAFKA_NUM_BROKERS}} --config retention.ms=43200000" 
+      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.data.playlist --partitions 1 --replication-factor 1 --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
@@ -21,7 +24,7 @@
             labels:
               app: service-playlist
             name: service-playlist
-            namespace: "{{ NAMESPACE }}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             lookupPolicy:
               local: false
@@ -36,7 +39,7 @@
             labels:
               app: service-playlist
             name: service-playlist
-            namespace: "{{ NAMESPACE }}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             failedBuildsHistoryLimit: 5
             nodeSelector: null
@@ -50,7 +53,7 @@
             source:
               contextDir: components/service-playlist
               git:
-                ref: "{{ GIT_REF }}"
+                ref: "{{ENV.COMMON.GIT.RED | default('master')}}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -85,7 +88,7 @@
             labels:
               app: service-playlist
             name: service-playlist
-            namespace: "{{ NAMESPACE }}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             replicas: 1
             revisionHistoryLimit: 10
@@ -153,7 +156,7 @@
                   from:
                     kind: ImageStreamTag
                     name: 'service-playlist:latest'
-                    namespace: "{{ NAMESPACE }}"
+                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service
@@ -168,7 +171,7 @@
             labels:
               app: service-playlist
             name: service-playlist
-            namespace: "{{ NAMESPACE }}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             ports:
               - name: web
@@ -191,9 +194,9 @@
             labels:
               app: service-playlist
             name: service-playlist
-            namespace: "{{ NAMESPACE }}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            host: "{{DNS_BASENAME}}"
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
             path: /api/service-playlist
             to:
               kind: Service

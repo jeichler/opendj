@@ -99,7 +99,7 @@ http://localhost:8081/backend-spotifyprovider/auth_callback
 http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
-http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+    http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
 # second: (copy paste that URL to another tab and see spotify consent screen, then call back
 # Success full if you see a "1" response

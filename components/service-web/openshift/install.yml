@@ -4,6 +4,9 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
+    - name: "Combine env facts"
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create ImageStream
       k8s:
         state: present
@@ -16,7 +19,7 @@
             labels:
               app: service-web
             name: service-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             lookupPolicy:
               local: false
@@ -32,7 +35,7 @@
             labels:
               app: service-web
             name: service-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             failedBuildsHistoryLimit: 5
             nodeSelector: null
@@ -48,7 +51,7 @@
             source:
               contextDir: components/service-web
               git:
-                ref: "{{ GIT_REF }}"
+                ref: "{{ENV.COMMON.GIT.RED | default('master')}}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -85,7 +88,7 @@
               app: service-web
               template: opendj-nodejs-service-web
             name: service-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             replicas: 1
             revisionHistoryLimit: 10
@@ -139,7 +142,7 @@
                   from:
                     kind: ImageStreamTag
                     name: 'service-web:latest'
-                    namespace: "{{NAMESPACE}}"
+                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service
@@ -154,7 +157,7 @@
             labels:
               app: service-web
             name: service-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             ports:
               - name: web
@@ -177,9 +180,9 @@
             labels:
               app: service-web
             name: service-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            host: "{{DNS_BASENAME}}"
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
             path: /api/service-web
             to:
               kind: Service

@@ -2,15 +2,15 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
     name: frontend-web-config-map
-    namespace: "{{NAMESPACE}}"
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
 data:
     config.json: |-
         {
         "enableDebug": true,
         "curatorPassword": "test",
         "playlistMaxSize": 50,
-        "websocketHost": "http://{{DNS_BASENAME}}/" ,
+        "websocketHost": "http://{{ENV.COMMON.DNS_BASENAME|mandatory}}/" ,
         "websocketPath": "/api/service-web/socket.io",
-        "SPOTIFY_PROVIDER_API": "http://{{DNS_BASENAME}}/api/provider-spotify/v1" ,
-        "PLAYLIST_PROVIDER_API": "http://{{DNS_BASENAME}}/api/service-playlist/v1" 
+        "SPOTIFY_PROVIDER_API": "http://{{ENV.COMMON.DNS_BASENAME|mandatory}}/api/provider-spotify/v1" ,
+        "PLAYLIST_PROVIDER_API": "http://{{ENV.COMMON.DNS_BASENAME|mandatory}}/api/service-playlist/v1" 
         }

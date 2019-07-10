@@ -4,9 +4,13 @@
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
+    - name: "Combine env facts"
+      set_fact:
+        ENV: "{{ common | combine( specific, recursive=True) }}"
+
 # See https://github.com/tnozicka/openshift-acme/tree/master/deploy/letsencrypt-live/single-namespace
     - name: Deploy opensfhit-acme for lets encrypt certs
-      when: FRONTEND_USE_ACME_CERTS|bool
+      when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       shell: |
         oc create -fhttps://raw.githubusercontent.com/tnozicka/openshift-acme/master/deploy/letsencrypt-live/single-namespace/{role,serviceaccount,imagestream,deployment}.yaml
         oc policy add-role-to-user openshift-acme --role-namespace="$(oc project --short)" -z openshift-acme
@@ -26,7 +30,7 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             lookupPolicy:
               local: false
@@ -42,7 +46,7 @@
             labels:
               app: frontend-web
             name: centos7-s2i-web-app
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             lookupPolicy:
               local: false
@@ -70,7 +74,7 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             failedBuildsHistoryLimit: 5
             nodeSelector: null
@@ -86,7 +90,7 @@
             source:
               contextDir: components/frontend-web
               git:
-                ref: "{{GIT_REF}}"
+                ref: "{{ENV.COMMON.GIT.REF}}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
@@ -130,7 +134,7 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             replicas: 1
             revisionHistoryLimit: 5
@@ -197,7 +201,7 @@
                   from:
                     kind: ImageStreamTag
                     name: 'frontend-web:latest'
-                    namespace: "{{NAMESPACE}}"
+                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
 
@@ -213,7 +217,7 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             ports:
               - name: web
@@ -225,7 +229,7 @@
             sessionAffinity: None
             type: ClusterIP
     - name: Create Route with Let's Encrypt Certs
-      when: FRONTEND_USE_ACME_CERTS|bool
+      when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
         wait: true
@@ -238,9 +242,9 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            host: "{{DNS_BASENAME}}"
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
 #            path: /api/frontend-web
             port:
               targetPort: web
@@ -254,7 +258,7 @@
             wildcardPolicy: None
             
     - name: Create Route with provided certs
-      when: not FRONTEND_USE_ACME_CERTS|bool
+      when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
         wait: true
@@ -267,17 +271,17 @@
             labels:
               app: frontend-web
             name: frontend-web
-            namespace: "{{NAMESPACE}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            host: "{{DNS_BASENAME}}"
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
 #            path: /api/frontend-web
             port:
               targetPort: web
             tls:
               insecureEdgeTerminationPolicy: "Allow"
               termination: "edge"
-              certificate: "{{FRONTEND_TLS_CERT}}"
-              key: "{{FRONTEND_TLS_KEY}}"
+              certificate: "{{ENV.FRONTEND_WEB.TLS_CERT}}"
+              key: "{{ENV.FRONTEND_WEB.TLS_KEY}}"
             to:
               kind: Service
               name: frontend-web
