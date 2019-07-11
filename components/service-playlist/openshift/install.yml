@@ -53,7 +53,7 @@
             source:
               contextDir: components/service-playlist
               git:
-                ref: "{{ENV.COMMON.GIT.RED | default('master')}}"
+                ref: "{{ENV.COMMON.GIT.REF | default('master')}}"
                 uri: https://github.com/opendj/opendj.git
               type: Git
             strategy:
