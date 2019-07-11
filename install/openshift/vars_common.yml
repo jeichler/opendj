@@ -1,15 +1,20 @@
 common:
   COMMON:
     NAMESPACE: "dfroehli-opendj-{{STAGE}}"
+# Remember to change Callback URL below, too:
     DNS_BASENAME: "{{STAGE}}.opendj.io"
-    TEST1: "from COMMON"
-    TEST2: "from COMMON"
-
     GIT:
       REF: "master"
+
   BACKEND_EVENTSTORE:
     KAFKA:
       OPERATOR_AVAILABLE: true
       TOPIC_CMD:  oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
       NUM_BROKERS: 1
       NUM_ZOOKEPERS: 1
+
+  PROVIDER_SPOTIFY:
+    SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
+
+  FRONTEND_WEB:
+    INSECURE_EDGE_TERMINATION: "Allow"

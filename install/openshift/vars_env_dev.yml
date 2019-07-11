@@ -11,6 +11,12 @@
 # Step 5: change back dns entry to stormshift
 
 specific:
+      SERVICE_PLAYLIST:
+            LOG_LEVEL: "debug"
+            DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
+            MOCKUP_NO_ACTUAL_PLAYING: "true"
+            MOCKUP_AUTOSKIP_SECONDS: "20"
+            INTERNAL_POLL_INTERVAL: "20000"
       FRONTEND_WEB:
             USE_ACME_CERTS: false
             TLS_CERT: |

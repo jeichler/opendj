@@ -136,7 +136,7 @@
             name: frontend-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            replicas: 1
+            replicas: "{{ENV.FRONTEND_WEB.REPLICAS | default('1')}}"
             revisionHistoryLimit: 5
             selector:
               name: frontend-web
@@ -249,7 +249,7 @@
             port:
               targetPort: web
               tls:
-                insecureEdgeTerminationPolicy: "Allow"
+                insecureEdgeTerminationPolicy: "{{ENV.SERVICE_WEB.INSECURE_EDGE_TERMINATION}}"
                 termination: "edge"
             to:
               kind: Service
@@ -257,7 +257,7 @@
               weight: 100
             wildcardPolicy: None
             
-    - name: Create Route with provided certs
+    - name: Create Route with custom certs
       when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
@@ -266,8 +266,6 @@
           kind: Route
           apiVersion: route.openshift.io/v1
           metadata:
-            annotations:
-              kubernetes.io/tls-acme: "true"
             labels:
               app: frontend-web
             name: frontend-web
@@ -278,7 +276,7 @@
             port:
               targetPort: web
             tls:
-              insecureEdgeTerminationPolicy: "Allow"
+              insecureEdgeTerminationPolicy: "{{ENV.FRONTEND_WEB.INSECURE_EDGE_TERMINATION}}"
               termination: "edge"
               certificate: "{{ENV.FRONTEND_WEB.TLS_CERT}}"
               key: "{{ENV.FRONTEND_WEB.TLS_KEY}}"

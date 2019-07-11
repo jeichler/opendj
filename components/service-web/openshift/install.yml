@@ -90,7 +90,7 @@
             name: service-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            replicas: 1
+            replicas: "{{ENV.SERVICE_WEB.REPLICAS | default('1')}}"
             revisionHistoryLimit: 10
             selector:
               name: service-web
@@ -113,15 +113,15 @@
                 containers:
                   - env:
                       - name: LOG_LEVEL
-                        value: "info"
+                        value: "{{ENV.SERVICE_WEB.LOG_LEVEL | default('info')}}"
                       - name: KAFKA_HOST
-                        value: "backend-eventstore-kafka-bootstrap:9092"
+                        value: "{{ENV.SERVICE_WEB.KAFKA_HOST | default('backend-eventstore-kafka-bootstrap:9092')}}"
                       - name: PORT
-                        value: "8080"
+                        value: "{{ENV.SERVICE_WEB.PORT | default('8080')}}" 
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:
-                      - containerPort: 8080
+                      - containerPort: "{{ENV.SERVICE_WEB.PORT | default('8080')}}"
                         protocol: TCP
                     resources:
                       limits:
@@ -161,14 +161,18 @@
           spec:
             ports:
               - name: web
-                port: 8080
+# TODO: Find out why this does fail:
+#                port: "{{ (ENV.SERVICE_WEB.PORT | default('8080')) | int }}"
+                port: "8080"
                 protocol: TCP
                 targetPort: 8080
             selector:
               name: service-web
             sessionAffinity: None
             type: ClusterIP
-    - name: Create Route
+
+    - name: Create Route with Let's Encrypt Certs
+      when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
         wait: true
@@ -177,6 +181,7 @@
           apiVersion: route.openshift.io/v1
           metadata:
             annotations:
+              kubernetes.io/tls-acme: "true"
             labels:
               app: service-web
             name: service-web
@@ -184,9 +189,42 @@
           spec:
             host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
             path: /api/service-web
+            port:
+              targetPort: web
+              tls:
+                insecureEdgeTerminationPolicy: "{{ENV.SERVICE_WEB.INSECURE_EDGE_TERMINATION}}"
+                termination: "edge"
             to:
               kind: Service
               name: service-web
               weight: 100
             wildcardPolicy: None
-            
+
+    - name: Create Route with custom certs
+      when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: Route
+          apiVersion: route.openshift.io/v1
+          metadata:
+            labels:
+              app: service-web
+            name: service-web
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
+            path: /api/service-web
+            port:
+              targetPort: web
+            tls:
+              insecureEdgeTerminationPolicy: "{{ENV.FRONTEND_WEB.INSECURE_EDGE_TERMINATION}}"
+              termination: "edge"
+              certificate: "{{ENV.FRONTEND_WEB.TLS_CERT}}"
+              key: "{{ENV.FRONTEND_WEB.TLS_KEY}}"
+            to:
+              kind: Service
+              name: service-web
+              weight: 100
+            wildcardPolicy: None

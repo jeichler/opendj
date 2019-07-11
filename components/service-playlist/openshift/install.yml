@@ -90,7 +90,7 @@
             name: service-playlist
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            replicas: 1
+            replicas: "{{ENV.SERVICE_PLAYLIST.REPLICAS | default('1')}}" 
             revisionHistoryLimit: 10
             selector:
               name: service-playlist
@@ -113,25 +113,25 @@
                 containers:
                   - env:
                       - name: LOG_LEVEL
-                        value: "info"
+                        value: "{{ENV.SERVICE_PLAYLIST.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
                         value: "true"
                       - name: KAFKA_HOST
-                        value: "backend-eventstore-kafka-bootstrap:9092"
+                        value: "{{ENV.SERVICE_PLAYLIST.KAFKA_HOST | default('backend-eventstore-kafka-bootstrap:9092')}}"
                       - name: SPOTIFY_PROVIDER_URL
-                        value: "http://provider-spotify:8080/api/provider-spotify/v1/" 
+                        value: "{{ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/')}}"   
                       - name: DEFAULT_AUTOFILL_EMPTY_PLAYLIST
-                        value: "true"
+                        value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_AUTOFILL_EMPTY_PLAYLIST | default('false')}}" 
                       - name: DEFAULT_IS_PLAYING
-                        value: "true"
+                        value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_IS_PLAYING | default('true')}}"
                       - name: DEFAULT_ALLOW_DUPLICATE_TRACKS
-                        value: "false"
+                        value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_ALLOW_DUPLICATE_TRACKS | default('false')}}"
                       - name: MOCKUP_AUTOSKIP_SECONDS
-                        value: "0"
+                        value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_AUTOSKIP_SECONDS | default('0')}}"
                       - name: MOCKUP_NO_ACTUAL_PLAYING
-                        value: "false"
+                        value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_NO_ACTUAL_PLAYING | default('false')}}" 
                       - name: INTERNAL_POLL_INTERVAL
-                        value: "100"
+                        value: "{{ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('100')}}" 
                     imagePullPolicy: IfNotPresent
                     name: service-playlist
                     ports:
