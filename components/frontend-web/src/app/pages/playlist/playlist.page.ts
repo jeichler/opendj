@@ -43,7 +43,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
       // console.log(data);
     },
     (err) => {
-      console.log(err.msg);
+      console.error(err.msg);
     });
   }
 
@@ -53,7 +53,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
         // console.log(res);
         this.presentToast('You have deleted the track.');
       },
-      err => console.log(err)
+      err => console.error(err)
     );
   }
 
@@ -70,7 +70,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   computeETAForTracks(playlist) {
-    console.log('computeETAForTracks');
+    console.debug('computeETAForTracks');
     let ts = Date.now();
     if (playlist.currentTrack) {
         ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
@@ -110,7 +110,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
           this.presentToast('Track moved to top.');
           // slidingItem.close();
         },
-        err => console.log(err)
+        err => console.error(err)
       );
     }
   }
@@ -126,7 +126,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
           data => {
             this.presentToast('Track added to playlist.');
           },
-          err => console.log(err)
+          err => console.error(err)
         );
       }
     });
@@ -159,10 +159,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
           role: 'destructive',
           icon: 'trash',
           handler: () => {
-            console.log('Delete clicked');
+            console.debug('Delete clicked');
             this.feService.deleteTrack(data.id, index).subscribe(
               res => {
-                console.log(res);
+                console.debug(res);
                 this.presentToast('You have deleted the track.');
               },
               err => console.log(err)
@@ -173,7 +173,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
           icon: 'close',
           role: 'cancel',
           handler: () => {
-            console.log('Cancel clicked');
+            console.debug('Cancel clicked');
           }
         }]
     });
@@ -190,7 +190,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
-    console.log('Playlist page enter');
+    console.debug('Playlist page enter');
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         this.websocketService.init();
@@ -207,11 +207,11 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
-    console.log('Playlist page leave');
+    console.debug('Playlist page leave');
   }
 
   ngOnInit() {
-    console.log('Playlist page init');
+    console.debug('Playlist page init');
     this.websocketService.init();
 
     const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
@@ -219,7 +219,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
       if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
         this.computeETAForTracks(this.currentPlaylist);
       }
-      console.log(`playlist subscription: `, this.currentPlaylist);
+      console.debug(`playlist subscription: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
     this.intervalHandle = setInterval(() => {
@@ -228,7 +228,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.log('Playlist page destroy');
+    console.debug('Playlist page destroy');
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
@@ -288,7 +288,7 @@ export class PlaylistAddModalComponent implements OnInit {
   @ViewChild(IonSearchbar) myInput: IonSearchbar;
 
   setFocus() {
-    console.log('Set search focus');
+    console.debug('Set search focus');
     this.myInput.setFocus();
 
   }

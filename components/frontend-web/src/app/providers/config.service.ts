@@ -21,7 +21,7 @@ export class ConfigService {
 
     loadConfigurationData(): any {
         this.http.get<any>('conf/config.json').subscribe(data => {
-            console.log('App config loaded: ' + JSON.stringify(data));
+            console.info('App config loaded: ' + JSON.stringify(data));
             this.enableDebug = data.enableDebug;
             this.curatorPassword = data.curatorPassword;
             this.playlistMaxSize = data.playlistMaxSize;

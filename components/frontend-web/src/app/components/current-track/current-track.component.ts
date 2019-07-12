@@ -14,7 +14,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() isPlaying: boolean;
   @Input() set trackInput(value: any) {
     if (this.intervalHandle) {
-      console.log('clear interval');
+      console.debug('clear interval');
       clearInterval(this.intervalHandle);
     }
     if (value !== null) {
@@ -75,24 +75,24 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   playTrack() {
     this.feService.playTrack().subscribe(data => {
-      console.log(data);
+      console.debug(data);
     });
   }
 
   pauseTrack() {
     this.feService.pauseTrack().subscribe(data => {
-      console.log(data);
+      console.debug(data);
     });
   }
 
   nextTrack() {
     this.feService.playNextTrack().subscribe(data => {
-      console.log(data);
+      console.debug(data);
     });
   }
 
   ngOnInit() {
-    console.log(this.track);
+    console.debug(this.track);
   }
 
   ngOnDestroy() {

@@ -193,7 +193,7 @@
             port:
               targetPort: web
               tls:
-                insecureEdgeTerminationPolicy: "{{ENV.SERVICE_WEB.INSECURE_EDGE_TERMINATION}}"
+                insecureEdgeTerminationPolicy: "{{ENV.FRONTEND_WEB.INSECURE_EDGE_TERMINATION}}"
                 termination: "edge"
             to:
               kind: Service

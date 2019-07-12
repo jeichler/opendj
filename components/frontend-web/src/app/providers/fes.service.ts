@@ -16,9 +16,10 @@ export class FEService {
 
     private SPOTIFY_PROVIDER_API;
     private PLAYLIST_PROVIDER_API;
+    private EMPTY_TRACK_RESULT : Observable<Track[]> = new Observable();
 
     constructor(public http: HttpClient, public confService: ConfigService) {
-        console.log(this.confService.SPOTIFY_PROVIDER_API);
+        console.info(this.confService.SPOTIFY_PROVIDER_API);
         this.SPOTIFY_PROVIDER_API = this.confService.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = this.confService.PLAYLIST_PROVIDER_API;
     }
@@ -39,7 +40,8 @@ export class FEService {
     searchTracks(queryString: string): Observable<Track[]> {
         // console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2) {
-            throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
+            // throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
+            return this.EMPTY_TRACK_RESULT;
         }
         return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=0&q=' + encodeURIComponent(queryString)).pipe(
             retry(1),

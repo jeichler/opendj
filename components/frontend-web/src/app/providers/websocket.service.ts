@@ -12,9 +12,15 @@ export class WebsocketService {
     constructor(private confService: ConfigService) {
     }
 
+// TODO: Add "query" parameter with event ID to be received by server:
     init() {
         this.socket = io(this.confService.websocketHost, {
-            reconnectionAttempts: 10,
+            reconnectionAttempts: Infinity,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            randomizationFactor: 0.5,
+            timeout: 20000,
             path: this.confService.websocketPath
         });
     }
@@ -22,7 +28,7 @@ export class WebsocketService {
     getPlaylist() {
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
-                console.log('WebsocketService: Received playlist update');
+                console.debug('WebsocketService: Received playlist update');
                 observer.next(data);
             });
         });
@@ -30,6 +36,7 @@ export class WebsocketService {
     }
 
     refreshPlaylist() {
+        console.debug("refreshPlaylist");
         this.socket.emit('refresh-playlist');
     }
 
@@ -38,12 +45,12 @@ export class WebsocketService {
     }
 
     disconnect() {
-        console.log('WebsocketService: disconnect');
+        console.info('WebsocketService: disconnect');
         return this.socket.disconnect();
     }
 
     connect() {
-        console.log('WebsocketService: connect');
+        console.info('WebsocketService: connect');
         return this.socket.connect();
     }
 
