@@ -15,6 +15,8 @@ common:
 
   PROVIDER_SPOTIFY:
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
+    SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
+    SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
 
   FRONTEND_WEB:
     INSECURE_EDGE_TERMINATION: "Allow"

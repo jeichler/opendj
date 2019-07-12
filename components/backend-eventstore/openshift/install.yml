@@ -1,15 +1,13 @@
 ---
 - hosts: localhost
   vars_files:
+    - ../../../install/openshift/vars_secrets.yml
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: "Combine env facts"
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
-
-    - set_fact:
-        dummy: "{{ ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS | int }}" 
 
     - name: Deploy Kafka via Operator
       when: ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
@@ -64,3 +62,11 @@
             stdin: "{{ lookup('template', 'noOperator_broker.yml') }}"
           ignore_errors: yes
       when: not ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
+
+    - name: Wait for broker pod to be online
+      shell: oc get pods  | grep backend-eventstore-kafka-0 | grep Running
+      register: getpods
+      until: "'2/2' in getpods.stdout"
+      retries: 120
+      delay: 2
+      changed_when: false

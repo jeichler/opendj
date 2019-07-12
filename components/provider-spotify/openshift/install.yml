@@ -1,18 +1,26 @@
 ---
 - hosts: localhost
   vars_files:
+    - ../../../install/openshift/vars_secrets.yml
     - ../../../install/openshift/vars_common.yml
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: "Combine env facts"
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
+    - name: Create Spotify secret
+      shell: |
+        oc create secret generic spotify-api-credentials  --from-literal=CLIENT_ID={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID | mandatory}} --from-literal=CLIENT_SECRET={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET | mandatory}}
+      register: createSecret
+      failed_when: "createSecret.rc != 0 and 'already exists' not in createSecret.stderr" 
+      changed_when: "'already exists' not in createSecret.stderr" 
 
     - name: Create kafka topic 
       command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.state.provider-spotify --partitions 1 --replication-factor 1 --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
+
 
     # Create Secret Manually:
     #  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
@@ -187,7 +195,7 @@
                       timeoutSeconds: 1
                     resources:
                       limits:
-                        memory: 256Mi
+                        memory: 80Mi
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                 dnsPolicy: ClusterFirst
