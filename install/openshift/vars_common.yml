@@ -1,3 +1,9 @@
+
+# Common variables
+# HEADS UP: Due to limitation of variable parsing, you cant
+# use a variable defined here also in this file.
+# So certain values might occur redudant! 
+# Be sure to search for them and replace ALL occurences!
 common:
   COMMON:
     NAMESPACE: "dfroehli-opendj-{{STAGE | mandatory}}"
@@ -12,7 +18,7 @@ common:
   BACKEND_EVENTSTORE:
     KAFKA:
       OPERATOR_AVAILABLE: true
-      TOPIC_CMD:  oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+      TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
       NUM_BROKERS: 1
       NUM_ZOOKEPERS: 1
 

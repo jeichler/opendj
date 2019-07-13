@@ -1,0 +1,21 @@
+# Variables specific for DEV stage:
+
+
+specific:
+      COMMON:
+            CONTAINER_IMAGE_BUILD: false
+            CONTAINER_IMAGE_TAG: "test"
+            CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-dev"
+
+      SERVICE_PLAYLIST:
+            LOG_LEVEL: "info"
+            DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "false"
+            MOCKUP_NO_ACTUAL_PLAYING: "true"
+            MOCKUP_AUTOSKIP_SECONDS: "20"
+            INTERNAL_POLL_INTERVAL: "20000"
+      FRONTEND_WEB:
+            USE_ACME_CERTS: false
+            
+# Sorry, no nice certs for TST for the moment
+            TLS_CERT: ""
+            TLS_KEY: ""

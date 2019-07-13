@@ -54,19 +54,19 @@
     - name: Deploy Kafka via ugly workaround (errors can be ignored)
       block:
         - name: Deploy zookepper
-          command: oc create -f -
+          command: oc create --namespace {{ENV.COMMON.NAMESPACE}} -f -
           args:
             stdin: "{{ lookup('template', 'noOperator_zookeeper.yml') }}"
           ignore_errors: yes
         - name: Deploy broker
-          command: oc create -f -
+          command: oc create --namespace {{ENV.COMMON.NAMESPACE}} -f -
           args:
             stdin: "{{ lookup('template', 'noOperator_broker.yml') }}"
           ignore_errors: yes
       when: not ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
 
     - name: Wait for broker pod to be online
-      shell: oc get pods  | grep backend-eventstore-kafka-0 | grep Running
+      shell: oc get pods --namespace {{ENV.COMMON.NAMESPACE}} | grep backend-eventstore-kafka-0 | grep Running
       register: getpods
       until: "'2/2' in getpods.stdout"
       retries: 120

@@ -12,7 +12,7 @@
         ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create Spotify secret
       shell: |
-        oc create secret generic spotify-api-credentials  --from-literal=CLIENT_ID={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID | mandatory}} --from-literal=CLIENT_SECRET={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET | mandatory}}
+        oc create secret generic spotify-api-credentials  --from-literal=CLIENT_ID={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID | mandatory}} --from-literal=CLIENT_SECRET={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET | mandatory}} --namespace {{ENV.COMMON.NAMESPACE}}
       register: createSecret
       failed_when: "createSecret.rc != 0 and 'already exists' not in createSecret.stderr" 
       changed_when: "'already exists' not in createSecret.stderr" 
@@ -22,7 +22,7 @@
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
-      
+
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
