@@ -1,5 +1,7 @@
 ---
-- hosts: localhost
+- name: Install frontend-web
+  gather_facts: false
+  hosts: localhost
   vars_files:
     - ../../../install/openshift/vars_secrets.yml
     - ../../../install/openshift/vars_common.yml
