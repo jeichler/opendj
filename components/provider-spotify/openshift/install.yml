@@ -226,7 +226,8 @@
               name: provider-spotify
             sessionAffinity: None
             type: ClusterIP
-    - name: Create Route
+    - name: Create Route with Let's Encrypt Certs
+      when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
         wait: true
@@ -235,6 +236,7 @@
           apiVersion: route.openshift.io/v1
           metadata:
             annotations:
+              kubernetes.io/tls-acme: "true"
             labels:
               app: provider-spotify
             name: provider-spotify
@@ -242,6 +244,39 @@
           spec:
             host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
             path: /api/provider-spotify
+            port:
+              targetPort: web
+              tls:
+                insecureEdgeTerminationPolicy: "{{ENV.FRONTEND_WEB.INSECURE_EDGE_TERMINATION}}"
+                termination: "edge"
+            to:
+              kind: Service
+              name: provider-spotify
+              weight: 100
+            wildcardPolicy: None
+    - name: Create Route with custom certs
+      when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: Route
+          apiVersion: route.openshift.io/v1
+          metadata:
+            labels:
+              app: provider-spotify
+            name: provider-spotify
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            host: "{{ENV.COMMON.DNS_BASENAME|mandatory}}"
+            path: /api/provider-spotify
+            port:
+              targetPort: web
+            tls:
+              insecureEdgeTerminationPolicy: "{{ENV.FRONTEND_WEB.INSECURE_EDGE_TERMINATION}}"
+              termination: "edge"
+              certificate: "{{ENV.FRONTEND_WEB.TLS_CERT}}"
+              key: "{{ENV.FRONTEND_WEB.TLS_KEY}}"
             to:
               kind: Service
               name: provider-spotify
