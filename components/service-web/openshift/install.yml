@@ -11,6 +11,7 @@
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create ImageStream
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         wait: true
@@ -27,6 +28,7 @@
             lookupPolicy:
               local: false
     - name: Create BuildConfig
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         wait: true
@@ -144,8 +146,8 @@
                     - service-web
                   from:
                     kind: ImageStreamTag
-                    name: 'service-web:latest'
-                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+                    name: 'service-web:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+                    namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service

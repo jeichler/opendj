@@ -1,10 +1,13 @@
 common:
   COMMON:
-    NAMESPACE: "dfroehli-opendj-{{STAGE}}"
+    NAMESPACE: "dfroehli-opendj-{{STAGE | mandatory}}"
 # Remember to change Callback URL below, too:
     DNS_BASENAME: "{{STAGE}}.opendj.io"
     GIT:
       REF: "master"
+    CONTAINER_IMAGE_BUILD: true
+    CONTAINER_IMAGE_TAG: "latest"
+    CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-{{STAGE}}"
 
   BACKEND_EVENTSTORE:
     KAFKA:

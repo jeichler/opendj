@@ -17,6 +17,7 @@
       changed_when: '"already exists" not in topic_result.stderr'
       
     - name: Create ImageStreamTag
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         definition:
@@ -32,6 +33,7 @@
             lookupPolicy:
               local: false
     - name: Create BuildConfig
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         definition:
@@ -158,8 +160,8 @@
                     - service-playlist
                   from:
                     kind: ImageStreamTag
-                    name: 'service-playlist:latest'
-                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+                    name: 'service-playlist:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+                    namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service

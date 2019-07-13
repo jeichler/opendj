@@ -22,24 +22,9 @@
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
-
-
-    # Create Secret Manually:
-    #  oc create secret generic test  --from-literal=CLIENT_ID=<SECRET> --from-literal=CLIENT_SECRET=<SECRET>
-    # - name: Create Spotify secret
-    #   k8s:
-    #     state: present
-    #     wait: true
-    #     definition:
-    #       apiVersion: v1
-    #       kind: Secret
-    #       data:
-    #         CLIENT_ID: <SECRET>
-    #         CLIENT_SECRET: <SECRET>
-    #       metadata:
-    #         name: spotify-api-credentials
-    #         namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+      
     - name: Create ImageStreamTag
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         wait: true
@@ -56,6 +41,7 @@
             lookupPolicy:
               local: false
     - name: Create BuildConfig
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
         wait: true
@@ -213,8 +199,8 @@
                     - provider-spotify
                   from:
                     kind: ImageStreamTag
-                    name: 'provider-spotify:latest'
-                    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+                    name: 'provider-spotify:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
+                    namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE | mandatory}}"
                 type: ImageChange
               - type: ConfigChange
     - name: Create Service
@@ -229,7 +215,7 @@
             labels:
               app: provider-spotify
             name: provider-spotify
-            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+            namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
           spec:
             ports:
               - name: web
