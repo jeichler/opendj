@@ -144,7 +144,7 @@
                         protocol: TCP
                     resources:
                       limits:
-                        memory: 80Mi
+                        memory: 128Mi
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                 dnsPolicy: ClusterFirst

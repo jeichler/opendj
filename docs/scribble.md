@@ -67,16 +67,38 @@ brew install kafka
 # Make sure jdk 1.8 is selected:
 jenv local openjdk64-1.8.0.212
 
-# Get Logs from latest deployment:
-oc logs -f dc/spotify-provider-boundary
 
-# Run:
+# Run single broker :
 zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &
 kafka-server-start /usr/local/etc/kafka/server.properties
 
-# Delete topic:
-kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj-spotifyprovider-internal
+# Run dual broker :
+zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &
+kafka-server-start /usr/local/etc/kafka/server0.properties
+kafka-server-start /usr/local/etc/kafka/server1.properties
+
+
+# Delete topics:
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj-spotifyprovider-internal opendj.data.playlist
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.playlist
+
+# Create topics for dual brokers:
+kafka-topics --bootstrap-server localhost:9092  --create --topic  opendj.state.provider-spotify --partitions 3 --replication-factor 2 --config retention.ms=43200000
+kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.data.playlist --partitions 3 --replication-factor 2 --config retention.ms=43200000
+
+
 ```
+
+oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 --delete --topic opendj.data.playlist
+
+oc rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 --create --topic opendj.data.playlist --partitions 1 --replication-factor 1 --config retention.ms=43200000
+
+
+
+
+# Get Logs from latest deployment:
+oc logs -f dc/spotify-provider-boundary
 
 # GIT
 ## Reference issues in other repo:
@@ -144,6 +166,7 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/play
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
+http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/push
 
 http://demo.opendj.io/api/service-playlist/v1/events/0/playlists/0
 

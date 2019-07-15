@@ -10,6 +10,7 @@ var log4js = require('log4js')
 var log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
+var port = process.env.PORT || 8080;
 var COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
 var readyState = {
     kafkaClient: false,
@@ -872,23 +873,6 @@ router.get('/ready', function(req, res) {
 // TODO: Implement Retries on Spotify API Calls.
 
 
-if (typeof spotifyClientID !== 'undefined' && spotifyClientID) {
-    log.log("spotifyClientID is defined via env variable- using the real thing...");
-
-    app.use('/play', require('./lib/player.js')());
-    app.use('/currentTrack', require('./lib/currentTrack.js')());
-    app.use('/trackInfo', require('./lib/trackInfo.js')());
-} else {
-    log.log("spotifyClientID is NOT defined via env variable- using the mockup...");
-
-    var mockup = require('./lib/mockup.js');
-    app.use('/play', mockup["play"]);
-    app.use('/currentTrack', mockup["currentTrack"]);
-    app.use('/trackInfo', mockup["trackInfo"]);
-}
-
-
-
 //var swaggerUi = require('swagger-ui-express'),
 //swaggerDocument = require('./swagger.json');
 //app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -896,8 +880,11 @@ if (typeof spotifyClientID !== 'undefined' && spotifyClientID) {
 app.use("/api/provider-spotify/v1", router);
 
 // Wait 5 seconds for all messages to be processed, then check once for expired tokens:
-setTimeout(refreshExpiredTokens, SPOTIFY_REFRESH_INITIAL_DELAY);
+setTimeout(function() {
+    refreshExpiredTokens();
+    setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
 
-setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
-
-module.exports = app;
+    app.listen(port, function() {
+        log.info('Now listening on port *:' + port);
+    });
+}, SPOTIFY_REFRESH_INITIAL_DELAY);
