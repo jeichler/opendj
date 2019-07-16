@@ -52,3 +52,9 @@ opendj.data.playlist
 # Retention: 48h
 
 opendj.state.provider-spotify
+######## EVENTS #####
+
+PLAYLIST:
+track_play (key: eventID, value: provider:trackID)
+track_pause (key: eventID, value: provider:trackID)
+

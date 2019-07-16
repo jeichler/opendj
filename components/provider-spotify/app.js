@@ -69,13 +69,12 @@ kafkaClient.on('error', function(err) {
     kafkaClient.connect();
 });
 
-kafkaClient.on('connect', function(err) {
+kafkaClient.on('connect', function() {
     log.info("kafkaClient connect");
     readyState.kafkaClient = true;
     readyState.kafkaClientError = "";
 });
 
-kafkaClient.connect();
 
 
 var kafkaProducer = new kafka.Producer(kafkaClient);
@@ -159,8 +158,8 @@ var spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', '
 // Interval we check for expired tokens:
 var SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
 
-// Initial delay before we start checking for expiered token (allow for some time to have all messages processed)
-var SPOTIFY_REFRESH_INITIAL_DELAY = process.env.SPOTIFY_REFRESH_INITIAL_DELAY || "1000";
+// Initial delay before we start checking for expired token (allow for some time to have all messages processed)
+var SPOTIFY_REFRESH_INITIAL_DELAY = process.env.SPOTIFY_REFRESH_INITIAL_DELAY || "2500";
 
 // Offset we refresh a token BEFORE it expires - to be sure, we do this 5 minutes BEFORE
 // it expires:
@@ -280,11 +279,13 @@ function updateEventTokensFromSpotifyBody(eventState, body) {
 // understand this, esp. the references to the the steps.
 
 // step1: - generate the login URL / redirect...
-router.get('/getSpotifyLoginURL', function(req, res) {
+//router.get('/getSpotifyLoginURL', function(req, res) {
+router.get('/events/:eventID/providers/spotify/login', function(req, res) {
         log.debug("getSpotifyLoginURL");
 
         // TODO: Error handling if EventID is not presenet
-        var eventID = req.query.event;
+        //        var eventID = req.query.event;
+        var eventID = req.params.eventID;
         var spotifyApi = getSpotifyApiForEvent(eventID);
         var authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
         log.debug("authorizeURL=%s", authorizeURL);
@@ -318,6 +319,7 @@ router.get('/auth_callback', async function(req, res) {
 
             // Set tokens on the Event Object to use it in later spotify API calls:
             var eventState = getEventStateForEvent(eventID);
+            let continueWith = "/events/" + eventID + "/owner";
             updateEventTokensFromSpotifyBody(eventState, data.body);
             fireEventStateChange(eventState);
 
@@ -329,12 +331,12 @@ router.get('/auth_callback', async function(req, res) {
                 .then(function() {
                     spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
                 }).then(function() {
-                    res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=/events/" + eventID + "/owner\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
+                    res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
                     setTimeout(function() {
                         spotifyApi.pause({ device_id: eventState.currentDevice });
                     }, 10000);
                 }).catch(function(err) {
-                    res.send("Spotify Authorization was successful, but test playback failed. Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + err);
+                    res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
                 });
 
         },
@@ -407,11 +409,10 @@ function refreshExpiredTokens() {
 
 
 
-router.get('/getCurrentTrack', function(req, res) {
+router.get('/events/:eventID/providers/spotify/currentTrack', function(req, res) {
     log.debug("getCurrentTrack");
 
-    // TODO: Error handling if EventID is not present
-    var eventID = req.query.event;
+    var eventID = req.param.eventID;
     var api = getSpotifyApiForEvent(eventID);
 
     api.getMyCurrentPlaybackState({}).then(function(data) {
@@ -422,11 +423,10 @@ router.get('/getCurrentTrack', function(req, res) {
     });
 
 });
-router.get('/getAvailableDevices', function(req, res) {
+router.get('/events/:eventID/providers/spotify/devices', function(req, res) {
     log.trace("getAvailableDevices begin");
 
-    // TODO: Error handling if EventID is not present
-    var eventID = req.query.event;
+    var eventID = req.param.eventID;
     var api = getSpotifyApiForEvent(eventID);
 
     api.getMyDevices().then(function(data) {
@@ -557,11 +557,10 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
     return result;
 }
 
-router.get('/searchTrack', function(req, res) {
+router.get('/events/:eventID/providers/spotify/search', function(req, res) {
     log.trace("searchTrack begin");
 
-    // TODO: Error handling if EventID is not present
-    var eventID = req.query.event;
+    var eventID = req.param.eventID;
     var query = req.query.q
     var api = getSpotifyApiForEvent(eventID);
 
@@ -576,14 +575,12 @@ router.get('/searchTrack', function(req, res) {
 
 var mapOfTrackDetails = new Map();
 
-router.get('/trackDetails', async function(req, res) {
+router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(req, res) {
     log.trace("trackDetails begin");
 
     try {
-
-        // TODO: Error handling if EventID is not present
-        let eventID = req.query.event;
-        let trackID = req.query.track
+        let eventID = req.param.eventID;
+        let trackID = req.param.trackID;
         let trackResult = null;
         let audioFeaturesResult = null;
         let albumResult = null;
@@ -699,11 +696,11 @@ router.get('/trackDetails', async function(req, res) {
 
 });
 
-router.get('/pause', async function(req, res) {
+router.get('/events/:eventID/providers/spotify/pause', async function(req, res) {
     log.trace("begin pause ");
 
     try {
-        var eventID = req.query.event;
+        var eventID = req.param.eventID;
         var api = getSpotifyApiForEvent(eventID);
         var event = getEventStateForEvent(eventID);
 
@@ -718,12 +715,12 @@ router.get('/pause', async function(req, res) {
 });
 
 
-router.get('/play', async function(req, res) {
+router.get('/events/:eventID/providers/spotify/play/:trackID', async function(req, res) {
     log.trace("begin play ");
 
     try {
-        var eventID = req.query.event;
-        var trackID = req.query.track;
+        var eventID = req.param.eventID;
+        var trackID = req.param.trackID;
         var pos = req.query.pos;
         var api = getSpotifyApiForEvent(eventID);
         var event = getEventStateForEvent(eventID);
@@ -881,10 +878,20 @@ app.use("/api/provider-spotify/v1", router);
 
 // Wait 5 seconds for all messages to be processed, then check once for expired tokens:
 setTimeout(function() {
-    refreshExpiredTokens();
-    setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
+    if (readyState.kafkaClient) {
+        refreshExpiredTokens();
+        setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
 
-    app.listen(port, function() {
-        log.info('Now listening on port *:' + port);
-    });
+        app.listen(port, function() {
+            log.info('Now listening on port *:' + port);
+        });
+    } else {
+        log.fatal("!!!!!!!!!!!!!!!");
+        log.fatal("KAFKA CLIENT NOT IN READY STATE AFTER %s seconds. Last error was %s", SPOTIFY_REFRESH_INITIAL_DELAY / 1000, readyState.kafkaClientError);
+        log.fatal("Terminating now");
+        log.fatal("!!!!!!!!!!!!!!!");
+        process.exit(42);
+    }
+
+
 }, SPOTIFY_REFRESH_INITIAL_DELAY);

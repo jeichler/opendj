@@ -117,8 +117,13 @@ http://localhost:8081/backend-spotifyprovider/auth_callback
 
 # provider api:
 
+
 # first: get login url:
 http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
+
+
 http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 https://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
@@ -140,22 +145,38 @@ http://dev.opendj.io/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDo
 
 http://demo.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
 
-
 # PLay
 http://localhost:8080/api/provider-spotify/v1/play?event=0&track=5ftamIDoDRpEvlZinDuNNW&pos=0
 
 # Pause
 http://localhost:8080/api/provider-spotify/v1/pause?event=0
-
-
 http://localhost:8080/api/provider-spotify/v1/play?event=0&track=47&pos=2000
-
 
 http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
 http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
 http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
 
 http://demo.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
+
+# ############ NEW:
+/events/:eventID/providers/spotify/
+
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/devices
+
+
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
+
+
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
+
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/pause/
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/xxx
+
+
+
+
 
 # Access Playlist
 http://localhost:8081/api/service-playlist/v1/events/0/
