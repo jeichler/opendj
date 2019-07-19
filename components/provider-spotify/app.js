@@ -17,33 +17,12 @@ var readyState = {
     refreshExpiredTokens: false,
 };
 
-if (COMPRESS_RESULT == 'true') {
-    log.info("compression enabled");
-    app.use(compression())
-} else {
-    log.info("compression disabled");
-
-}
-app.use(cors());
-
-function handleError(err, response) {
-    log.error('Error: ' + err);
-    var error = {
-        "message": err,
-        "code": 500
-    };
-    response.writeHead(500);
-    response.end(JSON.stringify(error));
-}
-
-
-
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 // ------------------------------ kafka stuff -----------------------------
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
-const TOPIC_INTERNAL = "opendj.state.provider-spotify";
+const TOPIC_STATE = "opendj.state.provider-spotify";
 
 var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
 var kafka = require('kafka-node')
@@ -85,7 +64,7 @@ kafkaProducer.on('error', function(err) {
 });
 
 var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-    { topic: TOPIC_INTERNAL }, // offset, partition
+    { topic: TOPIC_STATE }, // offset, partition
 ], {
     autoCommit: true,
     fromOffset: true
@@ -101,7 +80,7 @@ kafkaConsumer.on('error', function(error) {
 kafkaConsumer.on('message', function(message) {
     log.debug("kafkaConsumer message: %s", JSON.stringify(message));
 
-    if (message.topic != TOPIC_INTERNAL) {
+    if (message.topic != TOPIC_STATE) {
         log.error("ignoring unexpected message %s", JSON.stringify(message));
         return;
     }
@@ -134,7 +113,7 @@ function fireEventStateChange(eventState) {
     log.debug("fireEventStateChange for eventID=%s", eventState.eventID);
     eventState.timestamp = new Date().toISOString();
     kafkaProducer.send([{
-        topic: TOPIC_INTERNAL,
+        topic: TOPIC_STATE,
         key: eventState.eventID,
         messages: [JSON.stringify(eventState)]
     }], function(err, data) {
@@ -146,7 +125,7 @@ function fireEventStateChange(eventState) {
 
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
-// ------------------------------ spotify stuff -----------------------------
+// ------------------- spotify authentication stuff -------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 var SpotifyWebApi = require('spotify-web-api-node');
@@ -277,9 +256,7 @@ function updateEventTokensFromSpotifyBody(eventState, body) {
 // We are using "Authorization Code Flow" as we need full access on behalf of the user.
 // Read https://developer.spotify.com/documentation/general/guides/authorization-guide/ to 
 // understand this, esp. the references to the the steps.
-
-// step1: - generate the login URL / redirect...
-//router.get('/getSpotifyLoginURL', function(req, res) {
+// step1: - generate the login URL / redirect....
 router.get('/events/:eventID/providers/spotify/login', function(req, res) {
         log.debug("getSpotifyLoginURL");
 
@@ -406,39 +383,11 @@ function refreshExpiredTokens() {
     log.trace("refreshExpiredTokens end");
 }
 
-
-
-
-router.get('/events/:eventID/providers/spotify/currentTrack', function(req, res) {
-    log.debug("getCurrentTrack");
-
-    var eventID = req.param.eventID;
-    var api = getSpotifyApiForEvent(eventID);
-
-    api.getMyCurrentPlaybackState({}).then(function(data) {
-        log.debug("Now Playing: ", data.body);
-        res.send(data.body);
-    }, function(err) {
-        handleError(err, res);
-    });
-
-});
-router.get('/events/:eventID/providers/spotify/devices', function(req, res) {
-    log.trace("getAvailableDevices begin");
-
-    var eventID = req.param.eventID;
-    var api = getSpotifyApiForEvent(eventID);
-
-    api.getMyDevices().then(function(data) {
-        log.debug("getAvailableDevices:", data.body);
-        res.send(data.body);
-    }, function(err) {
-        handleError(err, res);
-    });
-
-    log.trace("getAvailableDevices end");
-});
-
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// ----------------------- spotify track logic ------------------------------
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 function mapSpotifyTrackToOpenDJTrack(sptTrack) {
     var odjTrack = {};
     odjTrack.id = sptTrack.id;
@@ -557,128 +506,97 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
     return result;
 }
 
-router.get('/events/:eventID/providers/spotify/search', function(req, res) {
-    log.trace("searchTrack begin");
+async function getTrackDetails(eventID, trackID) {
+    log.trace("begin  getTrackDetails");
 
-    var eventID = req.param.eventID;
-    var query = req.query.q
+    let trackResult = null;
+    let audioFeaturesResult = null;
+    let albumResult = null;
+    let artistResult = null;
+    let result = null;
+
     var api = getSpotifyApiForEvent(eventID);
 
-    api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT }).then(function(data) {
-        res.send(mapSpotifySearchResultToOpenDJSearchResult(data.body));
-        //        res.send(data.body);
-        log.trace("searchTrack end");
-    }, function(err) {
-        handleError(err, res);
-    });
-});
+    log.debug("trackDetails eventID=%s, trackID=%s", eventID, trackID);
 
-var mapOfTrackDetails = new Map();
+    // If TrackID contains a "spotify:track:" prefix, we need to remove it:
+    var colonPos = trackID.lastIndexOf(":");
+    if (colonPos != -1) {
+        trackID = trackID.substring(colonPos + 1);
+    }
 
-router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(req, res) {
-    log.trace("trackDetails begin");
+    // CACHING, as the following is quite Expensive, and we would like
+    // to avoid to run into Spotify API rate limits:
+    result = mapOfTrackDetails.get(trackID);
+    if (result) {
+        log.debug("trackDetails cache hit");
+    } else {
+        log.debug("trackDetails cache miss");
 
-    try {
-        let eventID = req.param.eventID;
-        let trackID = req.param.trackID;
-        let trackResult = null;
-        let audioFeaturesResult = null;
-        let albumResult = null;
-        let artistResult = null;
-        let result = null;
+        // We have to make four calls - we do that in parallel to speed things up
+        // The problem is the "Genre" Result - it's not stored with the track, but with
+        // either the album or the artist. So here we go:
+        // #1: Get basic Track Result:
+        log.trace("getTrack()");
+        trackResult = api.getTrack(trackID);
 
-        // TODO: Error handling if API is not defined:
-        var api = getSpotifyApiForEvent(eventID);
+        // #2: Get get Track Audio Features (danceability, energy and stuff):
+        log.trace("getAudioFeaturesForTrack()");
+        audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
 
-        log.debug("trackDetails eventID=%s, trackID=%s", eventID, trackID);
+        // When we have trackResult we get the album and artist ID , and with that, we can make call 
+        // #3 to get album details and ...
+        try {
+            log.trace("awaiting trackResult");
+            trackResult = await trackResult;
+        } catch (err) {
+            log.info("getTrack() failed with error:" + err);
 
-        // If TrackID contains a "spotify:track:" prefix, we need to remove it:
-        var colonPos = trackID.lastIndexOf(":");
-        if (colonPos != -1) {
-            trackID = trackID.substring(colonPos + 1);
+            // Need to handle audioFeaturesResult which might repsone later - we can ignore that one.
+            audioFeaturesResult.catch(function(err2) {
+                log.debug("ignoring concurrent GetaudioFeatureResult error while handling getTrack() err=%s" + err2);
+            });
+            handleError({ code: "SPTFY-512", msg: "get Track  from spotify failed with err=" + err }, res);
+            return;
         }
 
-        // CACHING, as the following is quite Expensive, and we would like
-        // to avoid to run into Spotify API rate limits:
-        result = mapOfTrackDetails.get(trackID);
-        if (result) {
-            log.debug("trackDetails cache hit");
-        } else {
-            log.debug("trackDetails cache miss");
-
-            // We have to make four calls - we do that in parallel to speed things up
-            // The problem is the "Genre" Result - it's not stored with the track, but with
-            // either the album or the artist. So here we go:
-            // #1: Get basic Track Result:
-            log.trace("getTrack()");
-            trackResult = api.getTrack(trackID);
-
-            // #2: Get get Track Audio Features (danceability, energy and stuff):
-            log.trace("getAudioFeaturesForTrack()");
-            audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
-
-            // When we have trackResult we get the album and artist ID , and with that, we can make call 
-            // #3 to get album details and ...
-            try {
-                log.trace("awaiting trackResult");
-                trackResult = await trackResult;
-            } catch (err) {
-                log.info("getTrack() failed with error:" + err);
-
-                // Need to handle audioFeaturesResult which might repsone later - we can ignore that one.
-                audioFeaturesResult.catch(function(err2) {
-                    log.debug("ignoring concurrent GetaudioFeatureResult error while handling getTrack() err=%s" + err2);
-                });
-                handleError({ code: "SPTFY-512", msg: "get Track  from spotify failed with err=" + err }, res);
-                return;
-            }
-
-            if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
-                log.trace("getAlbum()");
-                albumResult = api.getAlbum(trackResult.body.album.id);
-            }
-
-            // ... call #4 to get Artist Result:
-            if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
-                log.trace("getArtist()");
-                artistResult = api.getArtist(trackResult.body.artists[0].id);
-            }
-
-            // Wait for all results to return:
-            // Error Handling is a bit ugly, but needs to be done to avoid "Unhandled promise rejections" messages,
-            // which could kill the process in the future of nodejs.
-            try {
-                log.trace("await albumResult")
-                albumResult = await albumResult;
-            } catch (err) {
-                log.info("error while await album for ignoring err=" + err);
-            }
-
-            try {
-                log.trace("await audioFeaturesResult");
-                audioFeaturesResult = await audioFeaturesResult;
-            } catch (err) {
-                log.info("error while await audio features for track- ignoring err=" + err);
-            }
-
-            try {
-                log.trace("await artistResult");
-                artistResult = await artistResult;
-            } catch (err) {
-                log.info("error while await audio artist  for track %s - ignoring err=" + err, trackID);
-            }
-
-            // TODO: Merge responses into OpenDJ TrackResult 
-            // For now (and debugging), we send the raw: spotify objects:
-            result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
-
-            // Cache result:
-            mapOfTrackDetails.set(trackID, result);
+        if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
+            log.trace("getAlbum()");
+            albumResult = api.getAlbum(trackResult.body.album.id);
         }
 
-        res.send(result);
-        /*
-            res.send({
+        // ... call #4 to get Artist Result:
+        if (trackResult && trackResult.body && trackResult.body.artists && trackResult.body.artists.length > 0) {
+            log.trace("getArtist()");
+            artistResult = api.getArtist(trackResult.body.artists[0].id);
+        }
+
+        // Wait for all results to return:
+        // Error Handling is a bit ugly, but needs to be done to avoid "Unhandled promise rejections" messages,
+        // which could kill the process in the future of nodejs.
+        try {
+            log.trace("await albumResult")
+            albumResult = await albumResult;
+        } catch (err) {
+            log.info("error while await album for ignoring err=" + err);
+        }
+
+        try {
+            log.trace("await audioFeaturesResult");
+            audioFeaturesResult = await audioFeaturesResult;
+        } catch (err) {
+            log.info("error while await audio features for track- ignoring err=" + err);
+        }
+
+        try {
+            log.trace("await artistResult");
+            artistResult = await artistResult;
+        } catch (err) {
+            log.info("error while await audio artist  for track %s - ignoring err=" + err, trackID);
+        }
+
+        /* FOR DEBUGGING:
+            result = {
                 track: trackResult,
                 album: albumResult,
                 artist: artistResult,
@@ -686,106 +604,96 @@ router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(
                 result: result,
             });
          */
+        result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
 
-    } catch (err) {
-        log.error("trackDetails() outer catch err=", err);
-        handleError(err, res);
+        // Cache result:
+        mapOfTrackDetails.set(trackID, result);
     }
 
-    log.trace("trackDetails end");
+    log.trace("end getTrackDetails");
+    return result;
+}
 
-});
 
-router.get('/events/:eventID/providers/spotify/pause', async function(req, res) {
+async function pause(eventID) {
     log.trace("begin pause ");
 
-    try {
-        var eventID = req.param.eventID;
-        var api = getSpotifyApiForEvent(eventID);
-        var event = getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(eventID);
+    var event = getEventStateForEvent(eventID);
 
-        await api.pause({ device_id: event.currentDevice });
-        res.status(200).send("ok");
-        log.info("PAUSE eventID=%s", eventID);
-    } catch (err) {
-        log.warn("pause failed: " + err);
-        res.status(500).send(err);
-    }
+    await api.pause({ device_id: event.currentDevice });
+    log.info("PAUSE eventID=%s", eventID);
+
     log.trace("end pause");
-});
+}
 
 
-router.get('/events/:eventID/providers/spotify/play/:trackID', async function(req, res) {
-    log.trace("begin play ");
 
+async function play(eventID, trackID, pos) {
+    log.trace("begin play");
+
+    log.debug("play eventID=%s, trackID=%s, pos=%s", eventID, trackID, pos);
+    var api = getSpotifyApiForEvent(eventID);
+    var event = getEventStateForEvent(eventID);
+
+
+
+    // If TrackID contains a "spotify:track:" prefix, we need to remove it:
+    var colonPos = trackID.lastIndexOf(":");
+    if (colonPos != -1) {
+        trackID = trackID.substring(colonPos + 1);
+    }
+    var uris = ["spotify:track:" + trackID];
+    var options = { uris: uris };
+
+    if (event.currentDevice) {
+        log.debug("event has currentDevice set - using it");
+        options.device_id = event.currentDevice;
+    }
+
+    if (pos) {
+        options.position_ms = pos;
+    }
+
+    log.trace("play options: ", JSON.stringify(options));
+    //    await api.play(options);
+
+    // play sometimes fails on first try, probably due to comm issues
+    // with the device. Thus we re-try 
+    // before getting into fancy error handling:
     try {
-        var eventID = req.param.eventID;
-        var trackID = req.param.trackID;
-        var pos = req.query.pos;
-        var api = getSpotifyApiForEvent(eventID);
-        var event = getEventStateForEvent(eventID);
+        await promiseRetry(function(retry, number) {
+            log.debug("call spotify play, try #", number);
+            return api.play(options).catch(retry);
+        }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
 
-        log.debug("play eventID=%s, trackID=%s, pos=%s", eventID, trackID, pos);
-
-
-        // If TrackID contains a "spotify:track:" prefix, we need to remove it:
-        var colonPos = trackID.lastIndexOf(":");
-        if (colonPos != -1) {
-            trackID = trackID.substring(colonPos + 1);
-        }
-        var uris = ["spotify:track:" + trackID];
-        var options = { uris: uris };
-
-        if (event.currentDevice) {
-            log.debug("event has currentDevice set - using it");
-            options.device_id = event.currentDevice;
-        }
-
-        if (pos) {
-            options.position_ms = pos;
-        }
-
-        log.trace("play options: ", JSON.stringify(options));
-        //    await api.play(options);
-
-        // play sometimes fails on first try, probably due to comm issues
-        // with the device. Thus we re-try 
-        // before getting into fancy error handling:
-        try {
-            await promiseRetry(function(retry, number) {
-                log.debug("call spotify play, try #", number);
-                return api.play(options).catch(retry);
-            }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
-
-            log.debug("sending 200 ok");
-            res.status(200).send("ok");
-        } catch (err) {
-            log.trace("begin first catch");
-            try {
-                await handlePlayError(err, res, options, event, api)
-                res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
-            } catch (err2) {
-                log.debug("catching 2nd error -send 500 err", err2)
-                    // res.status(500).send({ code: "SPTFY-500", msg: "play failed despite retries! InitialErr=" + err + " SecondErr=" + JSON.stringify(err2 });
-                res.status(500).send(err2);
-
-            }
-            log.trace("end first catch");
-        }
-
-        log.debug("after promiseRetry");
-
-
-        // Todo: verify via currentTrack that player is actually playing!
+        log.debug("play was successful");
 
     } catch (err) {
-        log("handleError " + err);
-        handleError(err, res);
+        log.debug("play failed with err=%s - will try to handle this", err);
+        try {
+            await handlePlayError(err, options, event, api);
+            log.debug("play was successful after handling initial error");
+            // res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
+        } catch (err2) {
+            log.debug("play failed after handling initial error with new error=%s", err2);
+            throw {
+                code: "SPTFY-500",
+                msg: "play failed despite retries! Initial Error=" + err + " Second Error=" + err2
+            };
+        }
+        log.trace("end first catch");
     }
-    log.trace("end play");
-});
 
-async function handlePlayError(err, res, options, event, api) {
+
+
+    // Todo: verify via currentTrack that player is actually playing!
+
+    log.trace("end play");
+}
+
+
+async function handlePlayError(err, options, event, api) {
     log.debug("Play failed despite retry. err=" + err);
     if (SPOTIFY_AUTOSELECT_DEVICE && ("" + err).includes("Not Found")) {
         log.debug("expected shit happend - device not found - try autoselect a device");
@@ -842,6 +750,133 @@ async function autoSelectDevice(api, event) {
     log.trace("end autoSelectDevice result=", result);
     return result;
 }
+
+
+
+
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// --------------------------- sync api routes ------------------------------
+// --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+if (COMPRESS_RESULT == 'true') {
+    log.info("compression enabled");
+    app.use(compression())
+} else {
+    log.info("compression disabled");
+
+}
+app.use(cors());
+
+function handleError(err, response) {
+    log.error('Error: ' + err);
+    if (err.code && err.msg) {
+        response.status(500).send(err);
+    } else {
+        response.status(500).send({
+            "msg": err,
+            "code": "SPTY-542"
+        });
+
+    }
+}
+
+router.get('/events/:eventID/providers/spotify/currentTrack', function(req, res) {
+    log.debug("getCurrentTrack");
+
+    var eventID = req.params.eventID;
+    var api = getSpotifyApiForEvent(eventID);
+
+    api.getMyCurrentPlaybackState({}).then(function(data) {
+        log.debug("Now Playing: ", data.body);
+        res.send(data.body);
+    }, function(err) {
+        handleError(err, res);
+    });
+
+});
+
+router.get('/events/:eventID/providers/spotify/devices', function(req, res) {
+    log.trace("getAvailableDevices begin");
+
+    var eventID = req.params.eventID;
+    var api = getSpotifyApiForEvent(eventID);
+
+    api.getMyDevices().then(function(data) {
+        log.debug("getAvailableDevices:", data.body);
+        res.send(data.body);
+    }, function(err) {
+        handleError(err, res);
+    });
+
+    log.trace("getAvailableDevices end");
+});
+
+
+router.get('/events/:eventID/providers/spotify/search', function(req, res) {
+    log.trace("searchTrack begin");
+
+    var eventID = req.params.eventID;
+    var query = req.query.q
+    var api = getSpotifyApiForEvent(eventID);
+
+    api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT }).then(function(data) {
+        res.send(mapSpotifySearchResultToOpenDJSearchResult(data.body));
+        //        res.send(data.body);
+        log.trace("searchTrack end");
+    }, function(err) {
+        handleError(err, res);
+    });
+});
+
+var mapOfTrackDetails = new Map();
+
+router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(req, res) {
+    log.trace("begin route get tracks");
+
+    try {
+        let result = await getTrackDetails(req.params.eventID, req.params.trackID);
+        res.send(result);
+    } catch (err) {
+        log.error("trackDetails() outer catch err=", err);
+        handleError(err, res);
+    }
+
+    log.trace("end route get tracks");
+});
+
+
+// TODO - REFACTOR THIS TO ABOVE BUSINESS LOGIC, to be reused by async API
+router.get('/events/:eventID/providers/spotify/pause', async function(req, res) {
+    log.trace("begin pause route");
+
+    try {
+        await pause(req.params.eventID);
+        res.status(200).send("ok");
+        log.info("PAUSE eventID=%s", req.params.eventID);
+    } catch (err) {
+        log.warn("pause failed: " + err);
+        res.status(500).send(err);
+    }
+    log.trace("end pause route");
+});
+
+
+router.get('/events/:eventID/providers/spotify/play/:trackID', async function(req, res) {
+    log.trace("begin play route");
+
+    try {
+        var eventID = req.params.eventID;
+        var trackID = req.params.trackID;
+        var pos = req.query.pos;
+
+        await play(eventID, trackID, pos);
+        res.status(200).send("ok");
+    } catch (err) {
+        res.status(500).send(err);
+    }
+    log.trace("end play route");
+});
 
 
 router.get('/ready', function(req, res) {

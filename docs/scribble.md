@@ -79,7 +79,6 @@ kafka-server-start /usr/local/etc/kafka/server1.properties
 
 
 # Delete topics:
-kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj-spotifyprovider-internal opendj.data.playlist
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.playlist
 
@@ -172,7 +171,10 @@ http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/pause/
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/xxx
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
+http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW&pos=5000
+
+
 
 
 

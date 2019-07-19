@@ -31,8 +31,8 @@ app.use(express.json());
 function handleError(err, response) {
     log.error('Error: ' + err);
     var error = {
-        "message": err,
-        "code": 500
+        "msg": err,
+        "code": "PLYLST-42"
     };
     response.writeHead(500);
     response.end(JSON.stringify(error));
@@ -47,17 +47,17 @@ function handleError(err, response) {
 // --------------------------------------------------------------------------
 
 // Interval we check for expired tokens:
-var SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8080/api/provider-spotify/v1/";
+const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8080/api/provider-spotify/v1/";
 
 // Default for emergenceAddToPlaylist:
-var DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
-var DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
-var DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
-var DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS || 'false') == 'true';
-var MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
-var MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
-var INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
-var PAUSE_ON_PLAYERROR = (process.env.PAUSE_ON_PLAYERROR || 'true') == 'true';
+const DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
+const DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
+const DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
+const DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS || 'false') == 'true';
+const MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
+const MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
+const INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
+const PAUSE_ON_PLAYERROR = (process.env.PAUSE_ON_PLAYERROR || 'true') == 'true';
 
 
 // Key: EventID: Object: Event
@@ -92,25 +92,12 @@ var emergencyTrackIDs = [
     "spotify:3vkQ5DAB1qQMYO4Mr9zJN6", // Gimme! Gimme! Gimme!  by ABBA
 ];
 
-async function getTrackDetailsForTrackID(eventID, trackID) {
-    log.trace("getTrackDetailsForTrackID begin");
-    var result = await request(SPOTIFY_PROVIDER_URL + "trackDetails?event=" + eventID + "&track=" + trackID, { json: true })
-    log.trace("getTrackDetailsForTrackID end result=%s", JSON.stringify(result));
-    return result;
-}
 
-async function createAutofillPlayList(eventID) {
-    log.trace("createAutofillPlayList begin eventID=%s", eventID);
-    var result = [];
-    log.info("AUTOFILL event=%s", eventID);
-
-    for (let trackID of emergencyTrackIDs) {
-        var track = await getTrackDetailsForTrackID(eventID, trackID);
-        track.added_by = "OpenDJ";
-        result.push(track);
-    }
-    log.trace("createAutofillPlayList end eventID=%s result=%s", eventID, JSON.stringify(result));
-    return result;
+function splitTrackIDIntoProviderAndTrack(id) {
+    let splitter = id.split(":");
+    let provider = splitter[0];
+    let trackID = splitter[1];
+    return [provider, trackID];
 }
 
 function findTrackInList(listOfTracks, provider, trackID) {
@@ -138,6 +125,30 @@ function getETADateForTrackInPlayList(playlist, pos) {
 
     return new Date(ts);
 }
+
+
+async function getTrackDetailsForTrackID(eventID, trackIDxx) {
+    log.trace("getTrackDetailsForTrackID begin");
+    let [provider, trackID] = splitTrackIDIntoProviderAndTrack(trackIDxx);
+    let result = await request(SPOTIFY_PROVIDER_URL + "events/" + eventID + "/providers/" + provider + "/tracks/" + trackIDxx, { json: true })
+    log.trace("getTrackDetailsForTrackID end result=%s", JSON.stringify(result));
+    return result;
+}
+
+async function createAutofillPlayList(eventID) {
+    log.trace("createAutofillPlayList begin eventID=%s", eventID);
+    var result = [];
+    log.info("AUTOFILL event=%s", eventID);
+
+    for (let trackID of emergencyTrackIDs) {
+        let track = await getTrackDetailsForTrackID(eventID, trackID);
+        track.added_by = "OpenDJ";
+        result.push(track);
+    }
+    log.trace("createAutofillPlayList end eventID=%s result=%s", eventID, JSON.stringify(result));
+    return result;
+}
+
 
 async function addTrack(event, playlist, provider, trackID, user) {
     log.trace("begin addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
@@ -169,7 +180,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
 
     // Okay, track can be added. Let's get the details
     try {
-        var track = await getTrackDetailsForTrackID(event.eventID, trackID);
+        let track = await getTrackDetailsForTrackID(event.eventID, trackID);
         if (user)
             track.added_by = user;
         else
@@ -244,7 +255,6 @@ function updateCurrentTrackProgress(playlist) {
         playlist.currentTrack.progress_ms = newPos;
     }
 }
-
 async function play(event, playlist) {
     log.trace("play begin event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
@@ -278,7 +288,12 @@ async function play(event, playlist) {
     } else {
         log.debug("Play it, Sam. Play %s", playlist.currentTrack.id);
         try {
-            await request(SPOTIFY_PROVIDER_URL + "play?event=" + event.eventID + "&track=" + playlist.currentTrack.id + "&pos=" + playlist.currentTrack.progress_ms, { json: true });
+            await request(
+                SPOTIFY_PROVIDER_URL +
+                "events/" + event.eventID +
+                "/providers/" + playlist.currentTrack.provider +
+                "/play/" + playlist.currentTrack.id +
+                "?pos=" + playlist.currentTrack.progress_ms, { json: true });
         } catch (err) {
             log.fatal("!!! PLAY FAILED err=" + err);
             if (PAUSE_ON_PLAYERROR) {
@@ -306,8 +321,8 @@ async function pause(event, playlist, err) {
         log.debug("pause called due to error - do NOT call spotify");
     } else {
         try {
-            log.debug("calling spotify provider");
-            await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
+            log.debug("calling provider " + playlist.currentTrack.provider);
+            await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/" + playlist.currentTrack.provider + "/pause");
         } catch (err) {
             log.warn("pause failed while calling spotify. This error is ignored: " + err);
             // throw { code: "PLYLST-400", msg: "Could not pause track. Err=" + err };
@@ -346,9 +361,9 @@ async function skip(event, playlist) {
             if (MOCKUP_NO_ACTUAL_PLAYING) {
                 log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
             } else {
-                log.debug("calling spotify provider to pause");
-                var result = await request(SPOTIFY_PROVIDER_URL + "pause?event=" + event.eventID);
-                log.debug("spotify pause result=" + result);
+                log.debug("calling provider %s to pause", playlist.currentTrack.provider);
+                let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "providers/" + playlist.currentTrack.provider + "/pause");
+                log.debug("pause provider %s result=%s", playlist.currentTrack.provider, result);
 
             }
         } catch (err) {
@@ -417,7 +432,7 @@ async function checkPlaylist(event, playlist) {
         log.trace("playlist has tracks");
     }
 
-    if (playlist.isPlaying && !isTrackPlaying(playlist) && playlist.currentTrack) {
+    if (playlist.isPlaying && !isTrackPlaying(playlist)) {
         await skip(event, playlist);
         stateChanged = true;
     }
@@ -433,7 +448,7 @@ function checkEvent(event) {
     log.trace("checkEvent begin");
     for (let playlist of event.playlists) {
         checkPlaylist(event, playlist)
-            .catch(err => log.error("check playlist failed err=" + JSON.stringify(err)))
+            .catch(err => log.error("check playlist failed", err))
     }
     log.trace("checkEvent end");
 }
@@ -531,6 +546,16 @@ router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
 });
 
 router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
+    log.trace("begin NEXT playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+    var event = getEventForRequest(req);
+    var playlist = getPlaylistForRequest(req);
+    skip(event, playlist);
+    firePlaylistChangedEvent(event, playlist);
+    res.status(200).send(playlist);
+});
+
+// Just for Dan's convenience, we provide a SKIP operation, too:
+router.get('/events/:eventID/playlists/:listID/skip', function(req, res) {
     log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     var event = getEventForRequest(req);
     var playlist = getPlaylistForRequest(req);
@@ -553,11 +578,11 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
     log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     log.trace("body=%s", JSON.stringify(req.body));
 
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
-    var provider = req.body.provider;
-    var trackID = req.body.id;
-    var user = req.body.user;
+    let event = getEventForRequest(req);
+    let playlist = getPlaylistForRequest(req);
+    let provider = req.body.provider;
+    let trackID = req.body.id;
+    let user = req.body.user;
 
     try {
         await addTrack(event, playlist, provider, trackID, user);
@@ -578,11 +603,11 @@ router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
-        var event = getEventForRequest(req);
-        var playlist = getPlaylistForRequest(req);
-        var provider = req.body.provider;
-        var trackID = req.body.id;
-        var to = parseInt(req.body.to);
+        let event = getEventForRequest(req);
+        let playlist = getPlaylistForRequest(req);
+        let provider = req.body.provider;
+        let trackID = req.body.id;
+        let to = parseInt(req.body.to);
 
 
         moveTrack(event, playlist, provider, trackID, to);
@@ -604,13 +629,11 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, 
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
-        var event = getEventForRequest(req);
-        var playlist = getPlaylistForRequest(req);
+        let event = getEventForRequest(req);
+        let playlist = getPlaylistForRequest(req);
 
         // Track is in format <provider>:<trackID>, thus we need to split:
-        var parts = req.params.track.split(':');
-        var provider = parts[0];
-        var trackID = parts[1];
+        let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
 
         deleteTrack(event, playlist, provider, trackID);
 

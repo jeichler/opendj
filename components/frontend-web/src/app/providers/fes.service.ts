@@ -40,10 +40,13 @@ export class FEService {
     searchTracks(queryString: string): Observable<Track[]> {
         // console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2) {
+            // This is not an actually error, but expectec behavior. 
             // throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
+            // If this criteria is not met, we return an empty result:
             return this.EMPTY_TRACK_RESULT;
         }
-        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/searchTrack?event=0&q=' + encodeURIComponent(queryString)).pipe(
+
+        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/events/0/providers/spotify/search?q=' + encodeURIComponent(queryString)).pipe(
             retry(1),
             catchError(this.handleError)
           );
