@@ -11,13 +11,26 @@
 # Step 5: change back dns entry to stormshift
 
 specific:
+      BACKEND_EVENTSTORE:
+            KAFKA:
+                  NUM_BROKERS: 2
+                  NUM_ZOOKEPERS: 1
+      PROVIDER_SPOTIFY:
+            REPLICAS: 2
+
       SERVICE_PLAYLIST:
             LOG_LEVEL: "debug"
             DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
             MOCKUP_NO_ACTUAL_PLAYING: "true"
             MOCKUP_AUTOSKIP_SECONDS: "20"
             INTERNAL_POLL_INTERVAL: "20000"
+            REPLICAS: 2
+      
+      SERVICE_WEB:
+            REPLICAS: 2
+      
       FRONTEND_WEB:
+            REPLICAS: 2
             USE_ACME_CERTS: false
             TLS_CERT: |
                   -----BEGIN CERTIFICATE-----
