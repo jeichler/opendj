@@ -18,7 +18,7 @@
       changed_when: "'already exists' not in createSecret.stderr" 
 
     - name: Create kafka topic 
-      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.state.provider-spotify --partitions 1 --replication-factor 1 --config retention.ms=43200000" 
+      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.state.provider-spotify --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}} --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
