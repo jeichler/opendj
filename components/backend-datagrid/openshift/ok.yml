@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  creationTimestamp: null
+  generation: 1
+  labels:
+    app: datagrid-service
+    application: backend-datagrid
+    template: datagrid-service
+  name: backend-datagrid
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      application: backend-datagrid
+      deploymentConfig: backend-datagrid
+  serviceName: backend-datagrid-ping
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        application: backend-datagrid
+        deploymentConfig: backend-datagrid
+      name: backend-datagrid
+    spec:
+      containers:
+      - env:
+        - name: CACHE_CONTAINER_START
+          value: EAGER
+        - name: CACHE_NAMES
+          value: TRACKS
+        - name: TRACKS_CACHE_L1_LIFESPAN
+          value: "0"
+        - name: TRACKS_CACHE_MEMORY_STORAGE_TYPE
+          value: off-heap
+        - name: TRACKS_CACHE_MODE
+          value: SYNC
+        - name: TRACKS_CACHE_REMOTE_TIMEOUT
+          value: "1000"
+        - name: TRACKS_CACHE_SEGMENTS
+          value: "100"
+        - name: TRACKS_CACHE_START
+          value: EAGER
+        - name: TRACKS_CACHE_TYPE
+          value: distributed
+        - name: SERVICE_NAME
+          value: backend-datagrid
+        - name: SERVICE_PROFILE
+          value: datagrid-service
+        - name: JGROUPS_PING_PROTOCOL
+          value: openshift.DNS_PING
+        - name: OPENSHIFT_DNS_PING_SERVICE_NAME
+          value: backend-datagrid-ping
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: application-user
+              name: backend-datagrid
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: application-password
+              name: backend-datagrid
+        image: registry.redhat.io/jboss-datagrid-7/datagrid73-openshift
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /opt/datagrid/bin/livenessProbe.sh
+          failureThreshold: 5
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: backend-datagrid
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 8888
+          name: ping
+          protocol: TCP
+        - containerPort: 11222
+          name: hotrod
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /opt/datagrid/bin/readinessProbe.sh
+          failureThreshold: 5
+          initialDelaySeconds: 17
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/datagrid/standalone/data
+          name: srv-data
+        - mountPath: /var/run/secrets/java.io/keystores
+          name: keystore-volume
+        - mountPath: /var/run/secrets/openshift.io/serviceaccount
+          name: service-certs
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - emptyDir: {}
+        name: keystore-volume
+      - name: service-certs
+        secret:
+          defaultMode: 420
+          secretName: service-certs
+  updateStrategy:
+    type: OnDelete
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: srv-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+    status:
+      phase: Pending
+status:
+  collisionCount: 0
+  currentReplicas: 2
+  currentRevision: backend-datagrid-5c7b6544f8
+  observedGeneration: 1
+  readyReplicas: 2
+  replicas: 2
+  updateRevision: backend-datagrid-5c7b6544f8
+  updatedReplicas: 2

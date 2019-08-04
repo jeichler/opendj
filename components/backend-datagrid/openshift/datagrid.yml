@@ -1,0 +1,206 @@
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: backend-datagrid
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+    labels:
+      application: backend-datagrid
+  stringData:
+    application-password: cache
+    application-user: cache
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: backend-datagrid-ping
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+    annotations:
+      description: Provides a ping service for clustered applications.
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    labels:
+      application: backend-datagrid
+  spec:
+    clusterIP: None
+    ports:
+    - name: ping
+      port: 8888
+    selector:
+      deploymentConfig: backend-datagrid
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Provides a service for accessing the datagrid over HTTP or Hot Rod protocol.
+      service.alpha.openshift.io/serving-cert-secret-name: backend-datagrid-certs
+    labels:
+      application: backend-datagrid
+    name: backend-datagrid
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  spec:
+    ports:
+    - name: hotrod
+      port: 11222
+      targetPort: 11222
+    - name: http
+      port: 8080
+      targetPort: 8080
+    selector:
+      deploymentConfig: backend-datagrid
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Provides a service for accessing the management console of datagrid over HTTP
+    labels:
+      application: backend-datagrid
+    name: backend-datagrid-mmgt
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  spec:
+    ports:
+    - name: management
+      port: 9990
+      targetPort: 9990
+    selector:
+      deploymentConfig: backend-datagrid
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: backend-datagrid-config
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  data: 
+    standalone.xml: |-
+      {{ lookup('template', 'standalone.xml') | indent(6) }}
+      
+
+
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    labels:
+      application: backend-datagrid
+    name: backend-datagrid
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  spec:
+    replicas: "{{ENV.BACKEND_DATAGRID.NUM_REPLICAS}}"
+    podManagementPolicy: OrderedReady
+    serviceName: backend-datagrid-ping
+    revisionHistoryLimit: 5
+    selector:
+      matchLabels:
+        application: backend-datagrid
+        deploymentConfig: backend-datagrid
+    template:
+      metadata:
+        labels:
+          application: backend-datagrid
+          deploymentConfig: backend-datagrid
+        name: backend-datagrid
+      spec:
+        containers:
+        - env:
+          - name: CACHE_CONTAINER_START
+            value: EAGER
+          - name: SERVICE_NAME
+            value: backend-datagrid
+          - name: SERVICE_PROFILE
+            value: datagrid-service
+          - name: JGROUPS_PING_PROTOCOL
+            value: openshift.DNS_PING
+          - name: OPENSHIFT_DNS_PING_SERVICE_NAME
+            value: backend-datagrid-ping
+          - name: USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: application-user
+                name: backend-datagrid
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: application-password
+                name: backend-datagrid
+          - name: USER_CONFIG_MAP
+            value: "true"
+          image: registry.redhat.io/jboss-datagrid-7/datagrid73-openshift
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - /opt/datagrid/bin/livenessProbe.sh
+            failureThreshold: 5
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: backend-datagrid
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          - containerPort: 8888
+            name: ping
+            protocol: TCP
+          - containerPort: 11222
+            name: hotrod
+            protocol: TCP
+          - containerPort: 9990
+            name: management
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /opt/datagrid/bin/readinessProbe.sh
+            failureThreshold: 5
+            initialDelaySeconds: 17
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          resources:
+            limits:
+              memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY}}"
+            requests:
+              cpu: "0.5"
+              memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY}}"
+          volumeMounts:
+          - mountPath: /opt/datagrid/standalone/data
+            name: srv-data
+          - mountPath: /var/run/secrets/java.io/keystores
+            name: keystore-volume
+          - mountPath: /var/run/secrets/openshift.io/serviceaccount
+            name: service-certs
+          # [user config mod / Add a ConfigMap volume : start]
+          - mountPath: /opt/datagrid/standalone/configuration/user
+            name: config-volume
+            readOnly: true
+          # [user config mod / Add a ConfigMap volume : end]
+        terminationGracePeriodSeconds: 60
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        volumes:
+        - empty-dir: {}
+          name: keystore-volume
+        - name: service-certs
+          secret:
+            secretName: backend-datagrid-certs
+        # [user config mod / Add a ConfigMap : start]
+        - configMap:
+            name: backend-datagrid-config
+          name: config-volume
+        # [user config mod / Add a ConfigMap : end]
+    triggers:
+    - type: ConfigChange
+    updateStrategy:
+      type: OnDelete
+    volumeClaimTemplates:
+    - metadata:
+        name: srv-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: "{{ENV.BACKEND_DATAGRID.STORAGE_SIZE}}"

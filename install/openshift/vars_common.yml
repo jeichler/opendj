@@ -22,6 +22,12 @@ common:
       NUM_BROKERS: 1
       NUM_ZOOKEPERS: 1
       NUM_PARTITIONS: 3
+  BACKEND_DATAGRID:
+    NUM_REPLICAS: 2
+    LIMIT_MEMORY: "512Mi"
+    STORAGE_SIZE: "1Gi"
+
+
 
   PROVIDER_SPOTIFY:
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
