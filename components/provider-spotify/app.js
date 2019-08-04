@@ -10,117 +10,87 @@ var log4js = require('log4js')
 var log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
-var port = process.env.PORT || 8080;
-var COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
+const PORT = process.env.PORT || 8080;
+const COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
 var readyState = {
-    kafkaClient: false,
+    datagridClient: false,
     refreshExpiredTokens: false,
+    lastError: ""
 };
 
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-// ------------------------------ kafka stuff -----------------------------
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-const TOPIC_STATE = "opendj.state.provider-spotify";
 
-var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
-var kafka = require('kafka-node')
-var kafkaClient = new kafka.KafkaClient({
-    kafkaHost: kafkaURL,
-    connectTimeout: 1000,
-    requestTimeout: 500,
-    autoConnect: true,
-    connectRetryOptions: {
-        retries: 10,
-        factor: 1,
-        minTimeout: 1000,
-        maxTimeout: 1000,
-        randomize: true,
-    },
-    idleConnection: 60000,
-    reconnectOnIdle: true,
-});
-kafkaClient.on('error', function(err) {
-    log.error("kafkaClient error: %s -  reconnecting....", err);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = JSON.stringify(err);
-    kafkaClient.connect();
-});
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ------------------------------ datagrid stuff -----------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const datagrid = require('infinispan');
+var tracksCache = null;
+var stateCache = null;
 
-kafkaClient.on('connect', function() {
-    log.info("kafkaClient connect");
-    readyState.kafkaClient = true;
-    readyState.kafkaClientError = "";
-});
-
-
-
-var kafkaProducer = new kafka.Producer(kafkaClient);
-kafkaProducer.on('error', function(err) {
-    log.fatal("kafkaProducer error: %s", err);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = JSON.stringify(err);
-});
-
-var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-    { topic: TOPIC_STATE }, // offset, partition
-], {
-    autoCommit: true,
-    fromOffset: true
-});
-
-kafkaConsumer.on('error', function(error) {
-    log.error("kafkaConsumer error: %s", error);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = JSON.stringify(error);
-});
-
-
-kafkaConsumer.on('message', function(message) {
-    log.debug("kafkaConsumer message: %s", JSON.stringify(message));
-
-    if (message.topic != TOPIC_STATE) {
-        log.error("ignoring unexpected message %s", JSON.stringify(message));
-        return;
-    }
+async function connectToCache(name) {
+    let cache = null;
     try {
-        var payload = JSON.parse(message.value);
-        if (payload != null && payload.eventID != null) {
-            // Idempotency - check if our internal state is already newer
-            // then we should ignore this message:
-            var currentState = mapOfEventStates.get(payload.eventID);
-            if (currentState && Date.parse(currentState.timestamp) > Date.parse(payload.timestamp)) {
-                log.info("Current state for event %s is newer than state from message - message is ignored", payload.eventID)
-            } else {
-                log.info("Using new state for event %s", payload.eventID);
-                mapOfEventStates.set(payload.eventID, payload);
-            }
-
-            // Ensure we do not loose valuable refresh tokens:
-            if (currentState && currentState.refresh_token && !payload.refresh_token) {
-                log.info("New state has no refresh token, but old one has it - keeping it!");
-                payload.refresh_token = currentState.refresh_token;
-            }
-        }
-    } catch (e) {
-        log.warn(" Exception %s while processing message - ignored", e);
+        log.debug("begin connectToCache %s", name);
+        let splitter = DATAGRID_URL.split(":");
+        let host = splitter[0];
+        let port = splitter[1];
+        cache = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
+        readyState.datagridClient = true;
+        log.info("connected to grid %s", name);
+    } catch (err) {
+        readyState.datagridClient = false;
+        readyState.lastError = err;
+        throw "DataGrid connection FAILED with err " + err;
     }
-});
 
+    return cache;
+}
 
-function fireEventStateChange(eventState) {
-    log.debug("fireEventStateChange for eventID=%s", eventState.eventID);
-    eventState.timestamp = new Date().toISOString();
-    kafkaProducer.send([{
-        topic: TOPIC_STATE,
-        key: eventState.eventID,
-        messages: [JSON.stringify(eventState)]
-    }], function(err, data) {
-        log.debug("kafkaProducer.send err=%s", err);
-        log.debug("kafkaProducer.send data=%s", JSON.stringify(data));
-    });
-    log.debug("fireEventStateChange for eventID=%s DONE", eventState.eventID);
+async function getFromCache(cache, key) {
+    try {
+        let val = await cache.get(key);
+        if (val)
+            val = JSON.parse(val);
+        return val;
+    } catch (err) {
+        handleCacheError(cache, err);
+        throw err;
+    }
+}
+
+async function putIntoCache(cache, key, value) {
+    log.trace("begin putIntoCache");
+    await cache.put(key, JSON.stringify(value));
+    log.trace("end putIntoCache");
+}
+
+function putIntoCacheAsync(cache, key, value) {
+    log.trace("begin putIntoCacheAsync cache=%s, key=%s, value=%s", cache, key, value);
+    cache.put(key, JSON.stringify(value))
+        .then(function() {
+            log.trace("putIntoCacheAsync success");
+        })
+        .catch(function(err) {
+            log.warn("putIntoCacheAsync failed - ignoring error %s", err);
+            handleCacheError(cache, err);
+        });
+    log.trace("end putIntoCache");
+}
+
+function fireEventStateChange(event) {
+    log.trace("begin fireEventStateChange");
+    putIntoCacheAsync(stateCache, event.eventID, event);
+    log.trace("end fireEventStateChange");
+}
+
+function handleCacheError(cache, err) {
+    log.error("Cache error: %s", err);
+    log.error("cache=%s", JSON.stringify(cache));
+    readyState.datagridClient = false;
+    readyState.lastError = err;
+    //TODO: Try to reconnect
 }
 
 // --------------------------------------------------------------------------
@@ -137,8 +107,6 @@ var spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', '
 // Interval we check for expired tokens:
 var SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
 
-// Initial delay before we start checking for expired token (allow for some time to have all messages processed)
-var SPOTIFY_REFRESH_INITIAL_DELAY = process.env.SPOTIFY_REFRESH_INITIAL_DELAY || "2500";
 
 // Offset we refresh a token BEFORE it expires - to be sure, we do this 5 minutes BEFORE
 // it expires:
@@ -185,12 +153,14 @@ var eventStatePrototype = {
 // The Map of Event States:
 // Key: EventID
 // Value: EventState Object 
-var mapOfEventStates = new Map();
+
+// var mapOfEventStates = new Map();
 
 
-function getSpotifyApiForEvent(eventID) {
-    log.trace("getSpotifyApiForEvent begin eventID=%s", eventID);
-    var spotifyApi = mapOfSpotifyApis[eventID];
+function getSpotifyApiForEvent(event) {
+    log.trace("begin getSpotifyApiForEvent event=%s, eventID=%s", event, event.eventID);
+    let spotifyApi = mapOfSpotifyApis[event.eventID];
+    let eventID = event.eventID;
 
     if (spotifyApi == null) {
         log.debug("Create SpotifyApi for eventID=%s...", eventID);
@@ -207,30 +177,32 @@ function getSpotifyApiForEvent(eventID) {
 
     }
     // Make sure Api has latest Tokens:
-    var eventState = getEventStateForEvent(eventID);
-    if (eventState.access_token != null && spotifyApi.getAccessToken() != eventState.access_token) {
+    if (event.access_token != null && spotifyApi.getAccessToken() != event.access_token) {
         log.debug("Update API access token from state");
-        spotifyApi.setAccessToken(eventState.access_token);
+        spotifyApi.setAccessToken(event.access_token);
     }
-    if (eventState.refresh_token != null && spotifyApi.getRefreshToken() != eventState.refresh_token) {
+    if (event.refresh_token != null && spotifyApi.getRefreshToken() != event.refresh_token) {
         log.debug("Update API refresh token from state");
-        spotifyApi.setRefreshToken(eventState.refresh_token);
+        spotifyApi.setRefreshToken(event.refresh_token);
     }
 
     // TODO: Check if Access token did expire
-    log.trace("getSpotifyApiForEvent end eventID=%s", eventID);
+    log.trace("end getSpotifyApiForEvent eventID=%s", event.eventID);
     return spotifyApi;
 }
 
-function getEventStateForEvent(eventID) {
-    var eventState = mapOfEventStates.get(eventID);
+async function getEventStateForEvent(eventID) {
+    log.trace("begin getEventStateForEvent id=%s", eventID);
+    let eventState = await getFromCache(stateCache, eventID);
     if (eventState == null) {
         log.debug("EvenState object created for eventID=%s", eventID);
         eventState = Object.assign({}, eventStatePrototype);
         eventState.eventID = eventID;
         eventState.timestamp = new Date().toISOString();
-        mapOfEventStates.set(eventID, eventState);
+    } else {
+        log.debug("event from cache = %s", JSON.stringify(eventState));
     }
+    log.trace("end getEventStateForEvent id=%s", eventID);
     return eventState;
 }
 
@@ -257,13 +229,11 @@ function updateEventTokensFromSpotifyBody(eventState, body) {
 // Read https://developer.spotify.com/documentation/general/guides/authorization-guide/ to 
 // understand this, esp. the references to the the steps.
 // step1: - generate the login URL / redirect....
-router.get('/events/:eventID/providers/spotify/login', function(req, res) {
+router.get('/events/:eventID/providers/spotify/login', async function(req, res) {
         log.debug("getSpotifyLoginURL");
-
-        // TODO: Error handling if EventID is not presenet
-        //        var eventID = req.query.event;
         var eventID = req.params.eventID;
-        var spotifyApi = getSpotifyApiForEvent(eventID);
+        var event = await getEventStateForEvent(eventID);
+        var spotifyApi = getSpotifyApiForEvent(event);
         var authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
         log.debug("authorizeURL=%s", authorizeURL);
 
@@ -289,33 +259,35 @@ router.get('/auth_callback', async function(req, res) {
 
     // Trade CODE into TOKENS:
     log.debug("authorizationCodeGrant with code=%s", code);
-    var spotifyApi = getSpotifyApiForEvent(eventID);
+    var eventState = await getEventStateForEvent(eventID);
+    var spotifyApi = getSpotifyApiForEvent(eventState);
     spotifyApi.authorizationCodeGrant(code).then(
-        function(data) {
-            log.debug("authorization code granted for eventID=%s!", eventID);
+        async function(data) {
+            try {
 
-            // Set tokens on the Event Object to use it in later spotify API calls:
-            var eventState = getEventStateForEvent(eventID);
-            let continueWith = "/events/" + eventID + "/owner";
-            updateEventTokensFromSpotifyBody(eventState, data.body);
-            fireEventStateChange(eventState);
 
-            // Update tokens on API by getting fresh:
-            spotifyApi = getSpotifyApiForEvent(eventID);
+                log.debug("authorization code granted for eventID=%s!", eventID);
 
-            // Let's try to start bohemian rhapsody:
-            autoSelectDevice(spotifyApi, eventState)
-                .then(function() {
-                    spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
-                }).then(function() {
-                    res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
-                    setTimeout(function() {
-                        spotifyApi.pause({ device_id: eventState.currentDevice });
-                    }, 10000);
-                }).catch(function(err) {
-                    res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
-                });
+                // Set tokens on the Event Object to use it in later spotify API calls:
+                let continueWith = "/events/" + eventID + "/owner";
+                updateEventTokensFromSpotifyBody(eventState, data.body);
+                fireEventStateChange(eventState);
 
+                // Let's try to start bohemian rhapsody:
+                autoSelectDevice(spotifyApi, eventState)
+                    .then(function() {
+                        spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
+                    }).then(function() {
+                        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
+                        setTimeout(function() {
+                            spotifyApi.pause({ device_id: eventState.currentDevice });
+                        }, 10000);
+                    }).catch(function(err) {
+                        res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
+                    });
+            } catch (err) {
+                log.error("authorizationCodeGrant processing failed for event %s with err %s", eventID, err);
+            }
         },
         function(err) {
             log.debug('authorization code granted  err=%s', err);
@@ -356,7 +328,7 @@ function refreshAccessToken(event) {
     if (expTs < now) {
         log.info("refreshAccessToken: access token for eventID=%s is about to expire in %s sec - initiating refresh... ", event.eventID, (expTsOrig - now) / 1000);
 
-        var api = getSpotifyApiForEvent(event.eventID);
+        var api = getSpotifyApiForEvent(event);
         api.refreshAccessToken().then(
             function(data) {
                 log.info("access token for^ eventID=%s is expired - initiating refresh...SUCCESS", event.eventID);
@@ -375,10 +347,26 @@ function refreshAccessToken(event) {
     log.trace("refreshAccessToken end eventID=%s", event.eventID);
 }
 
-function refreshExpiredTokens() {
+async function refreshExpiredTokens() {
     log.trace("refreshExpiredTokens begin");
-    mapOfEventStates.forEach(refreshAccessToken);
-    readyState.refreshExpiredTokens = true;
+    try {
+        let it = await stateCache.iterator(10);
+        log.trace("it = %s", JSON.stringify(it));
+        let entry = await it.next();
+
+        while (!entry.done) {
+            log.trace("event = %s", JSON.stringify(entry));
+            refreshAccessToken(JSON.parse(entry.value));
+            entry = await it.next();
+        }
+
+        await it.close();
+
+        readyState.refreshExpiredTokens = true;
+    } catch (err) {
+        readyState.refreshExpiredTokens = false;
+        log.fatal("refreshExpiredTokens failed with err %s", err)
+    }
 
     log.trace("refreshExpiredTokens end");
 }
@@ -507,17 +495,15 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
 }
 
 async function getTrackDetails(eventID, trackID) {
-    log.trace("begin  getTrackDetails");
+    log.trace("begin getTrackDetails eventID=%s, trackID=%s", eventID, trackID);
 
     let trackResult = null;
     let audioFeaturesResult = null;
     let albumResult = null;
     let artistResult = null;
     let result = null;
-
-    var api = getSpotifyApiForEvent(eventID);
-
-    log.debug("trackDetails eventID=%s, trackID=%s", eventID, trackID);
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
     // If TrackID contains a "spotify:track:" prefix, we need to remove it:
     var colonPos = trackID.lastIndexOf(":");
@@ -527,7 +513,12 @@ async function getTrackDetails(eventID, trackID) {
 
     // CACHING, as the following is quite Expensive, and we would like
     // to avoid to run into Spotify API rate limits:
-    result = mapOfTrackDetails.get(trackID);
+    try {
+        result = await getFromCache(tracksCache, "spotify:" + trackID);
+    } catch (cacheFailed) {
+        log.warn("DataGrid GET TRACKS failed - ignoring error %s", cacheFailed);
+    }
+
     if (result) {
         log.debug("trackDetails cache hit");
     } else {
@@ -552,12 +543,13 @@ async function getTrackDetails(eventID, trackID) {
         } catch (err) {
             log.info("getTrack() failed with error:" + err);
 
-            // Need to handle audioFeaturesResult which might repsone later - we can ignore that one.
+            // Need to handle audioFeaturesResult which might respond later to avoid "unhandeled promise rejection warnings" - we can ignore that one.
             audioFeaturesResult.catch(function(err2) {
                 log.debug("ignoring concurrent GetaudioFeatureResult error while handling getTrack() err=%s" + err2);
             });
-            handleError({ code: "SPTFY-512", msg: "get Track  from spotify failed with err=" + err }, res);
-            return;
+
+            // Rethrow original error:
+            throw err;
         }
 
         if (trackResult && trackResult.body && trackResult.body.album && trackResult.body.album.id) {
@@ -607,7 +599,7 @@ async function getTrackDetails(eventID, trackID) {
         result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
 
         // Cache result:
-        mapOfTrackDetails.set(trackID, result);
+        putIntoCacheAsync(tracksCache, "spotify:" + trackID, result);
     }
 
     log.trace("end getTrackDetails");
@@ -618,8 +610,8 @@ async function getTrackDetails(eventID, trackID) {
 async function pause(eventID) {
     log.trace("begin pause ");
 
-    var api = getSpotifyApiForEvent(eventID);
-    var event = getEventStateForEvent(eventID);
+    var event = await getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(event);
 
     await api.pause({ device_id: event.currentDevice });
     log.info("PAUSE eventID=%s", eventID);
@@ -633,8 +625,8 @@ async function play(eventID, trackID, pos) {
     log.trace("begin play");
 
     log.debug("play eventID=%s, trackID=%s, pos=%s", eventID, trackID, pos);
-    var api = getSpotifyApiForEvent(eventID);
-    var event = getEventStateForEvent(eventID);
+    var event = await getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(event);
 
 
 
@@ -781,11 +773,12 @@ function handleError(err, response) {
     }
 }
 
-router.get('/events/:eventID/providers/spotify/currentTrack', function(req, res) {
+router.get('/events/:eventID/providers/spotify/currentTrack', async function(req, res) {
     log.debug("getCurrentTrack");
 
     var eventID = req.params.eventID;
-    var api = getSpotifyApiForEvent(eventID);
+    var event = await getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(event);
 
     api.getMyCurrentPlaybackState({}).then(function(data) {
         log.debug("Now Playing: ", data.body);
@@ -796,11 +789,12 @@ router.get('/events/:eventID/providers/spotify/currentTrack', function(req, res)
 
 });
 
-router.get('/events/:eventID/providers/spotify/devices', function(req, res) {
+router.get('/events/:eventID/providers/spotify/devices', async function(req, res) {
     log.trace("getAvailableDevices begin");
 
     var eventID = req.params.eventID;
-    var api = getSpotifyApiForEvent(eventID);
+    var event = await getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(event);
 
     api.getMyDevices().then(function(data) {
         log.debug("getAvailableDevices:", data.body);
@@ -813,12 +807,13 @@ router.get('/events/:eventID/providers/spotify/devices', function(req, res) {
 });
 
 
-router.get('/events/:eventID/providers/spotify/search', function(req, res) {
+router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
     log.trace("searchTrack begin");
 
     var eventID = req.params.eventID;
     var query = req.query.q
-    var api = getSpotifyApiForEvent(eventID);
+    var event = await getEventStateForEvent(eventID);
+    var api = getSpotifyApiForEvent(event);
 
     api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT }).then(function(data) {
         res.send(mapSpotifySearchResultToOpenDJSearchResult(data.body));
@@ -829,7 +824,6 @@ router.get('/events/:eventID/providers/spotify/search', function(req, res) {
     });
 });
 
-var mapOfTrackDetails = new Map();
 
 router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(req, res) {
     log.trace("begin route get tracks");
@@ -883,7 +877,7 @@ router.get('/ready', function(req, res) {
     log.trace("ready begin");
     // Default: not ready:
     var status = 500;
-    if (readyState.kafkaClient &&
+    if (readyState.datagridClient &&
         readyState.refreshExpiredTokens) {
         status = 200;
     }
@@ -893,40 +887,38 @@ router.get('/ready', function(req, res) {
 
 
 
-// Problem: Init of 10 Pods concurrently and expiered tokens, - we need to avoid concurrent token refresh
-// (actually we need to test that - could be that with a new refresh tokens, the 2nd call fails).
-// Other approach: readiness check = false, wait a random interval 0-30 seconds, then check for expiered tokens. Assumption: one  pod checks first for expiered tokens and does the update, other pods get notified and when their interval experies, they see only current tokens.
-
-// TODO: Implement Health and Readiness check.
-
-// TODO: Implement token refresh during runtime - check every minute or so if tokens expy in the near future. Use a random interval for "near future" to avoid concurrent refreshs. If a refresh fails, we assume that another pod tried it already.
-// If refresh_failure counter is too high, we notify to EventOwner.
-
-// TODO: Implement Retries on Spotify API Calls.
-
-
-//var swaggerUi = require('swagger-ui-express'),
-//swaggerDocument = require('./swagger.json');
-//app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/api/provider-spotify/v1", router);
 
-// Wait 5 seconds for all messages to be processed, then check once for expired tokens:
-setTimeout(function() {
-    if (readyState.kafkaClient) {
-        refreshExpiredTokens();
-        setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
 
-        app.listen(port, function() {
-            log.info('Now listening on port *:' + port);
+function onCacheEntryModified(key, entryVersion, listenerID) {
+    log.debug("onCacheEntryModified key=%s, entryVersion=%s, listenerID=%s", key, entryVersion, listenerID);
+}
+
+setImmediate(async function() {
+    try {
+        tracksCache = await connectToCache("TRACKS");
+        stateCache = await connectToCache("PROVIDER_SPOTIFY_STATE");
+
+        await refreshExpiredTokens();
+        //    setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
+
+        /* Sample Listener
+        log.debug("Adding cache listener");
+        let listenerID = await tracksCache.addListener('create', onCacheEntryModified);
+        await tracksCache.addListener('modify', onCacheEntryModified, { listenerId: listenerID });
+        await tracksCache.addListener('remove', onCacheEntryModified, { listenerId: listenerID });
+        await tracksCache.addListener('expiry', onCacheEntryModified, { listenerId: listenerID });
+*/
+
+        app.listen(PORT, function() {
+            log.info('Now listening on port *:' + PORT);
         });
-    } else {
+    } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
-        log.fatal("KAFKA CLIENT NOT IN READY STATE AFTER %s seconds. Last error was %s", SPOTIFY_REFRESH_INITIAL_DELAY / 1000, readyState.kafkaClientError);
+        log.fatal("init failed with err %s", err);
         log.fatal("Terminating now");
         log.fatal("!!!!!!!!!!!!!!!");
         process.exit(42);
     }
-
-
-}, SPOTIFY_REFRESH_INITIAL_DELAY);
+});

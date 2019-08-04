@@ -132,18 +132,12 @@
                         value: "{{ENV.PROVIDER_SPOTIFY.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
                         value: "true"
-                      - name: MOCKUP_ENABLED
-                        value: "{{ENV.PROVIDER_SPOTIFY.MOCKUP_ENABLED | default('false')}}"
-                      - name: MOCKUP_TRACKDURATION_MS
-                        value: "{{ENV.PROVIDER_SPOTIFY.MOCKUP_TRACKDURATION_MS | default('20000')}}"
-                      - name: KAFKA_HOST
-                        value: "{{ENV.PROVIDER_SPOTIFY.KAFKA_HOST | default('backend-eventstore-kafka-bootstrap:9092')}}" 
+                      - name: DATAGRID_URL
+                        value: "{{ENV.PROVIDER_SPOTIFY.DATAGRID_URL | default('backend-datagrid:11222')}}" 
                       - name: SPOTIFY_CALLBACK_URL
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL | mandatory}}" 
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_INTERVAL | default('60000')}}" 
-                      - name: SPOTIFY_REFRESH_INITIAL_DELAY
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_INITIAL_DELAY | default('1000')}}" 
                       - name: SPOTIFY_REFRESH_TOKEN_OFFSET
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET | default('300000')}}" 
                       - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
@@ -215,7 +209,7 @@
             labels:
               app: provider-spotify
             name: provider-spotify
-            namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             ports:
               - name: web
