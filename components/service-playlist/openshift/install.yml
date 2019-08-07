@@ -11,7 +11,7 @@
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create kafka topic 
-      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.data.playlist --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 
+      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.data.event --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
@@ -136,7 +136,7 @@
                       - name: MOCKUP_NO_ACTUAL_PLAYING
                         value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_NO_ACTUAL_PLAYING | default('false')}}" 
                       - name: INTERNAL_POLL_INTERVAL
-                        value: "{{ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('100')}}" 
+                        value: "{{ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('10000')}}" 
                     imagePullPolicy: IfNotPresent
                     name: service-playlist
                     ports:

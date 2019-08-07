@@ -3,10 +3,8 @@
 const compression = require('compression');
 const express = require('express');
 const app = express();
-const uuidv1 = require('uuid/v1');
 var request = require('request-promise-native');
 var cors = require('cors');
-var kafka = require('kafka-node');
 var router = new express.Router();
 var log4js = require('log4js');
 var log = log4js.getLogger();
@@ -14,7 +12,8 @@ log.level = process.env.LOG_LEVEL || "trace";
 
 var COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
 var readyState = {
-    kafkaClient: false,
+    datagridClient: false,
+    lastError: ""
 };
 
 if (COMPRESS_RESULT == 'true') {
@@ -25,6 +24,7 @@ if (COMPRESS_RESULT == 'true') {
 
 }
 app.use(cors());
+
 // Required for POST operations with body:
 app.use(express.json());
 
@@ -46,38 +46,53 @@ function handleError(err, response) {
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 
-// Interval we check for expired tokens:
-const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8080/api/provider-spotify/v1/";
+const PORT = process.env.PORT || 8090;
 
-// Default for emergenceAddToPlaylist:
+// Interval we check for expired tokens:
+const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8081/api/provider-spotify/v1/";
+
+// Defaults:
+const DEFAULT_TEST_EVENT_CREATE = (process.env.DEFAULT_TEST_EVENT_CREATE || 'true') == 'true';
+const DEFAULT_TEST_EVENT_ID = (process.env.DEFAULT_TEST_EVENT_ID || '0');
 const DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
 const DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
 const DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
 const DEFAULT_ALLOW_DUPLICATE_TRACKS = (process.env.DEFAULT_ALLOW_DUPLICATE_TRACKS || 'false') == 'true';
-const MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0') * 1000;
+const MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0');
 const MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
-const INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '100');
+const INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '10000');
 const PAUSE_ON_PLAYERROR = (process.env.PAUSE_ON_PLAYERROR || 'true') == 'true';
 
+const EVENT_PROTOTYPE = {
+    eventID: "",
+    url: "",
+    name: "",
+    owner: "",
+    maxUsers: 100,
+    maxDurationInMinutes: 3600,
+    maxTracksInPlaylist: 100,
+    eventStartsAt: "",
+    eventEndsAt: "",
+    allowDuplicateTracks: DEFAULT_ALLOW_DUPLICATE_TRACKS,
+    progressPercentageRequiredForEffectivePlaylist: DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST,
+    beginPlaybackAtEventStart: false,
+    everybodyIsCurator: false,
+    pauseOnPlayError: true,
+    enableTrackLiking: true,
+    enableTrackHating: true,
+    demoAutoskip: MOCKUP_AUTOSKIP,
+    demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
+    demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
+    providers: ["spotify"],
 
-// Key: EventID: Object: Event
-var mapOfEvents = new Map([
-    ["0", {
-        eventID: "0",
-        autoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
-        allowDuplicateTracks: DEFAULT_ALLOW_DUPLICATE_TRACKS,
-        activePlaylist: 0,
-        progressPercentageRequiredForEffectivePlaylist: DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST,
-        playlists: [{
-            playlistID: 0,
-            isPlaying: DEFAULT_IS_PLAYING,
-            currentTrack: null,
-            nextTracks: [],
-            timestamp: 0,
-        }],
-        effectivePlaylist: []
-    }],
-]);
+
+    activePlaylist: 0,
+    playlists: [0],
+    effectivePlaylist: []
+}
+
+// Key: EventID: Object: Timer
+var mapOfTimers = new Map();
 
 var emergencyTrackIDs = [
     "spotify:4u7EnebtmKWzUH433cf5Qv", // Bohemian Rhapsody by Queen
@@ -92,6 +107,20 @@ var emergencyTrackIDs = [
     "spotify:3vkQ5DAB1qQMYO4Mr9zJN6", // Gimme! Gimme! Gimme!  by ABBA
 ];
 
+function createEmptyEvent() {
+    log.trace("begin createEmptyEvent");
+    return JSON.parse(JSON.stringify(EVENT_PROTOTYPE));
+}
+
+function createEmptyPlaylist(id) {
+    log.trace("begin createEmptyPlaylist id=%s", id);
+    return {
+        playlistID: id,
+        currentTrack: null,
+        nextTracks: [],
+        isPlaying: DEFAULT_IS_PLAYING
+    };
+}
 
 function splitTrackIDIntoProviderAndTrack(id) {
     let splitter = id.split(":");
@@ -114,6 +143,13 @@ function findTrackInList(listOfTracks, provider, trackID) {
     return result;
 }
 
+async function getActivePlaylistForEvent(event) {
+    log.trace("begin getActivePlaylistForEvent");
+    let playlist = await getPlaylistWithID(event.eventID, event.activePlaylist);
+    log.trace("end getActivePlaylistForEvent");
+    return playlist;
+}
+
 function getETADateForTrackInPlayList(playlist, pos) {
     var ts = Date.now();
     if (playlist.currentTrack) {
@@ -127,11 +163,16 @@ function getETADateForTrackInPlayList(playlist, pos) {
 }
 
 
-async function getTrackDetailsForTrackID(eventID, trackIDxx) {
-    log.trace("getTrackDetailsForTrackID begin");
-    let [provider, trackID] = splitTrackIDIntoProviderAndTrack(trackIDxx);
-    let result = await request(SPOTIFY_PROVIDER_URL + "events/" + eventID + "/providers/" + provider + "/tracks/" + trackIDxx, { json: true })
-    log.trace("getTrackDetailsForTrackID end result=%s", JSON.stringify(result));
+async function getTrackDetailsForTrackID(eventID, trackID) {
+
+    log.trace("begin getTrackDetailsForTrackID eventID=%s, trackID=%s", eventID, trackID);
+    let [provider, track] = splitTrackIDIntoProviderAndTrack(trackID);
+    let url = SPOTIFY_PROVIDER_URL + "events/" + eventID + "/providers/" + provider + "/tracks/" + track;
+    log.debug("getTrackDetailsForTrackID before request url=>%s<", url);
+    let result = await request(url, { json: true })
+
+    if (log.isTraceEnabled())
+        log.trace("end getTrackDetailsForTrackID eventID=%s, trackID=%s, result=$s", eventID, trackID, JSON.stringify(result));
     return result;
 }
 
@@ -145,7 +186,7 @@ async function createAutofillPlayList(eventID) {
         track.added_by = "OpenDJ";
         result.push(track);
     }
-    log.trace("createAutofillPlayList end eventID=%s result=%s", eventID, JSON.stringify(result));
+    log.trace("createAutofillPlayList end eventID=%s len=%s", eventID, result.length);
     return result;
 }
 
@@ -206,8 +247,8 @@ async function addTrack(event, playlist, provider, trackID, user) {
     log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
 }
 
-function moveTrack(event, playlist, provider, trackID, newPos) {
-    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s, newPos=%s", event.eventID, playlist.playlistID, provider, trackID, newPos);
+function moveTrack(eventID, playlist, provider, trackID, newPos) {
+    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s, newPos=%s", eventID, playlist.playlistID, provider, trackID, newPos);
 
     var currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
     if (currentPos < 0) {
@@ -229,10 +270,10 @@ function moveTrack(event, playlist, provider, trackID, newPos) {
     log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
 }
 
-function deleteTrack(event, playlist, provider, trackID) {
-    log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
+function deleteTrack(eventID, playlist, provider, trackID) {
+    log.trace("begin deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 
-    var currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
+    let currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
     if (currentPos < 0) {
         throw { code: "PLYLST-200", msg: "Track not found in playlist - maybe somebody else has deleted it meanwhile?" };
     }
@@ -241,7 +282,7 @@ function deleteTrack(event, playlist, provider, trackID) {
     playlist.nextTracks.splice(currentPos, 1);
 
 
-    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
+    log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 }
 
 function updateCurrentTrackProgress(playlist) {
@@ -255,6 +296,57 @@ function updateCurrentTrackProgress(playlist) {
         playlist.currentTrack.progress_ms = newPos;
     }
 }
+
+function clearTimerForEvent(eventID) {
+    log.trace("begin clearTimerForEvent %s", eventID);
+    let timer = mapOfTimers.get(eventID);
+    if (timer) {
+        log.debug("cleared timer for event %s", eventID);
+        clearTimeout(timer);
+        mapOfTimers.delete(eventID);
+    } else {
+        log.debug("no timer for event %s - clear ignored", eventID);
+    }
+    log.trace("end clearTimerForEvent %s", eventID);
+}
+
+
+async function timerExpiredForEvent(eventID) {
+    log.debug("begin timer expired for eventID=%s - check event", eventID);
+    try {
+        let event = await getEventForEventID(eventID);
+        await checkEvent(event);
+    } catch (err) {
+        log.warn("timerExpiredForEvent failed with excpetion - will retry in a second", err);
+        setTimeout(timerExpiredForEvent, 1000, eventID);
+    }
+    log.debug("end timer expired for eventID=%s - check event", eventID);
+
+}
+
+function setTimerForEvent(event, playlist) {
+    log.trace("begin setTimerForEvent %s", event.eventID);
+
+    let timeout = playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms;
+    if (event.demoAutoskip > 0 && timeout > event.demoAutoskip * 1000) {
+        timeout = event.demoAutoskip * 1000;
+    }
+
+    if (timeout < 0 || timeout > 10 * 60 * 1000) {
+        log.warn("Calculated strange timeout %s for event %s - adjusting to 5 sec, hoping that the situation will resolve", timeout, event.eventID);
+        timeout = 5000;
+    }
+
+    clearTimerForEvent(event.eventID);
+    log.debug("Set timer for event %s with timeout %s", event.eventID, timeout);
+    let timer = setTimeout(timerExpiredForEvent, timeout, event.eventID);
+
+    mapOfTimers.set(event.eventID, timer);
+
+    log.trace("end setTimerForEvent %s", event.eventID);
+}
+
+
 async function play(event, playlist) {
     log.trace("play begin event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
@@ -283,8 +375,8 @@ async function play(event, playlist) {
 
     // Fire and Forget  Call Spotify-Provider to play at currentTrack.progress_ms
     // TODO: Make this truly async, i.e. sent a message, and provider fires a "PLAY_STARTED" event when action succeded
-    if (MOCKUP_NO_ACTUAL_PLAYING) {
-        log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - play request is NOT actually being executed");
+    if (event.demoNoActualPlaying) {
+        log.info("Demo No Actual Playing is active for event %s - play request is NOT actually being executed", event.eventID);
     } else {
         log.debug("Play it, Sam. Play %s", playlist.currentTrack.id);
         try {
@@ -304,7 +396,9 @@ async function play(event, playlist) {
         }
     }
 
-    log.info("PLAY event=%s, playlist=%s, track=%s, startAt=%s", event.eventID, playlist.playlistID, playlist.currentTrack.id, playlist.currentTrack.progress_ms);
+    // Start playing was successful!
+    log.info("PLAY event=%s, playlist=%s, track=%s, startAt=%s, name=%s", event.eventID, playlist.playlistID, playlist.currentTrack.id, playlist.currentTrack.progress_ms, playlist.currentTrack.name);
+    setTimerForEvent(event, playlist);
 
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
 }
@@ -314,9 +408,11 @@ async function pause(event, playlist, err) {
     // Make sure we take note of the current progress:
     updateCurrentTrackProgress(playlist);
     playlist.isPlaying = false;
+    clearTimerForEvent(event.eventID);
 
-    if (MOCKUP_NO_ACTUAL_PLAYING) {
-        log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request is NOT actually being executed");
+
+    if (event.demoNoActualPlaying) {
+        log.info("Demo No Actual Playing is active for event %s - pause request is NOT actually being executed", event.eventID);
     } else if (err) {
         log.debug("pause called due to error - do NOT call spotify");
     } else {
@@ -349,6 +445,7 @@ async function skip(event, playlist) {
 
     playlist.currentTrack = playlist.nextTracks.shift();
     if (playlist.currentTrack) {
+        log.debug("SKIP to next track");
         playlist.currentTrack.progress_ms = 0;
         if (playlist.isPlaying) {
             await play(event, playlist);
@@ -356,19 +453,32 @@ async function skip(event, playlist) {
     } else {
         log.info("SKIP: reached end of playlist");
         playlist.currentTrack = null;
+        clearTimerForEvent(event.eventID);
 
-        try {
-            if (MOCKUP_NO_ACTUAL_PLAYING) {
-                log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
+        log.trace("Check for autofill");
+        let stateChanged = await autofillPlaylistIfNecessary(event, playlist);
+        if (stateChanged && playlist.isPlaying) {
+            if (playlist.isPlaying) {
+                log.trace("playlist auto filled - pressing play again");
+                await play(event, playlist);
             } else {
-                log.debug("calling provider %s to pause", playlist.currentTrack.provider);
-                let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "providers/" + playlist.currentTrack.provider + "/pause");
-                log.debug("pause provider %s result=%s", playlist.currentTrack.provider, result);
-
+                log.trace("playlist auto filled but not playing");
             }
-        } catch (err) {
-            log.warn("call to spotify pause at end of playlist failed - ignoring err=" + err);
-        };
+        } else {
+            log.trace("This is really the end - stop the music");
+            try {
+                if (MOCKUP_NO_ACTUAL_PLAYING) {
+                    log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
+                } else {
+                    log.debug("calling provider %s to pause", playlist.currentTrack.provider);
+                    let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/" + playlist.currentTrack.provider + "/pause");
+                    log.debug("pause provider %s result=%s", playlist.currentTrack.provider, result);
+
+                }
+            } catch (err) {
+                log.warn("call to spotify pause at end of playlist failed - ignoring err=" + err);
+            };
+        }
     }
     log.trace("skip end");
 }
@@ -385,7 +495,7 @@ function isTrackPlaying(playlist) {
 
             if (currentPos > 0) {
                 log.trace("   currentPos=%s s", currentPos / 1000);
-                if (currentPos >= playlist.currentTrack.duration_ms) {
+                if (currentPos >= playlist.currentTrack.duration_ms - 10) {
                     log.trace("   currentPos after duration");
                     result = false;
                 } else if (currentPos < 0) {
@@ -393,7 +503,7 @@ function isTrackPlaying(playlist) {
                     result = false;
                 } else {
                     log.trace("   currentPos is within duration");
-                    if (MOCKUP_AUTOSKIP > 0 && currentPos > MOCKUP_AUTOSKIP) {
+                    if (MOCKUP_AUTOSKIP > 0 && currentPos >= MOCKUP_AUTOSKIP - 10) {
                         log.warn("AutoSkipping");
                         result = false;
                     } else {
@@ -417,12 +527,12 @@ function isTrackPlaying(playlist) {
     return result;
 }
 
-async function checkPlaylist(event, playlist) {
-    log.trace("checkPlaylist begin");
-    var stateChanged = false;
+async function autofillPlaylistIfNecessary(event, playlist) {
+    log.trace("begin autofillPlaylistIfNecessary");
+    let stateChanged = false;
     if (playlist.nextTracks.length == 0) {
         log.trace("playlist is empty");
-        if (event.autoFillEmptyPlaylist) {
+        if (event.demoAutoFillEmptyPlaylist) {
             log.info("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
             playlist.nextTracks = await createAutofillPlayList(event.eventID);
             stateChanged = true;
@@ -432,97 +542,162 @@ async function checkPlaylist(event, playlist) {
         log.trace("playlist has tracks");
     }
 
+    log.trace("end autofillPlaylistIfNecessary stateChanged=%s", stateChanged);
+    return stateChanged;
+}
+
+async function checkPlaylist(event, playlist) {
+    log.trace("checkPlaylist begin");
+    let stateChanged = await autofillPlaylistIfNecessary(event, playlist);
+
     if (playlist.isPlaying && !isTrackPlaying(playlist)) {
+        log.trace("playlist is playing but no track is playing - skipping to next track");
         await skip(event, playlist);
         stateChanged = true;
+    } else {
+        log.trace("playlist is not playing, or track is playing - nothing to do for us");
     }
 
-    if (stateChanged)
-        firePlaylistChangedEvent(event, playlist);
+    if (stateChanged) {
+        log.trace("State changed");
+        firePlaylistChangedEvent(event.eventID, playlist);
+    }
 
     log.trace("checkPlaylist end stateChanged=%s", stateChanged);
     return stateChanged;
 }
 
-function checkEvent(event) {
-    log.trace("checkEvent begin");
-    for (let playlist of event.playlists) {
-        checkPlaylist(event, playlist)
-            .catch(err => log.error("check playlist failed", err))
+async function checkEvent(event) {
+    log.trace("begin checkEvent for id %s", event.eventID);
+    try {
+        for (let playlistID of event.playlists) {
+            log.trace("get playlist");
+            let playlist = await getPlaylistWithID(event.eventID, playlistID);
+            if (!playlist) {
+                log.trace("playlist is not defined");
+                playlist = createEmptyPlaylist(playlistID);
+            }
+            log.trace("check playlist");
+            await checkPlaylist(event, playlist)
+        }
+    } catch (err) {
+        log.error("checkEvent %s failed with err %s - ignored", event.eventID, err);
     }
-    log.trace("checkEvent end");
+    log.trace("end checkEvent for id %s", event.eventID);
 }
 
-function checkEvents() {
+async function checkEvents() {
     log.trace("checkEvents begin");
-    mapOfEvents.forEach(checkEvent);
+    try {
+        let it = await gridEvents.iterator(10);
+        let entry = await it.next();
+
+        while (!entry.done) {
+            log.trace("checkEvents grid iterator key=%s", entry.key);
+            let event = JSON.parse(entry.value);
+            if (event.playlists) {
+                await checkEvent(event);
+            } else {
+                log.warn("ignoring strange event from grid with key %s", entry.key);
+                //                if (log.isTraceEnabled()) log.trace("entry=%s", JSON.stringify(entry));
+            }
+
+            log.trace("Get next entry from cache iterator");
+            entry = await it.next();
+        }
+
+        await it.close();
+
+    } catch (err) {
+        log.error("checkEvents failed with err %s", err);
+    }
+
     log.trace("checkEvents end");
 }
 
-// Make sure we update progress field of current Track, if we hand out
-// Track Info:
-function uglyTrackProgressUpdater() {
-    mapOfEvents.forEach(function(event) {
-        for (let playlist of event.playlists) {
-            updateCurrentTrackProgress(playlist);
-        }
-    });
+async function getEventForEventID(eventID) {
+    log.trace("begin getEventForEventID id=%s", eventID);
+    let event = await getFromGrid(gridEvents, eventID);
+    if (event == null) {
+        log.error("getEventForEventID event is null for id=%s", eventID);
+        /*        
+                log.debug("EvenState object created for eventID=%s", eventID);
+                event = Object.assign({}, EVENT_PROTOTYPE);
+                event.eventID = eventID;
+                event.timestamp = new Date().toISOString();
+        */
+    } else {
+        log.debug("event from grid = %s", JSON.stringify(event));
+    }
+    log.trace("end getEventForEventID id=%s", eventID);
+
+    return event;
 }
 
-function getEventForRequest(req) {
-    return mapOfEvents.get(req.params.eventID);
+async function getEventForRequest(req) {
+    log.trace("begin getEventForRequest");
+    let event = await getEventForEventID(req.params.eventID);
+    log.trace("end getEventForRequest");
+    return event;
 }
 
-function getPlaylistForRequest(req) {
-    return getEventForRequest(req).playlists[req.params.listID];
+async function getPlaylistWithID(eventID, playlistID) {
+    log.trace("begin getPlaylistWithID %s:%s", eventID, playlistID);
+    let playlist = await getFromGrid(gridPlaylists, eventID + ":" + playlistID);
+    log.trace("end getPlaylistWithID");
+    return playlist;
+}
+
+
+async function getPlaylistForRequest(req) {
+    log.trace("begin getPlaylistForRequest");
+    let eventID = req.params.eventID;
+    let listID = req.params.listID;
+    let playlist = await getPlaylistWithID(eventID, listID);
+    log.trace("end getPlaylistForRequest");
+    return playlist;
 }
 
 // ------------------------------------  Routes ---------------------
 
-router.get('/events/', function(req, res) {
-    log.trace("begin GET events");
-    uglyTrackProgressUpdater();
-    res.status(200).send(mapOfEvents);
-});
 
-router.get('/events/:eventID', function(req, res) {
+router.get('/events/:eventID', async function(req, res) {
     log.trace("begin GET event eventId=%s", req.params.eventID);
-    uglyTrackProgressUpdater();
-    res.status(200).send(getEventForRequest(req));
+    getEventForRequest(req)
+        .then(function(event) { res.status(200).send(event); })
+        .catch(function(err) { handleError(err, res) });
 });
 
-router.get('/events/:eventID/playlists/', function(req, res) {
-    log.trace("begin GET playlists eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    uglyTrackProgressUpdater();
-    res.status(200).send(getEventForRequest(req).playlists);
-});
-
-router.get('/events/:eventID/playlists/:listID', function(req, res) {
+router.get('/events/:eventID/playlists/:listID', async function(req, res) {
     log.trace("begin GET playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    uglyTrackProgressUpdater();
-    res.status(200).send(getPlaylistForRequest(req));
+    let playlist = await getPlaylistForRequest(req);
+    updateCurrentTrackProgress(playlist);
+    res.status(200).send(playlist);
 });
 
-router.get('/events/:eventID/playlists/:listID/currentTrack', function(req, res) {
+router.get('/events/:eventID/playlists/:listID/currentTrack', async function(req, res) {
     log.trace("begin GET currentTrack eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    uglyTrackProgressUpdater();
-    res.status(200).send(getPlaylistForRequest(req).currentTrack);
+    let playlist = await getPlaylistForRequest(req);
+    updateCurrentTrackProgress(playlist);
+    res.status(200).send(playlist.currentTrack);
 });
-router.get('/events/:eventID/playlists/:listID/tracks', function(req, res) {
+
+router.get('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
     log.trace("begin GET tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    uglyTrackProgressUpdater();
-    res.status(200).send(getPlaylistForRequest(req).nextTracks);
+    let playlist = await getPlaylistForRequest(req);
+    updateCurrentTrackProgress(playlist);
+    res.status(200).send(playlist.nextTracks);
 });
 
 
-router.get('/events/:eventID/playlists/:listID/play', function(req, res) {
+router.get('/events/:eventID/playlists/:listID/play', async function(req, res) {
     log.trace("begin PLAY tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
 
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
+    var event = await getEventForRequest(req);
+    var playlist = await getPlaylistForRequest(req);
     play(event, playlist)
         .then(function() {
-            firePlaylistChangedEvent(event, playlist);
+            firePlaylistChangedEvent(event.eventID, playlist);
             res.status(200).send(playlist);
         }).catch(function(err) {
             log.debug("play failed with err", err);
@@ -531,12 +706,12 @@ router.get('/events/:eventID/playlists/:listID/play', function(req, res) {
 });
 
 
-router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
+router.get('/events/:eventID/playlists/:listID/pause', async function(req, res) {
     log.trace("begin PAUSE playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
+    var event = await getEventForRequest(req);
+    var playlist = await getPlaylistForRequest(req);
     pause(event, playlist).then(function() {
-        firePlaylistChangedEvent(event, playlist);
+        firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
     }).catch(function(err) {
         log.debug("pause failed with err", err);
@@ -545,31 +720,25 @@ router.get('/events/:eventID/playlists/:listID/pause', function(req, res) {
 
 });
 
-router.get('/events/:eventID/playlists/:listID/next', function(req, res) {
+router.get('/events/:eventID/playlists/:listID/next', async function(req, res) {
     log.trace("begin NEXT playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
-    skip(event, playlist);
-    firePlaylistChangedEvent(event, playlist);
-    res.status(200).send(playlist);
-});
-
-// Just for Dan's convenience, we provide a SKIP operation, too:
-router.get('/events/:eventID/playlists/:listID/skip', function(req, res) {
-    log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
-    skip(event, playlist);
-    firePlaylistChangedEvent(event, playlist);
-    res.status(200).send(playlist);
+    var event = await getEventForRequest(req);
+    var playlist = await getPlaylistForRequest(req);
+    skip(event, playlist).then(function() {
+        firePlaylistChangedEvent(event.eventID, playlist);
+        res.status(200).send(playlist);
+    }).catch(function(err) {
+        log.debug("pause failed with err", err);
+        res.status(500).send(err);
+    });
 });
 
 
-router.get('/events/:eventID/playlists/:listID/push', function(req, res) {
+
+router.get('/events/:eventID/playlists/:listID/push', async function(req, res) {
     log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = getEventForRequest(req);
-    var playlist = getPlaylistForRequest(req);
-    firePlaylistChangedEvent(event, playlist);
+    var playlist = await getPlaylistForRequest(req);
+    firePlaylistChangedEvent(req.params.eventID, playlist);
     res.status(200).send(playlist);
 });
 
@@ -578,7 +747,7 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
     log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     log.trace("body=%s", JSON.stringify(req.body));
 
-    let event = getEventForRequest(req);
+    let event = await getEventForRequest(req);
     let playlist = getPlaylistForRequest(req);
     let provider = req.body.provider;
     let trackID = req.body.id;
@@ -586,7 +755,7 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
 
     try {
         await addTrack(event, playlist, provider, trackID, user);
-        firePlaylistChangedEvent(event, playlist);
+        firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
         log.info("Track ADDED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
     } catch (error) {
@@ -598,20 +767,18 @@ router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res
 });
 
 // Reorder // move Track:
-router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
+router.post('/events/:eventID/playlists/:listID/reorder', async function(req, res) {
     log.trace("begin MOVE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
-        let event = getEventForRequest(req);
-        let playlist = getPlaylistForRequest(req);
+        let playlist = await getPlaylistForRequest(req);
         let provider = req.body.provider;
         let trackID = req.body.id;
         let to = parseInt(req.body.to);
 
-
-        moveTrack(event, playlist, provider, trackID, to);
-        firePlaylistChangedEvent(event, playlist);
+        moveTrack(req.params.eventID, playlist, provider, trackID, to);
+        firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
         log.info("Track MOVED eventId=%s, listId=%s, track=%s:%s, to=%s", req.params.eventID, req.params.listID, provider, trackID, to);
     } catch (error) {
@@ -624,20 +791,19 @@ router.post('/events/:eventID/playlists/:listID/reorder', function(req, res) {
 
 // DELETE Track:
 // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index));
-router.delete('/events/:eventID/playlists/:listID/tracks/:track', function(req, res) {
+router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function(req, res) {
     log.trace("begin DELETE track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
-        let event = getEventForRequest(req);
-        let playlist = getPlaylistForRequest(req);
+        let playlist = await getPlaylistForRequest(req);
 
         // Track is in format <provider>:<trackID>, thus we need to split:
         let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
 
-        deleteTrack(event, playlist, provider, trackID);
+        deleteTrack(req.params.eventID, playlist, provider, trackID);
 
-        firePlaylistChangedEvent(event, playlist);
+        firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
         log.info("Track DELETED eventId=%s, listId=%s, track=%s:%s", req.params.eventID, req.params.listID, provider, trackID);
     } catch (error) {
@@ -653,126 +819,129 @@ app.use("/api/service-playlist/v1", router);
 
 
 
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-// ------------------------------ kafka stuff -----------------------------
-// ------------------------------------------------------------------------
-// ------------------------------------------------------------------------
-const TOPIC_PLAYLIST = "opendj.data.playlist";
 
-var kafkaURL = process.env.KAFKA_HOST || "localhost:9092"
-var kafkaClient = new kafka.KafkaClient({
-    kafkaHost: kafkaURL,
-    connectTimeout: 1000,
-    requestTimeout: 500,
-    autoConnect: true,
-    connectRetryOptions: {
-        retries: 10,
-        factor: 1,
-        minTimeout: 1000,
-        maxTimeout: 1000,
-        randomize: true,
-    },
-    idleConnection: 60000,
-    reconnectOnIdle: true,
-});
-kafkaClient.on('error', function(err) {
-    log.error("kafkaClient error: %s -  reconnecting....", err);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = JSON.stringify(err);
-    kafkaClient.connect();
-});
-
-kafkaClient.on('connect', function(err) {
-    log.info("kafkaClient connect");
-    readyState.kafkaClient = true;
-    readyState.kafkaClientError = "";
-});
-
-kafkaClient.connect();
-
-var kafkaProducer = new kafka.Producer(kafkaClient);
-
-kafkaProducer.on('error', function(err) {
-    log.error("kafkaProducer error: %s", err);
-});
-
-var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-    { topic: TOPIC_PLAYLIST }, // offset, partition
-], {
-    groupId: uuidv1(),
-    autoCommit: true,
-    fromOffset: true
-});
-
-kafkaConsumer.on('error', function(error) {
-    log.error("kafkaConsumer error: %s", error);
-    readyState.kafkaClient = false;
-    readyState.kafkaClientError = "Consumer:" + JSON.stringify(error);
-});
-
-kafkaConsumer.on('message', function(message) {
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ------------------------------ datagrid stuff -----------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const datagrid = require('infinispan');
+var gridPlaylists = null;
+var gridEvents = null;
+async function connectToGrid(name) {
+    let grid = null;
     try {
-        //        log.trace("kafkaConsumer message offset=%s, high=%s messsage=%s", message.offset, message.highWaterOffset, JSON.stringify(message));
-
-        if (message.offset == message.highWaterOffset - 1) {
-            log.debug("high water messages: %s", JSON.stringify(message));
-            var payload = JSON.parse(message.value);
-
-            let currentState = mapOfEvents.get("0").playlists[0];
-            if (currentState && currentState.timestamp) {
-                log.trace("we have a current state with a timestamp");
-                if (Date.parse(currentState.timestamp) < Date.parse(payload.timestamp)) {
-                    log.debug("Using new state for event %s", payload.eventID);
-                    mapOfEvents.get("0").playlists[0] = payload;
-                } else {
-                    log.debug("Current state for event is equal or newer than state from message - message is ignored")
-                }
-            } else {
-                log.trace("we have no current state, or current state does not have a timestamp, so we take the one from the message");
-                mapOfEvents.get("0").playlists[0] = payload;
-            }
-        }
-    } catch (e) {
-        log.warn(" Exception while processing message - ignored", e);
+        log.debug("begin connectToGrid %s", name);
+        let splitter = DATAGRID_URL.split(":");
+        let host = splitter[0];
+        let port = splitter[1];
+        grid = await datagrid.client([{ host: host, port: port }], { gridName: name, mediaType: 'application/json' });
+        readyState.datagridClient = true;
+        log.info("connected to grid %s", name);
+    } catch (err) {
+        readyState.datagridClient = false;
+        readyState.lastError = err;
+        throw "DataGrid connection FAILED with err " + err;
     }
-});
 
-
-function firePlaylistChangedEvent(event, playlist) {
-    log.debug("firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
-    playlist.timestamp = new Date().toISOString();
-    kafkaProducer.send([{
-        topic: TOPIC_PLAYLIST,
-        key: event.eventID + ":" + playlist.playlistID,
-        messages: [JSON.stringify(playlist)]
-    }], function(err, data) {
-        if (err) {
-            log.error("kafkaProducer.send err=%s", err);
-            readyState.kafkaClient = false;
-            readyState.kafkaClientError = JSON.stringify(err);
-        }
-    });
-    log.trace("end firePlaylistChangedEvent for event=%s, playlist=%s", event.eventID, playlist.playlistID);
+    return grid;
 }
 
-// Then: check events, start poll intevall, open port
+async function getFromGrid(grid, key) {
+    try {
+        let val = await grid.get(key);
+        if (val)
+            val = JSON.parse(val);
+        return val;
+    } catch (err) {
+        handleGridError(grid, err);
+        throw err;
+    }
+}
 
-log.info("Wait 2s sec for messages to be processed....");
-setTimeout(function() {
-    log.info("Initial check of Events....");
-    checkEvents();
+async function putIntoGrid(grid, key, value) {
+    log.trace("begin putIntoGrid grid=%s, key=%s, value=%s", grid, key, value);
+    await grid.put(key, JSON.stringify(value));
+    log.trace("end putIntoGrid key=%s", key);
+}
+
+function putIntoGridAsync(grid, key, value) {
+    log.trace("begin putIntoGridAsync grid=%s, key=%s, value=%s", grid, key, value);
+    grid.put(key, JSON.stringify(value))
+        .then(function() {
+            log.trace("putIntoGridAsync success");
+        })
+        .catch(function(err) {
+            log.warn("putIntoGridAsync failed - ignoring error %s", err);
+            handleGridError(grid, err);
+        });
+    log.trace("end putIntoGridAsync");
+}
+
+function handleGridError(grid, err) {
+    log.error("Grid error: %s", err);
+    log.error("grid=%s", JSON.stringify(grid));
+    readyState.datagridClient = false;
+    readyState.lastError = err;
+    //TODO: Try to reconnect
+}
+
+async function fireEventChangedEvent(event) {
+    log.trace("begin fireEventChangedEvent");
+    await putIntoGrid(gridEvents, event.eventID, event);
+    log.trace("end fireEventChangedEvent");
+}
+
+function firePlaylistChangedEvent(eventID, playlist) {
+    let key = eventID + ":" + playlist.playlistID;
+    log.trace("begin firePlaylistChangedEvent key=%s", key);
+    putIntoGridAsync(gridPlaylists, key, playlist);
+    log.trace("end firePlaylistChangedEvent");
+}
+
+
+
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// ------------------------------ init stuff -----------------------------
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+
+setImmediate(async function() {
+    try {
+        log.info("Connecting to datagrid...");
+        gridEvents = await connectToGrid("EVENT");
+        gridPlaylists = await connectToGrid("PLAYLISTS");
+
+        if (DEFAULT_TEST_EVENT_CREATE) {
+            let testEvent = await getEventForEventID(DEFAULT_TEST_EVENT_ID);
+            if (testEvent) {
+                log.info("Test event already present - no need to create it");
+            } else {
+                log.trace("Creating test event....");
+                testEvent = createEmptyEvent();
+                testEvent.eventID = DEFAULT_TEST_EVENT_ID;
+                testEvent.name = "Demo Event";
+                testEvent.owner = "OpenDJ";
+                await fireEventChangedEvent(testEvent);
+                log.info("Created test event with id " + testEvent.eventID);
+            }
+            log.debug("Initial check of testEvent");
+            await checkEvent(testEvent);
+
+        }
+    } catch (err) {
+        log.fatal("Init failed, something is seriously wrong. Will terminate.", err);
+        process.exit(42);
+    }
 
     log.info("Starting checkEvents() poll");
     setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
 
     log.debug("opening server port");
-    app.listen(8081, function() {
-        log.info('Now listening on port 8081!');
+    app.listen(PORT, function() {
+        log.info('Now listening on port %s!', PORT);
     });
 
-    log.info("Tell everybody that we are online by firePlaylistChangedEvent");
-    firePlaylistChangedEvent(
-        mapOfEvents.get("0"),
-        mapOfEvents.get("0").playlists[0]);
-}, 2000);
+});
