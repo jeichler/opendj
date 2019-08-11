@@ -8,6 +8,7 @@
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: "Combine env facts"
+      tags: always
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
@@ -21,7 +22,7 @@
       register: acmedeploy
       changed_when: "'AlreadyExists' not in acmedeploy.stderr" 
 
-    - name: Create Image Stream 
+    - name: Create Image Stream for S2I Builder Image
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
@@ -33,24 +34,7 @@
             annotations:
             labels:
               app: frontend-web
-            name: frontend-web
-            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
-          spec:
-            lookupPolicy:
-              local: false
-    - name: Create Image Stream for Build Image
-      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
-      k8s:
-        state: present
-        wait: true
-        definition:
-          kind: ImageStream
-          apiVersion: image.openshift.io/v1
-          metadata:
-            annotations:
-            labels:
-              app: frontend-web
-            name: centos7-s2i-web-app
+            name: frontend-web-s2i-builder
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             lookupPolicy:
@@ -66,8 +50,73 @@
                 name: latest
                 referencePolicy:
                   type: Local
-            
-    - name: Create BuildConfig
+
+    - name: Create Image Stream for Runtime Base Image
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: frontend-web
+            name: frontend-web-runtime-base
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            lookupPolicy:
+              local: false
+            tags:
+              - annotations: null
+                from:
+                  kind: DockerImage
+                  name: registry.redhat.io/rhscl/httpd-24-rhel7
+                generation: 2
+                importPolicy:
+                  scheduled : true
+                name: latest
+                referencePolicy:
+                  type: Local
+
+    - name: Create Image Stream for Component Artifact Image
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: frontend-web
+            name: frontend-web-artifact
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            lookupPolicy:
+              local: false
+
+    - name: Create Image Stream for Component Runtime Image
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: frontend-web
+            name: frontend-web
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            lookupPolicy:
+              local: false
+
+    - name: Create BuildConfig S2I artifact
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
@@ -79,7 +128,7 @@
             annotations:
             labels:
               app: frontend-web
-            name: frontend-web
+            name: frontend-web-s2i
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             failedBuildsHistoryLimit: 5
@@ -87,7 +136,7 @@
             output:
               to:
                 kind: ImageStreamTag
-                name: frontend-web:latest
+                name: frontend-web-artifact:latest
             postCommit: {}
             resources: 
               limits:
@@ -106,7 +155,7 @@
                     value: www
                 from:
                   kind: ImageStreamTag
-                  name: 'centos7-s2i-web-app:latest'
+                  name: 'frontend-web-s2i-builder:latest'
                 incremental: true
               type: Source
             successfulBuildsHistoryLimit: 2
@@ -120,6 +169,65 @@
             - generic:
                 secret: rEVLkWDcrlBoPuionusPj0CL4A1H1DsFCMYPCdSw
               type: Generic
+
+    - name: Create BuildConfig Runtime image
+      when: ENV.COMMON.CONTAINER_IMAGE_BUILD
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: BuildConfig
+          apiVersion: build.openshift.io/v1
+          metadata:
+            annotations:
+            labels:
+              app: frontend-web
+            name: frontend-web-runtime
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            failedBuildsHistoryLimit: 5
+            nodeSelector: null
+            output:
+              to:
+                kind: ImageStreamTag
+                name: frontend-web:latest
+            postCommit: {}
+            resources: 
+              limits:
+                memory: 512Mi
+            runPolicy: Serial
+            source:
+              dockerfile: |-
+                FROM openshift/httpd:2.4                 
+                COPY ./artifact/app-root/src/my-httpd.conf /etc/httpd/conf/httpd.conf
+                COPY ./artifact/app-root/output /var/www/html/
+              images:
+              - from: 
+                  kind: ImageStreamTag
+                  name: frontend-web-artifact:latest
+                paths: 
+                - sourcePath: /opt/app-root
+                  destinationDir: "./artifact"
+            strategy:
+              dockerStrategy:
+                from: 
+                  kind: ImageStreamTag
+                  name: httpd:2.4  
+                  namespace: openshift
+            triggers:
+              - imageChange:
+                  from:
+                    kind: ImageStreamTag
+                    name: frontend-web-artifact:latest
+                    namespace: dfroehli-opendj-dev
+                type: ImageChange
+              - imageChange:
+                  from:
+                    kind: ImageStreamTag
+                    name: httpd:2.4  
+                    namespace: openshift
+                type: ImageChange
+            
 
     - name: Create ConfigMap
       k8s:
