@@ -8,8 +8,8 @@ export class MusicEvent {
     maxUsers: number;
     maxDurationInMinutes: number;
     maxTracksInPlaylist: number;
-    eventStartsAt: Date;
-    eventEndsAt: Date;
+    eventStartsAt: String; // ISO DateTime as String
+    eventEndsAt: String; // ISO DateTime as String
     allowDuplicateTracks: boolean;
     progressPercentageRequiredForEffectivePlaylist: number;
     beginPlaybackAtEventStart: boolean;
