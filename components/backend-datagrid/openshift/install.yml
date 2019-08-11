@@ -14,7 +14,8 @@
 
 #https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.3.x/openshift/datagrid-service/user-config
 
-    - name: Deploy Datagrid 
+    - name: undeploy Datagrid 
+      when: ENV.BACKEND_DATAGRID.UNDEPLOY
       k8s:
         state: absent
         wait: true

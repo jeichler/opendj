@@ -8,6 +8,7 @@
     - ../../../install/openshift/vars_env_{{ STAGE }}.yml
   tasks:
     - name: "Combine env facts"
+      tags: always
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
     - name: Create Spotify secret
@@ -18,6 +19,7 @@
       changed_when: "'already exists' not in createSecret.stderr" 
 
     - name: Create kafka topic 
+      when: ENV.BACKEND_EVENTSTORE.KAFKA.USE
       command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.state.provider-spotify --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}} --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
@@ -132,8 +134,10 @@
                         value: "{{ENV.PROVIDER_SPOTIFY.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
                         value: "true"
+                      - name: PORT
+                        value: "8080"
                       - name: DATAGRID_URL
-                        value: "{{ENV.PROVIDER_SPOTIFY.DATAGRID_URL | default('backend-datagrid:11222')}}" 
+                        value: "{{ENV.BACKEND_DATAGRiD.URL | default('backend-datagrid:11222')}}" 
                       - name: SPOTIFY_CALLBACK_URL
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL | mandatory}}" 
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL

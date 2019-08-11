@@ -157,6 +157,8 @@ http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/devic
 http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
 
 
+http://dev.opendj.io/api/provider-spotify/v1/events/0/providers/spotify/login
+
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/login
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 
