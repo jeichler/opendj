@@ -1,106 +1,339 @@
-var app = require('express')();
-var http = require('http').createServer(app);
-var cors = require('cors');
-var io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket.io' });
-var kafka = require('kafka-node');
-const uuidv1 = require('uuid/v1');
+const compression = require('compression');
+const express = require('express');
+const app = express();
+const http = require('http').createServer(app);
+const router = new express.Router();
+const cors = require('cors');
+const io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket' });
 
-var port = process.env.PORT || 3000;
-var kafkaURL = process.env.KAFKA_HOST || "localhost:9092";
-var TOPIC_INTERNAL = process.env.topic || "opendj.data.playlist";
-
-var log4js = require('log4js')
-var log = log4js.getLogger();
+const port = process.env.PORT || 3000;
+const log4js = require('log4js')
+const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
-
 app.use(cors());
+app.use(compression())
+app.use("/api/service-web/v1", router);
 
-var currentPlaylist = {};
+var readyState = {
+    datagridClient: false,
+    websocket: false,
+    lastError: ""
+};
 
-/**
- * Kafka Client Setup
- */
 
-var kafkaClient = new kafka.KafkaClient({
-    kafkaHost: kafkaURL,
-    connectTimeout: 1000,
-    requestTimeout: 500,
-    autoConnect: true,
-    connectRetryOptions: {
-        retries: 10,
-        factor: 1,
-        minTimeout: 1000,
-        maxTimeout: 1000,
-        randomize: true,
-    },
-    idleConnection: 60000,
-    reconnectOnIdle: true,
-});
-kafkaClient.on('error', function(err) {
-    log.error("kafkaClient error: %s -  reconnecting....", err);
-    kafkaClient.connect();
-});
-kafkaClient.on('connect', function(data) {
-    log.info("kafkaClient connected");
-});
 
-function startKafkaConsumer() {
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ------------------------------ datagrid stuff -----------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const datagrid = require('infinispan');
+var gridPlaylists = null;
+var gridEvents = null;
 
-    var kafkaConsumer = new kafka.Consumer(kafkaClient, [
-        { topic: TOPIC_INTERNAL } // offset, partition
-    ], {
-        groupId: uuidv1(), // All pods need to consume for now, thus we use a random consumer group
-        autoCommit: true,
-        // Fix #72: Do not start at the beginning
-        // fromOffset: true,
-        // offset: 0
-    });
+async function connectToGrid(name) {
+    let grid = null;
+    try {
+        log.debug("begin connectToGrid %s", name);
+        let splitter = DATAGRID_URL.split(":");
+        let host = splitter[0];
+        let port = splitter[1];
+        grid = await datagrid.client([{ host: host, port: port }], { gridName: name, mediaType: 'application/json' });
+        readyState.datagridClient = true;
+        log.debug("connectToGrid grid=%s client=%s", name, grid);
+        log.info("connected to grid %s", name);
+    } catch (err) {
+        readyState.datagridClient = false;
+        readyState.lastError = err;
+        throw "DataGrid connection FAILED with err " + err;
+    }
 
-    kafkaConsumer.on('message', function(message) {
-        log.trace("kafkaConsumer received message: %s", JSON.stringify(message));
+    return grid;
+}
+
+async function getFromGrid(grid, key) {
+    try {
+        let val = await grid.get(key);
+        if (val)
+            val = JSON.parse(val);
+        return val;
+    } catch (err) {
+        handleGridError(grid, err);
+        throw err;
+    }
+}
+
+function handleGridError(grid, err) {
+    log.error("Grid error: %s", err);
+    log.error("grid=%s", JSON.stringify(grid));
+    readyState.datagridClient = false;
+    readyState.lastError = err;
+    //TODO: Try to reconnect
+}
+
+async function addCUDListenerForGrid(grid, listener) {
+    log.trace("begin addCUDListenerForGrid grid=%s", grid);
+    let listenerID = await grid.addListener('create', listener);
+    await grid.addListener('modify', listener, { listenerId: listenerID });
+    await grid.addListener('remove', listener, { listenerId: listenerID });
+    await grid.addListener('expiry', listener, { listenerId: listenerID });
+}
+
+async function connectToDatagrid() {
+    log.info("Connecting to datagrid...");
+    gridEvents = await connectToGrid("EVENT");
+    gridPlaylists = await connectToGrid("PLAYLISTS");
+
+
+    log.debug("Register listeners...");
+    await addCUDListenerForGrid(gridEvents, onEventModified);
+    await addCUDListenerForGrid(gridPlaylists, onPlaylistModified);
+
+    log.debug("Connecting to datagrid...DONE");
+    readyState.datagridClient = true;
+
+}
+
+async function onPlaylistModified(key, entryVersion, listenerID) {
+    log.trace("begin onPlaylistModified key=%s", key);
+    try {
+        if (key.indexOf(':') < 0) {
+            log.debug("onPlaylistModified: ignore strange event with key %s", key);
+            return;
+        }
+
+        let splitter = key.split(":");
+        let eventID = splitter[0];
+        let playlistID = splitter[1];
+
+        let playlist = await getPlaylistForPlaylistID(key);
+        let namespace = io.of("/event/" + eventID);
+        emitPlaylist(namespace, playlist);
+    } catch (err) {
+        log.error("onPlaylistModified  failed - ignoring err=%s", err);
+    }
+
+    log.trace("end onPlaylistModified key=%s", key);
+}
+
+async function onEventModified(key, entryVersion, listenerID) {
+    log.trace("begin onEventModified key=%s", key);
+    try {
+        if (key.indexOf(':') > 0) {
+            log.debug("onEventModified: ignore strange event with key %s", key);
+            return;
+        }
+
+        let eventID = key;
+
+        let event = await getEventForEventID(key);
+        let namespace = io.of("/api/service-web/socket/event/" + eventID);
+
+        emitEvent(namespace, event);
+    } catch (err) {
+        log.error("onEventModified  failed - ignoring err=%s", err);
+    }
+
+    log.trace("end onEventModified key=%s", key);
+}
+
+
+async function getEventForEventID(eventID) {
+    log.trace("begin getEventForEventID id=%s", eventID);
+    let event = await getFromGrid(gridEvents, eventID);
+    if (event == null) {
+        log.warn("getEventForEventID event is null for id=%s", eventID);
+    } else {
+        if (log.isTraceEnabled())
+            log.trace("event from grid = %s", JSON.stringify(event));
+    }
+    log.trace("end getEventForEventID id=%s", eventID);
+    return event;
+}
+async function getPlaylistForPlaylistID(playlistID) {
+    log.trace("begin getPlaylistForPlaylistID id=%s", playlistID);
+    let playlist = await getFromGrid(gridPlaylists, playlistID);
+    if (playlist == null) {
+        log.warn("getPlaylistForPlaylistID event is null for id=%s", playlistID);
+    } else {
+        if (log.isTraceEnabled())
+            log.trace("playlist from grid = %s", JSON.stringify(playlist));
+    }
+    log.trace("end getPlaylistForPlaylistID id=%s", playlistID);
+    return playlist;
+}
+
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ------------------------------ websocket stuff -----------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+function getEventIDFromSocketNamespace(socket) {
+    const nsp = socket.nsp;
+    let eventID = null;
+    if (nsp && nsp.name && nsp.name.startsWith("/event/"))
+        eventID = nsp.name.slice("/event/".length);
+    log.trace("getEventIDFromSocketNamespace eventID=%s", eventID);
+    return eventID;
+}
+
+
+function emitPlaylist(socketOrNamespace, playlist) {
+    log.trace("begin emitPlaylist id=%s", playlist.playlistID);
+
+    log.trace("nsp=%s", socketOrNamespace.nsp);
+
+    socketOrNamespace.emit('current-playlist', playlist);
+    log.trace("end emitPlaylist id=%s", playlist.playlistID);
+}
+
+function emitEvent(socketOrNamespace, event) {
+    log.trace("begin emitEvent id=%s", event.eventID);
+    socketOrNamespace.emit('current-event', event);
+    log.trace("end emitEvent id=%s", event.eventID);
+}
+
+async function emitEventToSocket(socket) {
+    log.trace("begin emitEventToSocket");
+    let eventID = getEventIDFromSocketNamespace(socket);
+    let currentEvent = await getEventForEventID(eventID);
+    if (eventID && currentEvent) {
+        log.debug("emit current-event %s to socket %s", eventID, socket.id);
+        emitEvent(socket, currentEvent);
+    } else {
+        log.warn("We have no event for id %s ?!", eventID);
+    }
+    log.trace("end emitEventToSocket");
+}
+
+async function onRefreshEvent(socket) {
+    log.trace("begin onRefreshEvent socket.id=%s", socket.id);
+    try {
+        await emitEventToSocket(socket);
+    } catch (err) {
+        log.error("onRefreshEvent failed - ignoring err %s", err);
+    }
+    log.trace("end onRefreshEvent socket.id=%s", socket.id);
+}
+
+async function onRefreshPlaylist(socket) {
+    log.trace("begin onRefreshPlaylist socket.id=%s", socket.id);
+    try {
+        let eventID = getEventIDFromSocketNamespace(socket);
+        let event = await getEventForEventID(eventID);
+        let playlist = await getPlaylistForPlaylistID(eventID + ":" + event.activePlaylist);
+        emitPlaylist(socket, playlist);
+    } catch (err) {
+        log.error("onRefreshPlaylist failed - ignoring err %s", err);
+    }
+    log.trace("end onRefreshPlaylist socket.id=%s", socket.id);
+}
+
+function onDisconnect(socket) {
+    // Not really something to do for us:
+    log.debug('socket %s disconnected from event %s', socket.id, getEventIDFromSocketNamespace(socket));
+}
+
+
+async function onWebsocketConnection(socket) {
+    log.trace("begin onWebsocketConnection socket.id=%s", socket.id);
+
+    const eventID = getEventIDFromSocketNamespace(socket);
+
+    if (eventID) {
+        log.debug('socket %s connected to event %s', socket.id, eventID);
+
+        log.debug("Register callbacks");
+        socket.on('refresh-event', function() {
+            onRefreshEvent(socket);
+        });
+        socket.on('refresh-playlist', function() {
+            onRefreshPlaylist(socket);
+        });
+
+        socket.on('disconnect', function() {
+            onDisconnect(socket);
+        });
 
         try {
-
-            var msg = JSON.parse(JSON.stringify(message));
-            if (msg.offset == msg.highWaterOffset - 1) {
-                log.trace("High Water Message received");
-                var msgPayload = JSON.parse(msg.value);
-                currentPlaylist = msgPayload;
-                io.emit('current-playlist', currentPlaylist);
-                log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
+            // Send Welcome Package:
+            let eventID = getEventIDFromSocketNamespace(socket);
+            let event = await getEventForEventID(eventID);
+            if (event) {
+                emitEvent(socket, event);
+                let playlist = await getPlaylistForPlaylistID(eventID + ":" + event.activePlaylist);
+                if (playlist) {
+                    emitPlaylist(socket, playlist);
+                } else {
+                    log.warn("onWebsocketConnection: no active playlist with ID %s for event %s in grid", event.activePlaylist, eventID);
+                }
             } else {
-                log.trace("Ignoring old message");
+                log.warn("onWebsocketConnection: no event with ID %s in grid", eventID);
             }
-        } catch (e) {
-            log.error("kafkaConsumer Exception %s while processing message", e);
+        } catch (err) {
+            log.error("onWebsocketConnection sent welcome package failed - ignoring err %s", err);
         }
-    });
 
-    kafkaConsumer.on('error', function(error) {
-        log.error("kafkaConsumer error: %s", error);
-    });
+    } else {
+        log.warn("Socket connect without namespace - disconnecting");
+        socket.disconnect(true);
+    }
+
+    log.trace("end onWebsocketConnection socket.id=%s", socket.id);
 }
 
-/**
- * Socket.io connection handling
- */
-function onConnection(socket) {
+// Register Dynamic namespaces with IO:
+log.trace("Register websocket namespace");
 
-    log.info('socket.io user connected');
-    socket.emit('current-playlist', currentPlaylist);
+io.of(/^\/event\/.+$/)
+    .on('connect', onWebsocketConnection);
 
-    socket.on('refresh-playlist', function() {
-        socket.emit('current-playlist', currentPlaylist);
-    });
+/*
+io.of("/event/0")
+    .on('connect', onWebsocketConnection);
+*/
 
-    socket.on('disconnect', function() {
-        log.info('socket.io disconnected');
-    });
-}
+//io.on('connect', onWebsocketConnection);
 
-io.on('connection', onConnection);
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// ------------------------------ Web routes -----------------------------
+// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
-http.listen(port, function() {
-    log.info('listening on *: ' + port);
-    startKafkaConsumer();
+
+router.get('/ready', function(req, res) {
+    log.trace("ready begin");
+    // Default: not ready:
+    var status = 500;
+    if (readyState.datagridClient &&
+        readyState.refreshExpiredTokens) {
+        status = 200;
+    }
+
+    res.status(status).send(JSON.stringify(readyState));
+});
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ------------------------------ init stuff -----------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+setImmediate(async function() {
+    try {
+        await connectToDatagrid();
+
+        http.listen(port, function() {
+            log.info('listening on *: ' + port);
+            readyState.websocket = true;
+        });
+    } catch (err) {
+        log.fatal("!!!!!!!!!!!!!!!");
+        log.fatal("init failed with err %s", err);
+        log.fatal("Terminating now");
+        log.fatal("!!!!!!!!!!!!!!!");
+        process.exit(42);
+    }
 });
