@@ -3,14 +3,14 @@
 const compression = require('compression');
 const express = require('express');
 const app = express();
-var cors = require('cors');
-var promiseRetry = require('promise-retry');
-var router = new express.Router();
-var log4js = require('log4js')
-var log = log4js.getLogger();
+const router = new express.Router();
+const cors = require('cors');
+const promiseRetry = require('promise-retry');
+const log4js = require('log4js')
+const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8081;
 const COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
 var readyState = {
     datagridClient: false,
@@ -26,8 +26,8 @@ var readyState = {
 // ---------------------------------------------------------------------------
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const datagrid = require('infinispan');
-var tracksCache = null;
-var stateCache = null;
+var cacheTracks = null;
+var cacheState = null;
 
 async function connectToCache(name) {
     let cache = null;
@@ -81,7 +81,7 @@ function putIntoCacheAsync(cache, key, value) {
 
 function fireEventStateChange(event) {
     log.trace("begin fireEventStateChange");
-    putIntoCacheAsync(stateCache, event.eventID, event);
+    putIntoCacheAsync(cacheState, event.eventID, event);
     log.trace("end fireEventStateChange");
 }
 
@@ -102,7 +102,7 @@ var SpotifyWebApi = require('spotify-web-api-node');
 var spotifyClientID = process.env.SPOTIFY_CLIENT_ID || "-unknown-";
 var spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET || "-unknown-";
 var spotifyRedirectUri = process.env.SPOTIFY_CALLBACK_URL || "-unknown-";
-var spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private'];
+var spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private', 'user-read-email'];
 
 // Interval we check for expired tokens:
 var SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
@@ -193,7 +193,7 @@ function getSpotifyApiForEvent(event) {
 
 async function getEventStateForEvent(eventID) {
     log.trace("begin getEventStateForEvent id=%s", eventID);
-    let eventState = await getFromCache(stateCache, eventID);
+    let eventState = await getFromCache(cacheState, eventID);
     if (eventState == null) {
         log.debug("EvenState object created for eventID=%s", eventID);
         eventState = Object.assign({}, eventStatePrototype);
@@ -350,12 +350,11 @@ function refreshAccessToken(event) {
 async function refreshExpiredTokens() {
     log.trace("refreshExpiredTokens begin");
     try {
-        let it = await stateCache.iterator(10);
-        log.trace("it = %s", JSON.stringify(it));
+        let it = await cacheState.iterator(10);
         let entry = await it.next();
 
         while (!entry.done) {
-            log.trace("event = %s", JSON.stringify(entry));
+            log.trace("entry = %s", JSON.stringify(entry));
             refreshAccessToken(JSON.parse(entry.value));
             entry = await it.next();
         }
@@ -514,7 +513,7 @@ async function getTrackDetails(eventID, trackID) {
     // CACHING, as the following is quite Expensive, and we would like
     // to avoid to run into Spotify API rate limits:
     try {
-        result = await getFromCache(tracksCache, "spotify:" + trackID);
+        result = await getFromCache(cacheTracks, "spotify:" + trackID);
     } catch (cacheFailed) {
         log.warn("DataGrid GET TRACKS failed - ignoring error %s", cacheFailed);
     }
@@ -599,7 +598,7 @@ async function getTrackDetails(eventID, trackID) {
         result = mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult);
 
         // Cache result:
-        putIntoCacheAsync(tracksCache, "spotify:" + trackID, result);
+        putIntoCacheAsync(cacheTracks, "spotify:" + trackID, result);
     }
 
     log.trace("end getTrackDetails");
@@ -758,6 +757,7 @@ if (COMPRESS_RESULT == 'true') {
     log.info("compression disabled");
 
 }
+
 app.use(cors());
 
 function handleError(err, response) {
@@ -890,26 +890,14 @@ router.get('/ready', function(req, res) {
 
 app.use("/api/provider-spotify/v1", router);
 
-
-function onCacheEntryModified(key, entryVersion, listenerID) {
-    log.debug("onCacheEntryModified key=%s, entryVersion=%s, listenerID=%s", key, entryVersion, listenerID);
-}
-
 setImmediate(async function() {
     try {
-        tracksCache = await connectToCache("TRACKS");
-        stateCache = await connectToCache("PROVIDER_SPOTIFY_STATE");
+        cacheTracks = await connectToCache("TRACKS");
+        cacheState = await connectToCache("PROVIDER_SPOTIFY_STATE");
 
+        log.info("Initial token refresh");
         await refreshExpiredTokens();
-        //    setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
-
-        /* Sample Listener
-        log.debug("Adding cache listener");
-        let listenerID = await tracksCache.addListener('create', onCacheEntryModified);
-        await tracksCache.addListener('modify', onCacheEntryModified, { listenerId: listenerID });
-        await tracksCache.addListener('remove', onCacheEntryModified, { listenerId: listenerID });
-        await tracksCache.addListener('expiry', onCacheEntryModified, { listenerId: listenerID });
-*/
+        setInterval(refreshExpiredTokens, SPOTIFY_REFRESH_TOKEN_INTERVAL);
 
         app.listen(PORT, function() {
             log.info('Now listening on port *:' + PORT);
