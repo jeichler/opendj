@@ -54,7 +54,17 @@ opendj.data.playlist
 opendj.state.provider-spotify
 ######## EVENTS #####
 
-PLAYLIST:
-track_play (key: eventID, value: provider:trackID)
-track_pause (key: eventID, value: provider:trackID)
+opendj.event.playlist
+
+
+TRACK_EVENTS:
+play (key: eventID, value: provider:trackID, sender: playlist: receiver: provider)
+pause (key: eventID, value: provider:trackID, sender: playlist: receiver: provider)
+error (sender: provider: receiver: playlist)
+update (sender: provider: receiver: playlist, position update of track being played)
+details
+
+
+
+
 

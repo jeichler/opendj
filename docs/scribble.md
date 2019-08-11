@@ -82,9 +82,19 @@ kafka-server-start /usr/local/etc/kafka/server1.properties
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.playlist
 
+
 # Create topics for dual brokers:
 kafka-topics --bootstrap-server localhost:9092  --create --topic  opendj.state.provider-spotify --partitions 3 --replication-factor 2 --config retention.ms=43200000
-kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.data.playlist --partitions 3 --replication-factor 2 --config retention.ms=43200000
+kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.data.event --partitions 3 --replication-factor 2 --config retention.ms=43200000
+kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.playlist --partitions 3 --replication-factor 2 --config retention.ms=43200000
+
+# Delete Topics:
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify 
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.event
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.event.playlist
+
+
+
 
 
 ```
@@ -114,55 +124,22 @@ http://localhost:8081/api/provider-spotify/v1/auth_callback
 
 http://localhost:8081/backend-spotifyprovider/auth_callback
 
-# provider api:
 
+# old:
 
-# first: get login url:
 http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
+http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
 
+
+# provider api:
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
 
 
-http://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
-https://dev.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
-
-
-http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
-
-# second: (copy paste that URL to another tab and see spotify consent screen, then call back
-# Success full if you see a "1" response
-
-
-# third: Searches, currentTrack, AvailDevices:
-http://localhost:8080/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
-http://localhost:8080/api/provider-spotify/v1/getCurrentTrack?event=0
-http://localhost:8080/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDoDRpEvlZinDuNNW
-http://localhost:8080/api/provider-spotify/v1/getAvailableDevices?event=0
-
-
-http://dev.opendj.io/api/provider-spotify/v1/trackDetails?event=0&track=5ftamIDoDRpEvlZinDuNNW
-
-http://demo.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Michael+Jackson
-
-# PLay
-http://localhost:8080/api/provider-spotify/v1/play?event=0&track=5ftamIDoDRpEvlZinDuNNW&pos=0
-
-# Pause
-http://localhost:8080/api/provider-spotify/v1/pause?event=0
-http://localhost:8080/api/provider-spotify/v1/play?event=0&track=47&pos=2000
-
-http://dev.opendj.io/api/provider-spotify/v1/searchTrack?event=0&q=Rock
-http://dev.opendj.io/api/provider-spotify/v1/getCurrentTrack?event=0
-http://dev.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
-
-http://demo.opendj.io/api/provider-spotify/v1/getAvailableDevices?event=0
-
-# ############ NEW:
-/events/:eventID/providers/spotify/
 
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/devices
+
 
 
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
@@ -175,6 +152,13 @@ http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5f
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW&pos=5000
 
 
+http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/login
+http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/devices
+http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
+
+
+http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/login
+http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 
 
 
@@ -212,5 +196,12 @@ curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 oc adm prune builds --confirm
 oc adm prune deployments --confirm
 oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/
+
+
+# IONIC
+sudo npm install -g ionic --save
+ionic info
+ionic generate page pages/event
+ionic serve
 
 
