@@ -112,10 +112,11 @@ function createEmptyEvent() {
     return JSON.parse(JSON.stringify(EVENT_PROTOTYPE));
 }
 
-function createEmptyPlaylist(id) {
-    log.trace("begin createEmptyPlaylist id=%s", id);
+function createEmptyPlaylist(eventID, playlistID) {
+    log.trace("begin createEmptyPlaylist eventID=%s, playlistID=%s", eventID, playlistID);
     return {
-        playlistID: id,
+        eventID: eventID,
+        playlistID: playlistID,
         currentTrack: null,
         nextTracks: [],
         isPlaying: DEFAULT_IS_PLAYING
@@ -575,7 +576,7 @@ async function checkEvent(event) {
             let playlist = await getPlaylistWithID(event.eventID, playlistID);
             if (!playlist) {
                 log.trace("playlist is not defined");
-                playlist = createEmptyPlaylist(playlistID);
+                playlist = createEmptyPlaylist(event.eventID, playlistID);
             }
             log.trace("check playlist");
             await checkPlaylist(event, playlist)
@@ -627,7 +628,8 @@ async function getEventForEventID(eventID) {
                 event.timestamp = new Date().toISOString();
         */
     } else {
-        log.debug("event from grid = %s", JSON.stringify(event));
+        if (log.isTraceEnabled())
+            log.trace("event from grid = %s", JSON.stringify(event));
     }
     log.trace("end getEventForEventID id=%s", eventID);
 
@@ -917,16 +919,22 @@ setImmediate(async function() {
         if (DEFAULT_TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(DEFAULT_TEST_EVENT_ID);
             if (testEvent) {
-                log.info("Test event already present - no need to create it");
-            } else {
-                log.trace("Creating test event....");
-                testEvent = createEmptyEvent();
-                testEvent.eventID = DEFAULT_TEST_EVENT_ID;
-                testEvent.name = "Demo Event";
-                testEvent.owner = "OpenDJ";
-                await fireEventChangedEvent(testEvent);
-                log.info("Created test event with id " + testEvent.eventID);
+                log.warn("Test event already present - will overwrite it");
             }
+
+            log.trace("Creating test event....");
+            testEvent = createEmptyEvent();
+            testEvent.eventID = DEFAULT_TEST_EVENT_ID;
+            testEvent.name = "Demo Event";
+            testEvent.owner = "OpenDJ";
+            await fireEventChangedEvent(testEvent);
+
+            log.trace("Creating test playlist....");
+            let testList = createEmptyPlaylist(testEvent.eventID, testEvent.playlists[testEvent.activePlaylist]);
+            await firePlaylistChangedEvent(testEvent.eventID, testList);
+
+            log.info("Created test event with id " + testEvent.eventID);
+
             log.debug("Initial check of testEvent");
             await checkEvent(testEvent);
 
