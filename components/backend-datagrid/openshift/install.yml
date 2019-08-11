@@ -14,7 +14,7 @@
 
 #https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.3.x/openshift/datagrid-service/user-config
 
-    - name: Remove Datagrid 
+    - name: Deploy Datagrid 
       k8s:
         state: absent
         wait: true
@@ -31,9 +31,6 @@
             fail_on_error: no
             strict: no
         definition: "{{ (lookup('template', 'datagrid.yml') | from_yaml_all | list)[0] }}"
-
-
-
 
     - name: Wait for datagrid pod to be online
       shell: oc get pods --namespace {{ENV.COMMON.NAMESPACE}} | grep backend-datagrid-0 | grep Running
