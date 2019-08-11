@@ -5,6 +5,7 @@ import { ModalController, ActionSheetController, ToastController, Platform, IonS
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from './../../providers/fes.service';
+import { MusicEvent } from 'src/app/models/music-event';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
@@ -17,6 +18,7 @@ import { Subscription } from 'rxjs';
 export class PlaylistPage implements OnInit, OnDestroy {
   public selectedItem: any;
 
+  currentEvent: MusicEvent = null;
   currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
   username: string = null;
@@ -193,7 +195,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     console.debug('Playlist page enter');
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
-        this.websocketService.init();
+        this.websocketService.init(this.currentEvent.eventID);
         this.websocketService.refreshPlaylist();
       }
     }, 100);
@@ -212,7 +214,12 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.debug('Playlist page init');
-    this.websocketService.init();
+  
+    this.currentEvent = new MusicEvent;
+    this.currentEvent.eventID = "0";
+  
+    this.websocketService.init(this.currentEvent.eventID);
+    this.websocketService.refreshPlaylist();
 
     const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
       this.currentPlaylist = data as Playlist;

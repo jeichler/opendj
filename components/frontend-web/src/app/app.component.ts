@@ -20,6 +20,11 @@ export class AppComponent implements OnInit {
       title: 'Playlist',
       url: '/playlist',
       icon: 'play-circle'
+    },
+    {
+      title: 'Event',
+      url: '/event',
+      icon: 'play-circle'
     }
   ];
 

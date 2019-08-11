@@ -1,21 +1,27 @@
+import { Track } from 'src/app/models/track';
+
 export class MusicEvent {
-    id: string;
-    ownerId: string;
-    title: string;
-    motto: string;
-    description: string;
-    imgUrl?: string;
-    street: string;
-    city: string;
-    startDate: Date;
-    startTime: Date;
-    isPublic: boolean;
-    isDuplicateTracksAllowed: boolean;
-    isMultipleCuratorAllowed: boolean;
-    musicProvider: string;
-    musicProviderToken: string;
-    maxParticipants?: number;
-    registrationCode?: string;
-    costs?: number;
-    currency?: string;
+    eventID: string;
+    url: string;
+    name: string;
+    owner: string;
+    maxUsers: number;
+    maxDurationInMinutes: number;
+    maxTracksInPlaylist: number;
+    eventStartsAt: Date;
+    eventEndsAt: Date;
+    allowDuplicateTracks: boolean;
+    progressPercentageRequiredForEffectivePlaylist: number;
+    beginPlaybackAtEventStart: boolean;
+    everybodyIsCurator: boolean;
+    pauseOnPlayError: boolean;
+    enableTrackLiking: boolean;
+    enableTrackHating: boolean;
+    demoAutoskip: number;
+    demoNoActualPlaying: boolean;
+    demoAutoFillEmptyPlaylist: boolean;
+    providers: Array<string>;
+    activePlaylist: number;
+//    playlists: [0];
+    effectivePlaylist: Array<Track>;
 }

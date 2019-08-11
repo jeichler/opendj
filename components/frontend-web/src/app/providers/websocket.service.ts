@@ -13,19 +13,28 @@ export class WebsocketService {
     }
 
 // TODO: Add "query" parameter with event ID to be received by server:
-    init() {
-        this.socket = io(this.confService.websocketHost, {
+    init(eventID: string) {
+        console.debug("begin websocket init eventID=%s", eventID);
+
+        // Use /event/<EventID> as socket.io Namespace, which must be added to host parameter: 
+        let hostStr = this.confService.websocketHost + "/event/"+eventID;
+        let pathStr = this.confService.websocketPath;
+        console.debug("connect to websocket host=%s, path=%s", hostStr, pathStr); 
+
+        this.socket = io(hostStr, {
             reconnectionAttempts: Infinity,
             reconnection: true,
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             randomizationFactor: 0.5,
             timeout: 20000,
-            path: this.confService.websocketPath
+            path: pathStr
         });
+        console.debug("end websocket init eventID=%s", eventID);
     }
 
     getPlaylist() {
+        console.debug("begin websocket getPlaylist()");
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
                 console.debug('WebsocketService: Received playlist update');
@@ -36,7 +45,7 @@ export class WebsocketService {
     }
 
     refreshPlaylist() {
-        console.debug("refreshPlaylist");
+        console.debug("begin websocket refreshPlaylist()");
         this.socket.emit('refresh-playlist');
     }
 
