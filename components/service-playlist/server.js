@@ -484,7 +484,7 @@ async function skip(event, playlist) {
     log.trace("skip end");
 }
 
-function isTrackPlaying(playlist) {
+function isTrackPlaying(event, playlist) {
     var result = false;
     log.trace("isTrackPlaying begin id=%s", playlist.playlistID);
 
@@ -504,7 +504,7 @@ function isTrackPlaying(playlist) {
                     result = false;
                 } else {
                     log.trace("   currentPos is within duration");
-                    if (MOCKUP_AUTOSKIP > 0 && currentPos >= MOCKUP_AUTOSKIP - 10) {
+                    if (event.demoAutoskip > 0 && currentPos >= event.demoAutoskip * 1000 - 10) {
                         log.warn("AutoSkipping");
                         result = false;
                     } else {
@@ -551,7 +551,7 @@ async function checkPlaylist(event, playlist) {
     log.trace("checkPlaylist begin");
     let stateChanged = await autofillPlaylistIfNecessary(event, playlist);
 
-    if (playlist.isPlaying && !isTrackPlaying(playlist)) {
+    if (playlist.isPlaying && !isTrackPlaying(event, playlist)) {
         log.trace("playlist is playing but no track is playing - skipping to next track");
         await skip(event, playlist);
         stateChanged = true;
@@ -595,12 +595,17 @@ async function checkEvents() {
 
         while (!entry.done) {
             log.trace("checkEvents grid iterator key=%s", entry.key);
-            let event = JSON.parse(entry.value);
-            if (event.playlists) {
-                await checkEvent(event);
+            if ("-1" == entry.key) {
+                log.trace("ignoring key -1 used for clever event checking");
             } else {
-                log.warn("ignoring strange event from grid with key %s", entry.key);
-                //                if (log.isTraceEnabled()) log.trace("entry=%s", JSON.stringify(entry));
+                let event = JSON.parse(entry.value);
+                if (event.playlists) {
+                    // TODO: Make this a REST call to utilized load balancing
+                    await checkEvent(event);
+                } else {
+                    log.debug("ignoring strange event from grid with key %s", entry.key);
+                    //                if (log.isTraceEnabled()) log.trace("entry=%s", JSON.stringify(entry));
+                }
             }
 
             log.trace("Get next entry from cache iterator");
@@ -669,6 +674,8 @@ router.get('/events/:eventID', async function(req, res) {
         .then(function(event) { res.status(200).send(event); })
         .catch(function(err) { handleError(err, res) });
 });
+// TODO: CHECK Ops
+
 
 router.get('/events/:eventID/playlists/:listID', async function(req, res) {
     log.trace("begin GET playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
@@ -902,6 +909,51 @@ function firePlaylistChangedEvent(eventID, playlist) {
     log.trace("end firePlaylistChangedEvent");
 }
 
+async function cleverCheckEvents() {
+    log.trace("begin cleverCheckEvents");
+    // The approach:
+    // under the key "-1", we store a timestamp on when the last check was run.
+    // if it is smaller then poll period, we are good
+    // if it is greater then poll period, we try to update it (with verion)
+    // if the update success, we did win and perform the check
+
+    let entry = await gridEvents.getWithMetadata("-1");
+    let now = new Date();
+    if (entry) {
+        log.trace("Last check was performed %s - now is %s", entry.value, now.toISOString());
+        let lastCheck = new Date(entry.value);
+        let delta = now.valueOf() - lastCheck.valueOf();
+
+        if (delta < INTERNAL_POLL_INTERVAL) {
+            log.trace("Last check was performed %s ago which is below internal poll interval of %s msec - nothing to do", delta, INTERNAL_POLL_INTERVAL);
+        } else {
+            log.trace("Last check is %s msec ago and above %s msec - try to enter crit sec with opt lock...", delta, INTERNAL_POLL_INTERVAL);
+            let replaceOK = await gridEvents.replaceWithVersion("-1", now.toISOString(), entry.version);
+            if (replaceOK) {
+                log.info("cleverCheckEvents - do the check");
+                let start = Date.now();
+                await checkEvents();
+                let stop = Date.now();
+                let duration = stop - start;
+                if (duration > INTERNAL_POLL_INTERVAL) {
+                    log.fatal("!!!! checkEvents took %s msec which is longer then poll internval of %s", duration, INTERNAL_POLL_INTERVAL);
+                    process.exit(43);
+                } else {
+                    log.info("checkEvents took %s msec", duration);
+                }
+
+            } else {
+                log.trace("replace did not work - somebody else was faster, we can ignore this");
+            }
+        }
+
+    } else {
+        log.info("lastCheck Timestmap not present - creating it");
+        await gridEvents.putIfAbsent("-1", now.toISOString());
+    }
+
+    log.trace("end cleverCheckEvents");
+}
 
 
 // -----------------------------------------------------------------------
@@ -919,25 +971,24 @@ setImmediate(async function() {
         if (DEFAULT_TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(DEFAULT_TEST_EVENT_ID);
             if (testEvent) {
-                log.warn("Test event already present - will overwrite it");
+                log.warn("Test event already present");
+            } else {
+                log.trace("Creating test event....");
+                testEvent = createEmptyEvent();
+                testEvent.eventID = DEFAULT_TEST_EVENT_ID;
+                testEvent.name = "Demo Event";
+                testEvent.owner = "OpenDJ";
+                await fireEventChangedEvent(testEvent);
+
+                log.trace("Creating test playlist....");
+                let testList = createEmptyPlaylist(testEvent.eventID, testEvent.playlists[testEvent.activePlaylist]);
+                await firePlaylistChangedEvent(testEvent.eventID, testList);
+
+                log.info("Created test event with id " + testEvent.eventID);
+
+                log.debug("Initial check of testEvent");
+                await checkEvent(testEvent);
             }
-
-            log.trace("Creating test event....");
-            testEvent = createEmptyEvent();
-            testEvent.eventID = DEFAULT_TEST_EVENT_ID;
-            testEvent.name = "Demo Event";
-            testEvent.owner = "OpenDJ";
-            await fireEventChangedEvent(testEvent);
-
-            log.trace("Creating test playlist....");
-            let testList = createEmptyPlaylist(testEvent.eventID, testEvent.playlists[testEvent.activePlaylist]);
-            await firePlaylistChangedEvent(testEvent.eventID, testList);
-
-            log.info("Created test event with id " + testEvent.eventID);
-
-            log.debug("Initial check of testEvent");
-            await checkEvent(testEvent);
-
         }
     } catch (err) {
         log.fatal("Init failed, something is seriously wrong. Will terminate.", err);
@@ -945,7 +996,7 @@ setImmediate(async function() {
     }
 
     log.info("Starting checkEvents() poll");
-    setInterval(checkEvents, INTERNAL_POLL_INTERVAL);
+    setInterval(cleverCheckEvents, INTERNAL_POLL_INTERVAL);
 
     log.debug("opening server port");
     app.listen(PORT, function() {
