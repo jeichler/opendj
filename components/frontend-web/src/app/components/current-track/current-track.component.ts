@@ -27,7 +27,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
         const startedAt = new Date(this.track.started_at).getTime() / 1000;
         const diff = (now - startedAt);
         this.progress = diff;
-        this.intervalHandle = setInterval(() => this.countdown(), 250);
+        this.intervalHandle = setInterval(() => this.countdown(), 500);
       }
     }
   }
@@ -57,22 +57,28 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   countdown() {
-    const duration = this.track.duration_ms / 1000;
-    this.progress = this.progress + 1;
-    const timeLeft = duration - this.progress;
+    const duration = this.track.duration_ms;
+    this.progress  = (Date.now() - Date.parse(this.track.started_at));
+
+    let timeLeft = duration - this.progress;
+    if (timeLeft <0)
+      timeLeft = 0;
+
 
     this.timeRemaining = 1 - (timeLeft / duration);
+    this.timeRemaining = Math.floor(this.timeRemaining*1000)/1000;
+    // console.debug("timeRemaining=%s", this.timeRemaining);
 
-    let s = timeLeft % 60;
-    s = Math.round(s);
-    const m = Math.floor(timeLeft / 60) % 60;
+    let s = timeLeft/1000 % 60;
+    s = Math.floor(s);
+    const m = Math.floor(timeLeft / 1000 / 60) % 60;
     const sStr = s < 10 ? '0' + s : '' + s;
     const mStr = m < 10 ? '0' + m : '' + m;
     this.currentTime = mStr + ':' + sStr;
 
-    const mP = Math.floor(this.progress / 60);
-    let sP = this.progress % 60;
-    sP = s = Math.round(sP);
+    const mP = Math.floor(this.progress / 1000/ 60);
+    let sP = this.progress/1000 % 60;
+    sP = s = Math.floor(sP);
     const spStr = sP < 10 ? '0' + sP : '' + sP;
     const mpStr = mP < 10 ? '0' + mP : '' + mP;
     this.playingTime = mpStr + ':' + spStr;
