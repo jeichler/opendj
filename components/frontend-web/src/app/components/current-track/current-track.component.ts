@@ -1,6 +1,7 @@
 import { FEService } from './../../providers/fes.service';
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Track } from 'src/app/models/track';
+import { MusicEvent } from 'src/app/models/music-event';
 
 @Component({
   selector: 'app-current-track',
@@ -26,9 +27,12 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
         const startedAt = new Date(this.track.started_at).getTime() / 1000;
         const diff = (now - startedAt);
         this.progress = diff;
-        this.intervalHandle = setInterval(() => this.countdown(), 1000);
+        this.intervalHandle = setInterval(() => this.countdown(), 250);
       }
     }
+  }
+  @Input() set currentEvent(event: MusicEvent) {
+    this.musicEvent = event;
   }
 
   track;
@@ -38,6 +42,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   totalTime = null; // total track length
   progress; // temp var for countdown
   intervalHandle = null;
+  musicEvent: MusicEvent;
 
   constructor(public feService: FEService) { }
 
@@ -74,19 +79,19 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   playTrack() {
-    this.feService.playTrack().subscribe(data => {
+    this.feService.playTrack(this.currentEvent).subscribe(data => {
       console.debug(data);
     });
   }
 
   pauseTrack() {
-    this.feService.pauseTrack().subscribe(data => {
+    this.feService.pauseTrack(this.currentEvent).subscribe(data => {
       console.debug(data);
     });
   }
 
   nextTrack() {
-    this.feService.playNextTrack().subscribe(data => {
+    this.feService.playNextTrack(this.currentEvent).subscribe(data => {
       console.debug(data);
     });
   }

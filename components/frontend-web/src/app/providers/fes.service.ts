@@ -6,6 +6,7 @@ import { Observable, throwError } from 'rxjs';
 import { query } from '@angular/core/src/render3';
 import { ConfigService } from './config.service';
 import { retry, catchError } from 'rxjs/operators';
+import { MusicEvent } from '../models/music-event';
 
 
 
@@ -25,19 +26,24 @@ export class FEService {
     }
 
     handleError(error) {
+        console.error("fes service: handleError", error);
         let errorMessage = '';
         if (error.error instanceof ErrorEvent) {
           // client-side error
           errorMessage = `Error: ${error.error.message}`;
         } else {
-          // server-side error
-          errorMessage = `Error Code: ${error.error.code}\nMessage: ${error.error.msg}`;
+            // server-side error
+            if (error.error && error.error.code && error.error.msg) {
+                errorMessage = `Error Code: ${error.error.code}\nMessage: ${error.error.msg}`;
+            } else {
+                errorMessage = "Unexpected shit happened - Sorry for that!\n"+JSON.stringify(error);
+            }
         }
         window.alert(errorMessage);
         return throwError(errorMessage);
       }
 
-    searchTracks(queryString: string): Observable<Track[]> {
+    searchTracks(event: MusicEvent, queryString: string): Observable<Track[]> {
         // console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2) {
             // This is not an actually error, but expectec behavior. 
@@ -46,70 +52,70 @@ export class FEService {
             return this.EMPTY_TRACK_RESULT;
         }
 
-        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/events/0/providers/spotify/search?q=' + encodeURIComponent(queryString)).pipe(
+        return this.http.get<Track[]>(this.SPOTIFY_PROVIDER_API + '/events/'+event.eventID+'/providers/spotify/search?q=' + encodeURIComponent(queryString)).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    addTrack(trackId: string, musicProvider: string, addedBy: string): Observable<any> {
+    addTrack(event: MusicEvent, trackId: string, musicProvider: string, addedBy: string): Observable<any> {
 
         if (trackId === null || trackId === undefined || musicProvider === null || musicProvider === undefined || addedBy === null || addedBy === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        return this.http.post<any>(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks', { provider: musicProvider, id: trackId, user: addedBy }).pipe(
+        return this.http.post<any>(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/tracks', { provider: musicProvider, id: trackId, user: addedBy }).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    deleteTrack(trackId: string, index: string): Observable<any> {
+    deleteTrack(event: MusicEvent, trackId: string, index: string): Observable<any> {
         if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index)).pipe(
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/tracks/' + encodeURIComponent(`spotify:${trackId}`) + '?index=' + encodeURIComponent('' + index)).pipe(
             retry(1),
             catchError(this.handleError)
           );
-        // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/tracks/' + encodeURIComponent(`spotify:${trackId}`));
+        // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/tracks/' + encodeURIComponent(`spotify:${trackId}`));
     }
 
-    reorderTrack(trackId: string, fromIndex: number, toIndex: number): Observable<any> {
+    reorderTrack(event: MusicEvent, trackId: string, fromIndex: number, toIndex: number): Observable<any> {
         if (trackId === null || trackId === undefined || fromIndex === null || fromIndex === undefined || toIndex === null || toIndex === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
-        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify' }).pipe(
+        return this.http.post(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify' }).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    playTrack(): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/play', {}).pipe(
+    playTrack(event: MusicEvent): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/play', {}).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    pauseTrack(): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/pause', {}).pipe(
+    pauseTrack(event: MusicEvent): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/pause', {}).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    playNextTrack(): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/0/next', {}).pipe(
+    playNextTrack(event: MusicEvent): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/next', {}).pipe(
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    deletePlaylist(playlistId: string): Observable<any> {
+    deletePlaylist(event: MusicEvent, playlistId: string): Observable<any> {
         if (playlistId === null || playlistId === undefined) {
             throw new Error('Required parameter playlistId was null or undefined when calling deletePlaylist.');
         }
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/0/playlists/' + encodeURIComponent(playlistId)).pipe(
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/' + encodeURIComponent(playlistId)).pipe(
             retry(1),
             catchError(this.handleError)
           );

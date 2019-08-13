@@ -1,96 +1,94 @@
 <!-- <div class="context"> -->
 <ion-header no-border color="dark">
-  <ion-toolbar color="dark">
-    <ion-buttons slot="start">
-      <ion-menu-button color="light"></ion-menu-button>
-    </ion-buttons>
-    <ion-title color="light">
-      RH Summer Party - {{currentPlaylist?.nextTracks?.length}} Tracks
-    </ion-title>
-    
-    <ion-buttons slot="end" *ngIf="isConnected"> 
-      <ion-button color="light">
-          <ion-icon name="wifi"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    
-  </ion-toolbar>
-  <ion-toolbar color="dark">
-      <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
-  </ion-toolbar>
-  
+    <ion-toolbar color="dark">
+        <ion-buttons slot="start">
+            <ion-menu-button color="light"></ion-menu-button>
+        </ion-buttons>
+        <ion-title color="light">
+            {{currentEvent?.name}} - {{currentPlaylist?.nextTracks?.length}} Tracks
+        </ion-title>
+
+        <ion-buttons slot="end" *ngIf="isConnected">
+            <ion-button color="light">
+                <ion-icon name="wifi"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+
+    </ion-toolbar>
+    <ion-toolbar color="dark">
+        <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEvent]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="isCurator" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
+    </ion-toolbar>
+
 </ion-header>
 
 <ion-content color="dark">
 
     <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
-      <ion-refresher-content></ion-refresher-content>
+        <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-  <ion-button *ngIf="isCurator && currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
+    <ion-button *ngIf="isCurator && currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
 
-  <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
-    <ion-reorder-group (ionItemReorder)="onRenderItems($event)"
-      disabled="false">
+    <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
+        <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
 
-      <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
+            <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
 
-        <ion-item color="dark">
-          <ion-thumbnail slot="start" (press)="toggleOptions()">
-            <img src="{{item.image_url}}">
-          </ion-thumbnail>
-          <ion-label>{{item.name}}
-            <br />
-            <span *ngIf="isCurator && showOptions">
+                <ion-item color="dark">
+                    <ion-thumbnail slot="start" (press)="toggleOptions()">
+                        <img src="{{item.image_url}}">
+                    </ion-thumbnail>
+                    <ion-label>{{item.name}}
+                        <br />
+                        <span *ngIf="isCurator && showOptions">
               <ion-button (tap)="moveTop(item, i)" size="small">Top</ion-button>
               <ion-button color="danger" (tap)="deleteTrack(item, i)" size="small">Delete</ion-button>
               <br/>
             </span>
-            <span style="font-size: 14px; color: #999;">
+                        <span style="font-size: 14px; color: #999;">
               {{item.artist}} {{item.year}} eta {{item.eta}}</span>
-            <ion-badge color="medium" float-right>
-              {{item.added_by}}
-            </ion-badge>
-            <ion-label *ngIf="isCurator">
-              <span style="font-size: 14px; color: #999;">
+                        <ion-badge color="medium" float-right>
+                            {{item.added_by}}
+                        </ion-badge>
+                        <ion-label *ngIf="isCurator">
+                            <span style="font-size: 14px; color: #999;">
               {{item.genre}}</span>
-            </ion-label>
-            <ion-label *ngIf="isCurator">
-              <span style="font-size: 14px; color: #999;">
+                        </ion-label>
+                        <ion-label *ngIf="isCurator">
+                            <span style="font-size: 14px; color: #999;">
               {{item.bpm}} bpm D:{{item.danceability}} E:{{item.energy}} H:{{item.happiness}}</span>
-            </ion-label>
-          </ion-label>
-          <ion-reorder slot="end" *ngIf="isCurator">
-              <ion-chip color="secondary">{{i +1}}</ion-chip>
-          </ion-reorder>
+                        </ion-label>
+                    </ion-label>
+                    <ion-reorder slot="end" *ngIf="isCurator">
+                        <ion-chip color="secondary">{{i +1}}</ion-chip>
+                    </ion-reorder>
 
 
 
-        </ion-item>
-        <ion-item-options side="end" *ngIf="isCurator">
-          <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
-          <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
-        </ion-item-options>
+                </ion-item>
+                <ion-item-options side="end" *ngIf="isCurator">
+                    <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
+                    <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
+                </ion-item-options>
 
-      </ion-item-sliding>
-    </ion-reorder-group>
-  </ion-list>
+            </ion-item-sliding>
+        </ion-reorder-group>
+    </ion-list>
 
-  <!-- Add button right for normal users -->
-  <ion-fab *ngIf="!isCurator && currentPlaylist?.nextTracks?.length <= configService.playlistMaxSize" vertical="bottom" horizontal="end" slot="fixed" margin>
-    <ion-fab-button (click)="presentModal()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <!-- Add button right for normal users -->
+    <ion-fab *ngIf="!isCurator && currentPlaylist?.nextTracks?.length <= configService.playlistMaxSize" vertical="bottom" horizontal="end" slot="fixed" margin>
+        <ion-fab-button (click)="presentModal()">
+            <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
 
 
-  <!-- Add button center for curators, to avoid clash with re-order know for last track
+    <!-- Add button center for curators, to avoid clash with re-order know for last track
        issue#56 -->
-  <ion-fab *ngIf="isCurator"
-    vertical="bottom" horizontal="center" slot="fixed" margin>
-    <ion-fab-button (click)="presentModal()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ion-fab *ngIf="isCurator" vertical="bottom" horizontal="center" slot="fixed" margin>
+        <ion-fab-button (click)="presentModal()">
+            <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
 
 </ion-content>

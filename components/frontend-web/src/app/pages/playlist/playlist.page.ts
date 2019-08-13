@@ -41,7 +41,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   playTrack() {
-    this.feService.playTrack().subscribe((data) => {
+    this.feService.playTrack(this.currentEvent,).subscribe((data) => {
       // console.log(data);
     },
     (err) => {
@@ -50,7 +50,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   deleteTrack(track, index) {
-    this.feService.deleteTrack(track.id, index).subscribe(
+    this.feService.deleteTrack(this.currentEvent, track.id, index).subscribe(
       res => {
         // console.log(res);
         this.presentToast('You have deleted the track.');
@@ -88,7 +88,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
     const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
     this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
-    this.feService.reorderTrack(draggedItem.id, event.detail.from, event.detail.to).subscribe(
+    this.feService.reorderTrack(this.currentEvent, draggedItem.id, event.detail.from, event.detail.to).subscribe(
       data => {
         this.presentToast('Track successfully reordered in playlist.');
       },
@@ -107,7 +107,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   moveTop(item, index, slidingItem) {
     if (this.isCurator) {
-      this.feService.reorderTrack(item.id, index, 0).subscribe(
+      this.feService.reorderTrack(this.currentEvent, item.id, index, 0).subscribe(
         data => {
           this.presentToast('Track moved to top.');
           // slidingItem.close();
@@ -120,11 +120,12 @@ export class PlaylistPage implements OnInit, OnDestroy {
   async presentModal() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
-      componentProps: { value: 123 }
+      componentProps: { 
+        currentEvent: this.currentEvent }
     });
     modal.onDidDismiss().then(res => {
       if (res.data) {
-        this.feService.addTrack(res.data.id, 'spotify', this.username).subscribe(
+        this.feService.addTrack(this.currentEvent, res.data.id, 'spotify', this.username).subscribe(
           data => {
             this.presentToast('Track added to playlist.');
           },
@@ -162,7 +163,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
           icon: 'trash',
           handler: () => {
             console.debug('Delete clicked');
-            this.feService.deleteTrack(data.id, index).subscribe(
+            this.feService.deleteTrack(this.currentEvent, data.id, index).subscribe(
               res => {
                 console.debug(res);
                 this.presentToast('You have deleted the track.');
@@ -217,6 +218,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   
     this.currentEvent = new MusicEvent;
     this.currentEvent.eventID = "0";
+    this.currentEvent.name = "Demo Event";
   
     this.websocketService.init(this.currentEvent.eventID);
     this.websocketService.refreshPlaylist();
@@ -290,8 +292,11 @@ export class PlaylistPage implements OnInit, OnDestroy {
   `
 })
 export class PlaylistAddModalComponent implements OnInit {
+  currentEvent: MusicEvent;
   queryText = '';
   tracks: Array<Track>;
+
+  
   @ViewChild(IonSearchbar) myInput: IonSearchbar;
 
   setFocus() {
@@ -303,18 +308,16 @@ export class PlaylistAddModalComponent implements OnInit {
   constructor(
     public modalController: ModalController,
     public feService: FEService) { }
-
-
   dismiss(data) {
     this.modalController.dismiss(data);
   }
 
   updateSearch() {
-    this.feService.searchTracks(this.queryText).subscribe(
+    this.feService.searchTracks(this.currentEvent, this.queryText).subscribe(
       data => {
         this.tracks = data;
       },
-      err => console.log(err));
+      err => console.error(err));
   }
 
   ngOnInit() {
