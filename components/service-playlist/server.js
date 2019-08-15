@@ -665,16 +665,96 @@ async function getPlaylistForRequest(req) {
     return playlist;
 }
 
-// ------------------------------------  Routes ---------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------  Routes - Event  ------------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
+// create
+router.post('/events', async function(req, res) {
+    log.trace("begin route createEvent");
 
+    try {
+        if (log.isTraceEnabled()) log.trace("route createEvent body=%s", JSON.stringify(req.body));
+        let event = JSON.parse(req.body);
+
+        // TODO!!!
+
+        log.info("Event CREATED eventId=%s, URL=%s", event.eventID, event.URL);
+    } catch (error) {
+        log.debug("route create Event err = %s".error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route createEvent");
+});
+
+// read:
 router.get('/events/:eventID', async function(req, res) {
     log.trace("begin GET event eventId=%s", req.params.eventID);
     getEventForRequest(req)
         .then(function(event) { res.status(200).send(event); })
         .catch(function(err) { handleError(err, res) });
 });
-// TODO: CHECK Ops
+
+// update
+router.post('/events/:eventID', async function(req, res) {
+    log.trace("begin route updateEvent");
+
+    try {
+        if (log.isTraceEnabled()) log.trace("route updateEvent body=%s", JSON.stringify(req.body));
+        let event = JSON.parse(req.body);
+
+        // TODO!!!
+
+        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.URL);
+    } catch (error) {
+        log.debug("route create Event err = %s".error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route updateEvent");
+});
+
+// delete
+router.delete('/events/:eventID', async function(req, res) {
+    log.trace("begin route deleteEvent eventId=%s", req.params.eventID);
+
+    try {
+        // TODO!!!
+
+        log.debug("Event DELETE eventId=%s", req.params.eventID);
+    } catch (error) {
+        log.debug("route delete Event err = %s".error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("begin route deleteEvent eventId=%s", req.params.eventID);
+});
+
+// validate
+router.post('/events/:eventID/validate', async function(req, res) {
+    log.trace("begin route validateEvent");
+
+    try {
+        if (log.isTraceEnabled()) log.trace("route validateEvent body=%s", JSON.stringify(req.body));
+        let event = JSON.parse(req.body);
+
+        // TODO!!!
+
+    } catch (error) {
+        log.debug("route validate Event err = %s".error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route validateEvent");
+});
+
+
+
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// -------------------------  Routes - Playlist  -----------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
 
 router.get('/events/:eventID/playlists/:listID', async function(req, res) {

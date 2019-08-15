@@ -121,4 +121,58 @@ export class FEService {
           );
     }
 
+    /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------ */
+    /* ------------------------- CRUD Event ----------------------------------- */
+    /* ------------------------------------------------------------------------ */
+    /* ------------------------------------------------------------------------ */
+
+    createEvent(event: MusicEvent): Observable<MusicEvent> {
+        return this.http.post<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events', event).pipe(
+            retry(1),
+            catchError(this.handleError)
+          );
+    }
+
+    readEvent(eventID: string): Observable<MusicEvent> {
+        if (!eventID) 
+            eventID = '___prototype___';
+
+        return this.http.get<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/'+eventID, {}).pipe(
+            retry(1),
+            catchError(this.handleError)
+          );
+    }
+
+    updateEvent(event: MusicEvent): Observable<MusicEvent> {
+        return this.http.post<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID, event).pipe(
+            retry(1),
+            catchError(this.handleError)
+          );
+    }
+
+    deleteEvent(eventID: string): Observable<any> {
+        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+eventID).pipe(
+            retry(1),
+            catchError(this.handleError)
+          );
+    }
+
+    validateEventURLAvailability(event: MusicEvent): Observable<MusicEvent> {
+        return this.http.post<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/validate', event).pipe(
+            retry(1),
+            catchError(this.handleError)
+          );
+
+    }
+
+
+
+
+
+
+
+
+
+
 }

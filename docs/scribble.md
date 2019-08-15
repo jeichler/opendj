@@ -1,61 +1,4 @@
 
-# Scribble
-This contains 
-- unsorted thoughts, ideas which have not yet been sorted into a the right document structure
-- random notices
-
-
-## Architecture Questions:
-
-
-### Service Discovery: 
-Description: 
-How does a frontend service find out which backend services exist and which endpoints they have?  
-
-Example: How does the EventService find out, which musicproviders are avail?
-Could be backend-spotify, backend-soundclound, backend-itunes, or non of these.
-
-Ideas:
-- Option **A**: Env Variables
-- Option **B**: some service discovery framework
-- Option **C**: query k8s for existing routes/services
-- Option **D**: Kafka-Topic  
-    Have a topic where each service provider publishes an event with his name, endpoint urls (internal as xxx.svc.local and external via ocp router), versions etc..  
-    The event is published every time a pod is started or every 12 hours. Thus consumers can read the topic -12 hours and know who might be there. To get final confidence, consumer can call the /health endpoint to verify - *et voilá*.  
-- Option **E**: Use only async event communications, then the only service needed would be the event bus endpoint, which could be in an env variable.
-
-
-### Service Versioning
-How do we handle service versioning.
-Idea:
-- use ..../v1  in path (like k8s does) until there is a breaking change. then increase to v2
-- avoid breaking changes like hell - no mandatory fields in any api or event!
-
-
-- Principal: No breaking changes
-- Principal: no mandatory fields in messages.
-
-
-
-git structure: 
--docs
---meta
---project management
---requirements
---architecture
---design
---implementation
---deployment
---operation
-
--components
---<component name>
----docs
----api
----src
----deploy
-
-
 # Container Registry
 Use Quay as registry to transport components between environments
 
@@ -139,14 +82,8 @@ http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/devices
-
-
-
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
-
-
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
-
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/pause/
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW&pos=5000
