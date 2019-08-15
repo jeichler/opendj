@@ -12,43 +12,62 @@
 
 <ion-content color="dark">
 
+<div class="event-form-wrapper"> 
+    
+    <ion-card style="background-color: #111;">
+        <ion-item>
+            <ion-icon name="wine" slot="start" color="light"></ion-icon>
+            <ion-label text-wrap>Create your own OpenDJ Music Event!</ion-label>
+            <ion-button fill="outline" slot="end">Help?</ion-button>
+        </ion-item>
+    
+        <ion-card-content>
+            Fill in your data and create your individual OpenDJ Party Event. Share your party link with friends, colleagues and people around the globe...
+        </ion-card-content>
+    </ion-card>
 
     <form [formGroup]="eventForm">
 
+    <ion-list style="background: transparent !important;">
+
         <ion-item>
             <ion-label>ID:</ion-label>
-            <ion-input type="text" formControlName="eventID" [(ngModel)]="event.eventID"></ion-input>
+            <ion-input type="text" formControlName="eventID" [(ngModel)]="event.eventID" color="primary" text-right></ion-input>
         </ion-item>
 
         <ion-item>
             <ion-label>Event Name:</ion-label>
-            <ion-input type="text" formControlName="name" [(ngModel)]="event.name"></ion-input>
+            <ion-input type="text" formControlName="name" [(ngModel)]="event.name" color="primary" text-right></ion-input>
         </ion-item>
 
         <ion-item>
             <ion-label>URL</ion-label>
-            <ion-input type="text" formControlName="url" [(ngModel)]="event.url"></ion-input>
+            <ion-input type="text" formControlName="url" [(ngModel)]="event.url" color="primary" text-right></ion-input>
         </ion-item>
 
         <ion-item>
             <ion-label>MusicProvider</ion-label>
-            <button ion-button type="submit">Add Spotify</button>
+            <ion-note slot="end">
+                <ion-button color="primary" size="small">
+                        Add Spotify
+                </ion-button>
+            </ion-note>
         </ion-item>
 
         <ion-item>
-            <ion-label>Max number of users</ion-label>
-            <ion-input type="text" formControlName="maxUsers" [(ngModel)]="event.maxUsers"></ion-input>
+            <ion-label text-wrap>Max number of users</ion-label>
+            <ion-input type="text" formControlName="maxUsers" [(ngModel)]="event.maxUsers" color="primary" text-right></ion-input>
         </ion-item>
 
         <ion-item>
             <ion-label>Duration of event</ion-label>
-            <ion-input type="number" formControlName="maxDurationInMinutes" [(ngModel)]="event.maxDurationInMinutes"></ion-input>
+            <ion-input type="number" formControlName="maxDurationInMinutes" [(ngModel)]="event.maxDurationInMinutes" color="primary" text-right></ion-input>
             <ion-label>min</ion-label>
         </ion-item>
 
         <ion-item>
-            <ion-label>Max number of tracks in playlist</ion-label>
-            <ion-input type="number" formControlName="maxTracksInPlaylist" [(ngModel)]="event.maxTracksInPlaylist"></ion-input>
+            <ion-label text-wrap>Max number of tracks in playlist</ion-label>
+            <ion-input type="number" formControlName="maxTracksInPlaylist" [(ngModel)]="event.maxTracksInPlaylist" color="primary" text-right></ion-input>
         </ion-item>
 
         <ion-item>
@@ -63,12 +82,12 @@
 
         <ion-item>
             <ion-label>Duplicate tracks allowed</ion-label>
-            <ion-toggle color="primary" formControlName="allowDuplicateTracks" [(ngModel)]="event.allowDuplicateTracks"></ion-toggle>
+            <ion-toggle color="primary" formControlName="allowDuplicateTracks" [(ngModel)]="event.allowDuplicateTracks" ></ion-toggle>
         </ion-item>
 
         <ion-item>
             <ion-label>All users are curators</ion-label>
-            <ion-toggle color="primary" formControlName="everybodyIsCurator" [(ngModel)]="event.everybodyIsCurator"></ion-toggle>
+            <ion-toggle color="primary" formControlName="everybodyIsCurator" [(ngModel)]="event.everybodyIsCurator" ></ion-toggle>
         </ion-item>
 
         <ion-item>
@@ -78,7 +97,7 @@
 
         <ion-item>
             <ion-label>Users can like tracks</ion-label>
-            <ion-toggle color="primary" formControlName="enableTrackLiking" [(ngModel)]="event.enableTrackLiking"></ion-toggle>
+            <ion-toggle color="primary" formControlName="enableTrackLiking" [(ngModel)]="event.enableTrackLiking" ></ion-toggle>
         </ion-item>
 
         <ion-item>
@@ -88,30 +107,30 @@
 
         <ion-item>
             <ion-label>Play progress required</ion-label>
-            <ion-input type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" [(ngModel)]="event.progressPercentageRequiredForEffectivePlaylist"></ion-input>
-            <ion-label>%</ion-label>
+            <ion-input type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" [(ngModel)]="event.progressPercentageRequiredForEffectivePlaylist" text-right></ion-input>
+            <ion-label >%</ion-label>
         </ion-item>
 
         <ion-item>
-            <ion-label color="secondary">Demo Mode: Auto Skip after</ion-label>
-            <ion-input color="secondary" type="number" formControlName="demoAutoskip" [(ngModel)]="event.demoAutoskip"></ion-input>
-            <ion-label color="secondary">s</ion-label>
+            <ion-label color="primary" text-wrap>Demo Mode: Auto Skip after</ion-label>
+            <ion-input color="primary" type="number" formControlName="demoAutoskip" [(ngModel)]="event.demoAutoskip" text-right></ion-input>
+            <ion-label>s</ion-label>
         </ion-item>
 
         <ion-item>
-            <ion-label color="secondary">Demo Mode: no actual playing of tracks</ion-label>
-            <ion-toggle color="secondary" formControlName="demoNoActualPlaying" [(ngModel)]="event.demoNoActualPlaying"></ion-toggle>
+            <ion-label color="primary" text-wrap>Demo Mode: no actual playing of tracks</ion-label>
+            <ion-toggle color="primary" formControlName="demoNoActualPlaying" [(ngModel)]="event.demoNoActualPlaying"></ion-toggle>
         </ion-item>
 
         <ion-item>
-            <ion-label color="secondary">Demo Mode: Fill Empty Playlist</ion-label>
-            <ion-toggle color="secondary" formControlName="demoAutoFillEmptyPlaylist" [(ngModel)]="event.demoAutoFillEmptyPlaylist"></ion-toggle>
+            <ion-label color="primary" text-wrap>Demo Mode: Fill Empty Playlist</ion-label>
+            <ion-toggle color="primary" formControlName="demoAutoFillEmptyPlaylist" [(ngModel)]="event.demoAutoFillEmptyPlaylist"></ion-toggle>
         </ion-item>
+        <ion-button type="submit" [disabled]="!eventForm.valid" expand="full" shape="round">Create Event</ion-button>
 
-
-        <button ion-button type="submit" [disabled]="!eventForm.valid">Submit</button>
+    </ion-list>
 
     </form>
-
+</div>
 
 </ion-content>
