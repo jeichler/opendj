@@ -18,20 +18,20 @@ export class AppComponent implements OnInit {
   public appPagesLoggedIn = [
     {
       title: 'Playlist',
-      url: '/playlist',
+      url: '/app-playlist',
       icon: 'play-circle'
     },
     {
-      title: 'Event',
-      url: '/event',
-      icon: 'play-circle'
+      title: 'Create Event',
+      url: '/app-create-event',
+      icon: 'wine'
     }
   ];
 
   public appPagesLoggedOut = [
     {
       title: 'Login',
-      url: '/login',
+      url: '/app-login',
       icon: 'log-in'
     }
   ];
@@ -86,11 +86,9 @@ export class AppComponent implements OnInit {
       this.loggedIn = loggedIn;
       if (this.loggedIn) {
         this.appPages = this.appPagesLoggedIn;
-        this.router.navigateByUrl('/playlist', { replaceUrl: true });
       } else {
         this.appPages = this.appPagesLoggedOut;
         this.userDetails = { username: '', isCurator: false };
-        this.router.navigateByUrl('/login', { replaceUrl: true });
       }
     }, 300);
   }
@@ -102,16 +100,18 @@ export class AppComponent implements OnInit {
         this.userDetails.isCurator = data[1];
       }
       this.updateLoggedInStatus(true);
+      this.router.navigateByUrl('/app-playlist', { replaceUrl: true });
     });
 
     this.events.subscribe('user:logout', () => {
       this.updateLoggedInStatus(false);
+      this.router.navigateByUrl('/app-login', { replaceUrl: true });
     });
   }
 
   logout() {
     this.userDataService.logout().then(() => {
-      this.updateLoggedInStatus(false);
+      this.events.publish('user:logout');
     });
   }
 

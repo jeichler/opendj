@@ -1,0 +1,141 @@
+<ion-header no-border color="dark">
+  <ion-toolbar color="dark">
+      <ion-buttons slot="start">
+          <ion-menu-button color="light"></ion-menu-button>
+      </ion-buttons>
+
+      <ion-title color="light">
+          Configure your OpenDJ Event
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button color="light" (tap)='resetForm()'>
+          <ion-icon name="refresh"></ion-icon>
+        </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="dark">
+
+<div class="event-form-wrapper"> 
+  
+  <ion-card style="background-color: #111;">
+      <ion-item>
+          <ion-icon name="wine" slot="start" color="light"></ion-icon>
+          <ion-label text-wrap>Create your own OpenDJ Music Event!</ion-label>
+          <ion-button fill="outline" slot="end">Help?</ion-button>
+      </ion-item>
+  
+      <ion-card-content>
+          Fill in your data and create your individual OpenDJ Party Event. Share your party link with friends, colleagues and people around the globe...
+      </ion-card-content>
+  </ion-card>
+
+  <form [formGroup]="eventForm">
+
+  <ion-list style="background: transparent !important;">
+
+      <ion-item>
+          <ion-label>ID:</ion-label>
+          <ion-input type="text" formControlName="eventID" color="primary" text-right></ion-input>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Event Name:</ion-label>
+          <ion-input type="text" formControlName="name" color="primary" text-right></ion-input>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>URL</ion-label>
+          <ion-input type="text" formControlName="url" color="primary" text-right></ion-input>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>MusicProvider</ion-label>
+          <ion-note slot="end">
+              <ion-button color="primary" size="small">
+                      Add Spotify
+              </ion-button>
+          </ion-note>
+      </ion-item>
+
+      <ion-item>
+          <ion-label text-wrap>Max number of users</ion-label>
+          <ion-input type="number" formControlName="maxUsers" color="primary" text-right></ion-input>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Duration of event</ion-label>
+          <ion-input type="number" formControlName="maxDurationInMinutes" color="primary" text-right></ion-input>
+          <ion-label>min</ion-label>
+      </ion-item>
+
+      <ion-item>
+          <ion-label text-wrap>Max number of tracks in playlist</ion-label>
+          <ion-input type="number" formControlName="maxTracksInPlaylist" color="primary" text-right></ion-input>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Event starts</ion-label>
+          <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Event ends </ion-label>
+          <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Duplicate tracks allowed</ion-label>
+          <ion-toggle color="primary" formControlName="allowDuplicateTracks" ></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>All users are curators</ion-label>
+          <ion-toggle color="primary" formControlName="everybodyIsCurator" ></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Pause on play error</ion-label>
+          <ion-toggle color="primary" formControlName="pauseOnPlayError"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Users can like tracks</ion-label>
+          <ion-toggle color="primary" formControlName="enableTrackLiking"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Users can hate tracks</ion-label>
+          <ion-toggle color="primary" formControlName="enableTrackHating" ></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label>Play progress required</ion-label>
+          <ion-input type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" text-right></ion-input>
+          <ion-label >%</ion-label>
+      </ion-item>
+
+      <ion-item>
+          <ion-label color="primary" text-wrap>Demo Mode: Auto Skip after</ion-label>
+          <ion-input color="primary" type="number" formControlName="demoAutoskip" text-right></ion-input>
+          <ion-label>s</ion-label>
+      </ion-item>
+
+      <ion-item>
+          <ion-label color="primary" text-wrap>Demo Mode: no actual playing of tracks</ion-label>
+          <ion-toggle color="primary" formControlName="demoNoActualPlaying"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+          <ion-label color="primary" text-wrap>Demo Mode: Fill Empty Playlist</ion-label>
+          <ion-toggle color="primary" formControlName="demoAutoFillEmptyPlaylist" ></ion-toggle>
+      </ion-item>
+      <ion-button [disabled]="!eventForm.valid" expand="full" shape="round" (tap)="submit(eventForm)">Create Event</ion-button>
+
+  </ion-list>
+
+  </form>
+</div>
+
+</ion-content>
