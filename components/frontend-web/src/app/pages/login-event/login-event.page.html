@@ -16,7 +16,7 @@
             <ion-list no-lines style="background: transparent !important;">
                 <ion-item lines="none">
                     <p text-wrap text-center style="color: #bbbbbb;">
-                        Welcome!<br/> We would like to know who you are, please enter a name. Of course, you can stay anonymous and use any alias. Click the magic wand to generate one.
+                        Welcome to the OpenDJ Event {{currentEvent?.name}} of {{currentEvent?.owner}}!<br/> We would like to know who you are, please enter a name. Of course, you can stay anonymous and use any alias. Click the magic wand to generate one.
                     </p>
                 </ion-item>
                 <ion-item lines="none">
@@ -28,6 +28,7 @@
                         </ion-button>
                     </ion-note>
                 </ion-item>
+
                 <ion-item *ngIf="!loginForm.controls.username.valid  && submitAttempt">
                     <p style="color: red;">Minimum length for username is 3.</p>
                 </ion-item>

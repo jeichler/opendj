@@ -9,6 +9,7 @@ import { MusicEvent } from 'src/app/models/music-event';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-playlist',
@@ -36,8 +37,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
     public feService: FEService,
     public userDataService: UserDataService,
     public configService: ConfigService,
-    public platform: Platform
-  ) {
+    public platform: Platform,
+    private route: ActivatedRoute,
+
+    ) {
   }
 
   playTrack() {
@@ -213,17 +216,23 @@ export class PlaylistPage implements OnInit, OnDestroy {
     console.debug('Playlist page leave');
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     console.debug('Playlist page init');
   
-    this.currentEvent = new MusicEvent;
-    this.currentEvent.eventID = "0";
-    this.currentEvent.name = "Demo Event";
+    let eventID = this.route.snapshot.paramMap.get('userEventID');
+    console.debug("Get Event %s from server", eventID);
+  
+    this.currentEvent = await this.feService.readEvent(eventID).toPromise();
+//    this.currentEvent = new MusicEvent;
+//    this.currentEvent.eventID= "0";
+    console.debug("Event from Server: %s", JSON.stringify(this.currentEvent));
+
   
     this.websocketService.init(this.currentEvent.eventID);
     this.websocketService.refreshPlaylist();
 
     const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
+      console.debug("playlist-page - received playlist update");
       this.currentPlaylist = data as Playlist;
       if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
         this.computeETAForTracks(this.currentPlaylist);

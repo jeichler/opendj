@@ -1,0 +1,39 @@
+<ion-header>
+    <ion-toolbar>
+        <img src="assets/img/Logo_OpenDJ_128.png" alt="OpenDJ logo" width="10%" align="left" style="max-width:100%;" />
+
+        <ion-title>
+            <ion-label text-wrap>
+                Let your guests play the music they like
+            </ion-label>
+        </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <p>
+    </p>
+    Have you ever been at an event and disliked the music being played?
+    <p>
+        The idea of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event:
+    </p>
+
+    <p>
+        <img src="assets//img/OpenDJExampleViewUser.png" width="25%" align="left" style="max-width:100%;">
+    </p>
+    Participants of an event can contribute to the playlist by adding tracks. Everybody can see and add to the playlist, no special accounts or apps needed, no access to local WiFi or special devices.
+
+    <br/><br/>
+    <p><img src="assets//img/OpenDJExampleViewCurator.png" width="25%" align="right" style="max-width:100%;"> Curators can edit the playlist (sorting/grouping by genre, deleting) - they are like the maintainer of an open source project. Curators get more
+        detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There is no special skill needed to be curator, just a sense for music.
+        <br><br></p>
+
+    <p>
+        The music is being played by a streaming provider, e.g. Spotify. OpenDJ is running in the internet and uses streaming provider APIs to execute the playlist on a local device (which might be connected to the PA system of your party location).
+    </p>
+
+    <ion-buttons>
+        <ion-button slot="start" shape="round" (tap)="createOwnEvent()">Create your own Event</ion-button>
+        <ion-button slot="end" shape="round" (tap)="joinExistingEvent()">Join an existing Event</ion-button>
+    </ion-buttons>
+</ion-content>

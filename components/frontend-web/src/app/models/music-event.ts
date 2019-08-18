@@ -5,6 +5,9 @@ export class MusicEvent {
     url: string;
     name: string;
     owner: string;
+    passwordOwner: string;
+    passwordCurator: string;
+    passwordUser: string;
     maxUsers: number;
     maxDurationInMinutes: number;
     maxTracksInPlaylist: number;
@@ -22,6 +25,6 @@ export class MusicEvent {
     demoAutoFillEmptyPlaylist: boolean;
     providers: Array<string>;
     activePlaylist: number = 0;
-//    playlists: [0];
+    playlists: [0];
     effectivePlaylist: Array<Track>;
 }

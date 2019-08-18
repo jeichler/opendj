@@ -20,9 +20,10 @@ export class FEService {
     private EMPTY_TRACK_RESULT : Observable<Track[]> = new Observable();
 
     constructor(public http: HttpClient, public confService: ConfigService) {
-        console.info(this.confService.SPOTIFY_PROVIDER_API);
+        console.debug("begin FEService constructor");
         this.SPOTIFY_PROVIDER_API = this.confService.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = this.confService.PLAYLIST_PROVIDER_API;
+        console.debug("end FEService constructor");
     }
 
     handleError(error) {
@@ -36,7 +37,15 @@ export class FEService {
             if (error.error && error.error.code && error.error.msg) {
                 errorMessage = `Error Code: ${error.error.code}\nMessage: ${error.error.msg}`;
             } else {
-                errorMessage = "Unexpected shit happened - Sorry for that!\n"+JSON.stringify(error);
+                if (error.error instanceof Array) {
+
+                    errorMessage = "Multiple shit happened:\n";
+                    error.error.forEach(err => {
+                        errorMessage = errorMessage + err.msg + '\n';
+                    });
+                } else {
+                    errorMessage = "Unexpected shit happened - Sorry for that!\n"+JSON.stringify(error);
+                }
             }
         }
         window.alert(errorMessage);
@@ -151,8 +160,8 @@ export class FEService {
           );
     }
 
-    deleteEvent(eventID: string): Observable<any> {
-        return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+eventID).pipe(
+    deleteEvent(eventID: string): Observable<MusicEvent> {
+        return this.http.delete<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/'+eventID).pipe(
             retry(1),
             catchError(this.handleError)
           );

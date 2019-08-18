@@ -14,7 +14,8 @@ import { UserDataService } from './providers/user-data.service';
 export class AppComponent implements OnInit {
   loggedIn = false;
   userDetails = { username: '', isCurator: false };
-
+  currentEventID = "dan";
+  /*
   public appPagesLoggedIn = [
     {
       title: 'Playlist',
@@ -37,6 +38,7 @@ export class AppComponent implements OnInit {
   ];
 
   public appPages = [];
+*/
 
   constructor(
     public platform: Platform,
@@ -85,9 +87,9 @@ export class AppComponent implements OnInit {
     setTimeout(() => {
       this.loggedIn = loggedIn;
       if (this.loggedIn) {
-        this.appPages = this.appPagesLoggedIn;
+//        this.appPages = this.appPagesLoggedIn;
       } else {
-        this.appPages = this.appPagesLoggedOut;
+//        this.appPages = this.appPagesLoggedOut;
         this.userDetails = { username: '', isCurator: false };
       }
     }, 300);

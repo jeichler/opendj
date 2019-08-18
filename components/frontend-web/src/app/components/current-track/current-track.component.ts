@@ -31,8 +31,8 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
       }
     }
   }
-  @Input() set currentEvent(event: MusicEvent) {
-    this.musicEvent = event;
+  @Input() set currentEventInput(event: MusicEvent) {
+    this.currentEvent = event;
   }
 
   track;
@@ -42,7 +42,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   totalTime = null; // total track length
   progress; // temp var for countdown
   intervalHandle = null;
-  musicEvent: MusicEvent;
+  currentEvent: MusicEvent;
 
   constructor(public feService: FEService) { }
 

@@ -17,9 +17,26 @@ export class ConfigService {
     SPOTIFY_PROVIDER_API;
     PLAYLIST_PROVIDER_API;
 
-    constructor(public http: HttpClient) {}
+    constructor(public http: HttpClient) {
+        console.debug("begin ConfigService constructor");
+    }
 
-    loadConfigurationData(): any {
+    async loadConfigurationData() {
+        console.debug("begin ConfigService loadConfigurationData");
+
+        let data = await this.http.get<any>('conf/config.json').toPromise();
+
+        console.info('App config loaded: ' + JSON.stringify(data));
+        this.enableDebug = data.enableDebug;
+        this.curatorPassword = data.curatorPassword;
+        this.playlistMaxSize = data.playlistMaxSize;
+        this.websocketHost = data.websocketHost;
+        this.websocketPath = data.websocketPath;
+        this.SPOTIFY_PROVIDER_API = data.SPOTIFY_PROVIDER_API;
+        this.PLAYLIST_PROVIDER_API = data.PLAYLIST_PROVIDER_API;
+
+
+ /*       
         this.http.get<any>('conf/config.json').subscribe(data => {
             console.info('App config loaded: ' + JSON.stringify(data));
             this.enableDebug = data.enableDebug;
@@ -30,6 +47,8 @@ export class ConfigService {
             this.SPOTIFY_PROVIDER_API = data.SPOTIFY_PROVIDER_API;
             this.PLAYLIST_PROVIDER_API = data.PLAYLIST_PROVIDER_API;
         });
+*/        
+        console.debug("end ConfigService loadConfigurationData");
     }
 
 }

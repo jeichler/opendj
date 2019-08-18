@@ -41,12 +41,14 @@ export class WebsocketService {
                 observer.next(data);
             });
         });
+        console.debug("end websocket getPlaylist()");
         return observable;
     }
 
     refreshPlaylist() {
         console.debug("begin websocket refreshPlaylist()");
         this.socket.emit('refresh-playlist');
+        console.debug("end websocket refreshPlaylist()");
     }
 
     isConnected() {

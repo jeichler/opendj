@@ -1,28 +1,26 @@
-import { SharedModule } from 'src/app/components/shared.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { EventPage } from './event.page';
+import { LandingPage } from './landing.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: EventPage
+    component: LandingPage
   }
 ];
 
 @NgModule({
   imports: [
     CommonModule,
-    SharedModule,
-    ReactiveFormsModule,
+    FormsModule,
     IonicModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [EventPage]
+  declarations: [LandingPage]
 })
-export class EventPageModule {}
+export class LandingPageModule {}
