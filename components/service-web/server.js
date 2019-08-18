@@ -121,18 +121,18 @@ async function onEventModified(key, entryVersion, listenerID) {
     log.trace("begin onEventModified key=%s", key);
     try {
         if (key.indexOf(':') > 0) {
-            log.debug("onEventModified: ignore strange event with key %s", key);
-            return;
+            log.trace("onEventModified: ignore strange event with key %s", key);
+        } else if ("-1" == key) {
+            log.trace("ignoring event key used for clever event checking");
+        } else {
+            log.trace("get and emit eventID=%s", key);
+            let eventID = key;
+            let event = await getEventForEventID(key);
+            let namespace = io.of("/api/service-web/socket/event/" + eventID);
+            emitEvent(namespace, event);
         }
-
-        let eventID = key;
-
-        let event = await getEventForEventID(key);
-        let namespace = io.of("/api/service-web/socket/event/" + eventID);
-
-        emitEvent(namespace, event);
     } catch (err) {
-        log.error("onEventModified  failed - ignoring err=%s", err);
+        log.error("onEventModified failed - ignoring err=%s", err);
     }
 
     log.trace("end onEventModified key=%s", key);
