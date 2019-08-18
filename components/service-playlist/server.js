@@ -42,7 +42,7 @@ function handleError(err, response) {
 
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
-// ------------------------------ playlist stuff -----------------------------
+// ------------------------------ playlist stuff ----------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 
@@ -68,6 +68,9 @@ const EVENT_PROTOTYPE = {
     url: "",
     name: "",
     owner: "",
+    passwordOwner: "owner",
+    passwordCurator: "opendj",
+    passwordUser: "",
     maxUsers: 100,
     maxDurationInMinutes: 3600,
     maxTracksInPlaylist: 100,
@@ -84,7 +87,6 @@ const EVENT_PROTOTYPE = {
     demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
     providers: ["spotify"],
-
 
     activePlaylist: 0,
     playlists: [0],
@@ -109,7 +111,16 @@ var emergencyTrackIDs = [
 
 function createEmptyEvent() {
     log.trace("begin createEmptyEvent");
-    return JSON.parse(JSON.stringify(EVENT_PROTOTYPE));
+    let event = JSON.parse(JSON.stringify(EVENT_PROTOTYPE));
+    let now = new Date();
+
+    event.eventStartsAt = now.toISOString();
+    event.eventEndsAt = now.toISOString();
+    //    event.eventEndsAt = new Date(now.value + event.maxDurationInMinutes * 60 * 1000).toISOString();
+
+    log.trace("end createEmptyEvent");
+    return event;
+
 }
 
 function createEmptyPlaylist(eventID, playlistID) {
@@ -267,8 +278,7 @@ function moveTrack(eventID, playlist, provider, trackID, newPos) {
     // Insert at new pos;
     playlist.nextTracks.splice(newPos, 0, track);
 
-
-    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+    log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, track);
 }
 
 function deleteTrack(eventID, playlist, provider, trackID) {
@@ -623,20 +633,20 @@ async function checkEvents() {
 
 async function getEventForEventID(eventID) {
     log.trace("begin getEventForEventID id=%s", eventID);
-    let event = await getFromGrid(gridEvents, eventID);
-    if (event == null) {
-        log.error("getEventForEventID event is null for id=%s", eventID);
-        /*        
-                log.debug("EvenState object created for eventID=%s", eventID);
-                event = Object.assign({}, EVENT_PROTOTYPE);
-                event.eventID = eventID;
-                event.timestamp = new Date().toISOString();
-        */
+    let event = null;
+    if ("___prototype___" == eventID) {
+        log.debug("getEventForEventID prototype requested");
+        event = createEmptyEvent();
     } else {
-        if (log.isTraceEnabled())
-            log.trace("event from grid = %s", JSON.stringify(event));
+        event = await getFromGrid(gridEvents, eventID);
+        if (event == null) {
+            log.debug("getEventForEventID event is null for id=%s", eventID);
+        } else {
+            if (log.isTraceEnabled())
+                log.trace("event from grid = %s", JSON.stringify(event));
+        }
+        log.trace("end getEventForEventID id=%s", eventID);
     }
-    log.trace("end getEventForEventID id=%s", eventID);
 
     return event;
 }
@@ -667,6 +677,79 @@ async function getPlaylistForRequest(req) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+// ---------------------------     Event CRUD   ------------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+async function createEvent(event) {
+    log.trace("begin createEvent");
+    event = await validateEvent(event, true);
+    fireEventChangedEvent(event);
+    log.trace("end createEvent");
+}
+async function updateEvent(event) {
+    log.trace("begin updateEvent");
+    event = await validateEvent(event, false);
+    fireEventChangedEvent(event);
+    log.trace("end updateEvent");
+}
+
+async function deleteEvent(eventID) {
+    log.trace("begin deleteEvent id=%s", eventID);
+
+    let event = await getEventForEventID(eventID);
+    if (event) {
+        log.debug("deleteEvent %s - found in grid", eventID);
+
+        // TODO: Do we want to stop the current track, if playing?
+
+        if (event.playlists && event.playlists.length > 0) {
+            log.debug("Removing playlist for event %s", eventID);
+            for (let playlist of event.playlists) {
+                log.debug("Remove playlist %s from grid", playlist.playlistID);
+                await removeFromGrid(gridPlaylists, event.eventID + ":" + playlist.playlistID);
+            };
+        } else {
+            log.trace("no playlists to delete");
+        }
+        log.debug("Remove event %s from grid", event.eventID);
+        await removeFromGrid(gridEvents, event.eventID);
+        log.info("EVENT DELETED %s", eventID);
+    } else {
+        log.warn("deleteEvent ignored because event with id %s not found", eventID);
+    }
+
+    log.trace("end deleteEvent");
+}
+
+
+async function validateEvent(event, isCreate) {
+    log.trace("begin validateEvent isCreate=%s", isCreate);
+    let listOfValidationErrors = new Array();
+
+    if (isCreate) {
+        // check if ID is existing:
+        let otherEvent = await getEventForEventID(event.eventID);
+        if (otherEvent) {
+            listOfValidationErrors.push({ code: "EVENT-100", msg: "An Event with this ID already exists", att: "eventID" });
+        }
+    }
+
+    // Adjust URL:
+    event.url = "www.opendj.io/" + event.eventID;
+
+    if (listOfValidationErrors.length > 0) {
+        log.trace("Throwing validationErrors");
+        throw listOfValidationErrors;
+    }
+
+    log.trace("end validateEvent");
+    return event;
+}
+
+
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // ---------------------------  Routes - Event  ------------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -677,13 +760,12 @@ router.post('/events', async function(req, res) {
 
     try {
         if (log.isTraceEnabled()) log.trace("route createEvent body=%s", JSON.stringify(req.body));
-        let event = JSON.parse(req.body);
-
-        // TODO!!!
-
-        log.info("Event CREATED eventId=%s, URL=%s", event.eventID, event.URL);
+        let event = req.body;
+        await createEvent(event);
+        res.status(200).send(event);
+        log.info("Event CREATED eventId=%s, URL=%s", event.eventID, event.url);
     } catch (error) {
-        log.debug("route create Event err = %s".error);
+        log.error("route create Event err = %s", error);
         res.status(500).send(JSON.stringify(error));
     }
     log.trace("end route createEvent");
@@ -703,13 +785,12 @@ router.post('/events/:eventID', async function(req, res) {
 
     try {
         if (log.isTraceEnabled()) log.trace("route updateEvent body=%s", JSON.stringify(req.body));
-        let event = JSON.parse(req.body);
-
-        // TODO!!!
-
-        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.URL);
+        let event = req.body;
+        await updateEvent(event);
+        res.status(200).send(event);
+        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
     } catch (error) {
-        log.debug("route create Event err = %s".error);
+        log.error("route update Event err = %s", error);
         res.status(500).send(JSON.stringify(error));
     }
     log.trace("end route updateEvent");
@@ -720,11 +801,12 @@ router.delete('/events/:eventID', async function(req, res) {
     log.trace("begin route deleteEvent eventId=%s", req.params.eventID);
 
     try {
-        // TODO!!!
-
+        await deleteEvent(req.params.eventID);
+        let event = createEmptyEvent();
+        res.status(200).send(event);
         log.debug("Event DELETE eventId=%s", req.params.eventID);
     } catch (error) {
-        log.debug("route delete Event err = %s".error);
+        log.error("route delete Event err = %s", error);
         res.status(500).send(JSON.stringify(error));
     }
     log.trace("begin route deleteEvent eventId=%s", req.params.eventID);
@@ -741,7 +823,7 @@ router.post('/events/:eventID/validate', async function(req, res) {
         // TODO!!!
 
     } catch (error) {
-        log.debug("route validate Event err = %s".error);
+        log.debug("route validate Event err = %s", error);
         res.status(500).send(JSON.stringify(error));
     }
     log.trace("end route validateEvent");
@@ -953,6 +1035,12 @@ async function putIntoGrid(grid, key, value) {
     log.trace("begin putIntoGrid grid=%s, key=%s, value=%s", grid, key, value);
     await grid.put(key, JSON.stringify(value));
     log.trace("end putIntoGrid key=%s", key);
+}
+
+async function removeFromGrid(grid, key) {
+    log.trace("begin removeFromGrid grid=%s, key=%s", grid, key);
+    await grid.remove(key);
+    log.trace("end removeFromGrid key=%s", key);
 }
 
 function putIntoGridAsync(grid, key, value) {
