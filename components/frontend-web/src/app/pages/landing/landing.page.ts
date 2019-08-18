@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
+import { createUrlResolverWithoutPackagePrefix } from '@angular/compiler';
 
 @Component({
   selector: '_/landing',
@@ -10,6 +12,7 @@ export class LandingPage implements OnInit {
 
   constructor(
     private router: Router,
+    public alertController: AlertController,
   ) { }
   
   createOwnEvent() {
@@ -18,11 +21,37 @@ export class LandingPage implements OnInit {
     console.debug("end createOwnEvent");
   }
 
-  joinExistingEvent() {
+  async joinExistingEvent() {
     console.debug("begin joinExistingEvent");
-    // TODO: Ask for EventID using a Popup, then navigate to it:
-    let eventID="dan";
-    this.router.navigateByUrl('/'+eventID, { replaceUrl: true });      
+
+    const popup = await this.alertController.create({
+      header: 'Join Existing Event',
+      message: "Please enter the ID of the event.<br>Look around, it should be advertised at the event location.<br>Ask your host!",
+      inputs: [
+        {
+          name: 'eventID',
+          type: 'text',
+          placeholder: 'demo'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+        }, {
+          text: 'Go!',
+          handler: (result) => {
+            if (result && result.eventID) {
+              console.debug("going to event %s", result.eventID);
+              this.router.navigateByUrl('/'+result.eventID, { replaceUrl: true });     
+            }
+          }
+        }
+      ]
+    });
+
+    await popup.present();
     console.debug("end joinExistingEvent");
   }
 
