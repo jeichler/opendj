@@ -9,11 +9,11 @@ import { timingSafeEqual } from 'crypto';
 import { refreshDescendantViews } from '@angular/core/src/render3/instructions';
 
 @Component({
-  selector: 'app-create-event',
-  templateUrl: './create-event.page.html',
-  styleUrls: ['./create-event.page.scss'],
+  selector: '_/event-create',
+  templateUrl: './event.page.html',
+  styleUrls: ['./event.page.scss'],
 })
-export class CreateEventPage implements OnInit {
+export class EventPage implements OnInit {
 
   eventForm: FormGroup;
   event: MusicEvent;

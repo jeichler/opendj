@@ -15,31 +15,7 @@ export class AppComponent implements OnInit {
   loggedIn = false;
   userDetails = { username: '', isCurator: false };
   currentEventID = "dan";
-  /*
-  public appPagesLoggedIn = [
-    {
-      title: 'Playlist',
-      url: '/app-playlist',
-      icon: 'play-circle'
-    },
-    {
-      title: 'Create Event',
-      url: '/app-create-event',
-      icon: 'wine'
-    }
-  ];
-
-  public appPagesLoggedOut = [
-    {
-      title: 'Login',
-      url: '/app-login',
-      icon: 'log-in'
-    }
-  ];
-
-  public appPages = [];
-*/
-
+ 
   constructor(
     public platform: Platform,
     private splashScreen: SplashScreen,
