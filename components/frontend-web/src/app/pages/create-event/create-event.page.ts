@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Events } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { timingSafeEqual } from 'crypto';
@@ -108,6 +108,19 @@ export class CreateEventPage implements OnInit {
   
   }
 
+   validateEventID(eventIDControl: FormControl) {
+    console.debug("begin validateEventID eventID=%s", eventIDControl.value);
+    let eventID =  eventIDControl.value;
+    if (eventID.length >= 3) {
+      console.debug("validate with Server")
+      this.event.eventID = eventID;
+      this.feService.validateEvent(this.event);
+    }
+    
+    console.debug("end validateEventID");
+  }
+
+
   async refresh() {
     console.debug("begin refresh");
   
@@ -167,9 +180,9 @@ export class CreateEventPage implements OnInit {
   ngOnInit() {
 
     this.eventForm = this.formBuilder.group({
-      eventID: ['', Validators.required],
+      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required, this.validateEventID.bind(this)] )],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
-      url: ['', Validators.required],
+      url: ['', Validators.nullValidator],
       maxUsers: ['', Validators.nullValidator],
       passwordOwner: ['', Validators.nullValidator],
       passwordCurator: ['', Validators.nullValidator],

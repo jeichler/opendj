@@ -66,7 +66,7 @@
                 <ion-item>
                     <ion-label>MusicProvider</ion-label>
                     <ion-note slot="end">
-                        <ion-button [disabled]="isCreate" color="primary" size="small">
+                        <ion-button [disabled]="isCreate" color="primary" size="small" href="/api/provider-spotify/v1/events/{{event.eventID}}/providers/spotify/login">
                             Add Spotify
                         </ion-button>
                     </ion-note>

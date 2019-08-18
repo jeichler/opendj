@@ -39,7 +39,7 @@ export class FEService {
             } else {
                 if (error.error instanceof Array) {
 
-                    errorMessage = "Multiple shit happened:\n";
+                    errorMessage = "Sorry:\n";
                     error.error.forEach(err => {
                         errorMessage = errorMessage + err.msg + '\n';
                     });
@@ -167,7 +167,8 @@ export class FEService {
           );
     }
 
-    validateEventURLAvailability(event: MusicEvent): Observable<MusicEvent> {
+    validateEvent(event: MusicEvent): Observable<MusicEvent> {
+        console.debug("fes-service validateEvent %s - prov=%s", event.eventID, this.PLAYLIST_PROVIDER_API);
         return this.http.post<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/validate', event).pipe(
             retry(1),
             catchError(this.handleError)

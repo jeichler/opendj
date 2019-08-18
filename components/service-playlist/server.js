@@ -818,9 +818,10 @@ router.post('/events/:eventID/validate', async function(req, res) {
 
     try {
         if (log.isTraceEnabled()) log.trace("route validateEvent body=%s", JSON.stringify(req.body));
-        let event = JSON.parse(req.body);
+        let event = req.body;
 
-        // TODO!!!
+        event = await validateEvent(event, true);
+        res.status(200).send(event);
 
     } catch (error) {
         log.debug("route validate Event err = %s", error);
