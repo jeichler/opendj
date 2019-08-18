@@ -120,6 +120,8 @@
               spec:
                 containers:
                   - env:
+                      - name: PORT
+                        value: "8081" 
                       - name: LOG_LEVEL
                         value: "{{ENV.SERVICE_PLAYLIST.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
