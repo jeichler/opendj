@@ -11,9 +11,9 @@ const routes: Routes = [
 //  { path: ':userEvent', loadChildren: './pages/event/event.module#EventPageModule', runGuardsAndResolvers: 'always' },
 //  { path: 'login-event', loadChildren: './pages/login-event/login-event.module#LoginEventPageModule' },
 
-  { path: '', redirectTo: 'app-landing', pathMatch: 'full' },
-  { path: 'app-landing', loadChildren: './pages/landing/landing.module#LandingPageModule' },
-  { path: 'app-event-create', loadChildren: './pages/create-event/create-event.module#CreateEventPageModule', runGuardsAndResolvers: 'always', canActivate: [AuthGuard]},
+  { path: '', redirectTo: '_/landing', pathMatch: 'full' },
+  { path: '_/landing', loadChildren: './pages/landing/landing.module#LandingPageModule' },
+  { path: '_/event-create', loadChildren: './pages/create-event/create-event.module#CreateEventPageModule', runGuardsAndResolvers: 'always', canActivate: [AuthGuard]},
   { path: ':userEventID', loadChildren: './pages/login-event/login-event.module#LoginEventPageModule' },
   { path: ':userEventID/playlist-user', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: ':userEventID/playlist-curator', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},

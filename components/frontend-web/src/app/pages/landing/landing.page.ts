@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-landing',
+  selector: '_/landing',
   templateUrl: './landing.page.html',
   styleUrls: ['./landing.page.scss'],
 })
@@ -14,7 +14,7 @@ export class LandingPage implements OnInit {
   
   createOwnEvent() {
     console.debug("begin createOwnEvent");
-    this.router.navigateByUrl('/app-event-create', { replaceUrl: true });      
+    this.router.navigateByUrl('_/event-create', { replaceUrl: true });      
     console.debug("end createOwnEvent");
   }
 
