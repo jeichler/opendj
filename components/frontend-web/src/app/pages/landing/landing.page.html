@@ -2,7 +2,7 @@
     <ion-toolbar color="dark">
         <ion-buttons slot="end">
             <ion-button color='primary' (tap)="skip()">Skip</ion-button>
-          </ion-buttons>
+        </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
@@ -10,14 +10,13 @@
 
     <ion-slides #slides pager="true">
         <ion-slide>
-            <img src="assets/img/Logo_OpenDJ_256.png" class="slide-image" />
+            <img src="assets/img/Logo_OpenDJ_128.png" class="slide-image" />
             <h2 class="slide-title">
                 Welcome to
                 <b>OpenDJ</b>
             </h2>
             <p>
-                Have you ever been at an event and disliked the music being played?<br /> The idea of OpenDJ is to solve
-                this problem by applying open source principles to the music playlist of an event:
+                Have you ever been at an event and disliked the music being played?<br/> The idea of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event.<br/> Swipe to learn more, or
             </p>
             <ion-button fill="clear" (tap)="createOwnEvent()">Create your own Event
                 <ion-icon slot="end" name="arrow-forward"></ion-icon>
@@ -28,37 +27,27 @@
         </ion-slide>
 
         <ion-slide>
-            <img src="assets//img/OpenDJExampleViewUser.png" class="slide-image" />
             <h2 class="slide-title">How does it work?</h2>
             <p>
-                Participants of an event can contribute to the playlist by adding tracks. Everybody can see and add to
-                the playlist, no special accounts or apps
-                needed, no access to local WiFi or special devices.</p>
+                Participants of an event can contribute to the playlist by adding tracks. Everybody can see and add to the playlist, no special accounts or apps needed, no access to local WiFi or special devices.</p>
+            <img src="assets//img/OpenDJExampleViewUser.png" class="slide-image" />
         </ion-slide>
 
         <ion-slide>
-            <img src="assets//img/OpenDJExampleViewCurator.png" class="slide-image" />
             <h2 class="slide-title">What are Curators?</h2>
             <p>
-                Curators can edit the playlist (sorting/grouping by genre, deleting).
-                Curators get more detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There
-                is no special skill needed to be curator, just a sense for music. Of course you could hire a
-                professional DJ as additional curator if you like.</p>
+                Curators can edit the playlist (sorting/grouping by genre, deleting). Curators get more detailed information about a track (e.g. genre, bpm, danceability, likes/dislikes by users). There is no special skill needed to be curator, just a sense for music.
+                Of course you could hire a professional DJ as additional curator if you like.</p>
+            <img src="assets//img/OpenDJExampleViewCurator.png" class="slide-image" />
         </ion-slide>
 
         <ion-slide>
-            <img src="assets/img/Logo_OpenDJ_256.png" class="slide-image" />
-            <h2 class="slide-title">Ready to Go?</h2>
+            <h2 class="slide-title">Where does the music come from?</h2>
             <p>
-                The music is being played by a streaming provider, e.g. Spotify. OpenDJ is running in the internet and
-                uses streaming provider APIs to execute the playlist on a local device of the event owner.
+                The music is being played by a streaming provider, e.g. Spotify. As Event Owner, you need to provide your streaming provider credentials. OpenDJ is running in the internet and uses your streaming provider APIs to execute the playlist on a local device
+                of the event owner.
             </p>
-            <ion-button fill="clear" (tap)="createOwnEvent()">Create your own Event
-                <ion-icon slot="end" name="arrow-forward"></ion-icon>
-            </ion-button>
-            <ion-button fill="clear" (tap)="joinExistingEvent()">Join an existing Event
-                <ion-icon slot="end" name="arrow-forward"></ion-icon>
-            </ion-button>
+            <img src="assets/img/spotify/Spotify_Logo_RGB_Green.png" class="slide-image" />
         </ion-slide>
     </ion-slides>
 </ion-content>

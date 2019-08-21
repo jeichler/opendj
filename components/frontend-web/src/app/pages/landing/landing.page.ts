@@ -19,7 +19,7 @@ export class LandingPage implements OnInit {
 
   createOwnEvent() {
     console.debug('begin createOwnEvent');
-    this.router.navigateByUrl('_/event-create', { replaceUrl: true });
+    this.router.navigate([`_/login`], {state: {ctx: 'owner'}});
     console.debug('end createOwnEvent');
   }
 
@@ -50,6 +50,7 @@ export class LandingPage implements OnInit {
           handler: (result) => {
             if (result && result.eventID) {
               console.debug('going to event %s', result.eventID);
+              this.router.navigate([`_/login`], {state: {ctx: 'owner', currentEventID: result.eventID}});
               this.router.navigateByUrl('/' + result.eventID, { replaceUrl: true });
             }
           }
