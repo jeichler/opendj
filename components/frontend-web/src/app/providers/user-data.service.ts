@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Events } from '@ionic/angular';
 import { Storage } from '@ionic/storage';
-import { User } from '../models/user';
+import { UserSessionState } from '../models/usersessionstate';
 
 
 @Injectable({
@@ -17,21 +17,22 @@ export class UserDataService {
     public storage: Storage
   ) { }
 
-  getUser(): Promise<User> {
+  getUser(): Promise<UserSessionState> {
     return this.storage.get('USER').then((value) => {
       if (!value) {
-        console.debug("user-data-service#getUser(): not found in storage, returning new one");
-        value = new User();
+        console.debug('user-data-service#getUser(): not found in storage, returning new one');
+        value = new UserSessionState();
       }
       return value;
     });
   }
 
-  updateUser(u: User) {
+  updateUser(u: UserSessionState) {
     this.storage.set('USER',u).catch((err) => {
-      console.error("user-data-service#updateUser failed",err);
+      console.error('user-data-service#updateUser failed',err);
     });
   }
+/*
 
   login(username: string, isCurator: boolean): Promise<any> {
     return this.storage.set(this.HAS_LOGGED_IN, true).then(() => {
@@ -74,5 +75,5 @@ export class UserDataService {
       return value;
     });
   }
-
+*/
 }

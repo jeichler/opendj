@@ -34,9 +34,11 @@ export class CuratorLoginPage implements OnInit {
     if (!this.loginForm.valid) {
       return;
     } else {
+ /*
       this.userDataService.login(this.loginForm.value.username, true).then(data => {
         this.events.publish('user:login', [this.loginForm.value.username, true]);
       });
+ */
     }
   }
 

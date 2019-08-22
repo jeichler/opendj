@@ -22,7 +22,7 @@
                             <ion-input formControlName="username" type="text" clearInput="true" [class.invalid]="!loginForm.controls.username.valid && (loginForm.controls.username.dirty || submitAttempt)">
                             </ion-input>
                         </ion-item>
-                        <ion-item *ngIf="!loginForm.controls.username.valid  && (loginForm.controls.username.dirty || submitAttempt)">
+                        <ion-item *ngIf="!loginForm.controls.username.valid  && submitAttempt">
                             <p style="color: red;">Minimum length: 3.</p>
                         </ion-item>
 
@@ -31,7 +31,7 @@
                             <ion-input formControlName="curatorKey" type="password" clearInput="true" [class.invalid]="!loginForm.controls.curatorKey.valid && (loginForm.controls.curatorKey.dirty || submitAttempt)">
                             </ion-input>
                         </ion-item>
-                        <ion-item *ngIf="!loginForm.controls.curatorKey.valid  && (loginForm.controls.curatorKey.dirty || submitAttempt)">
+                        <ion-item *ngIf="!loginForm.controls.curatorKey.valid  && submitAttempt">
                             <p style="color: red;">Your Curator Key is not valid</p>
                         </ion-item>
 

@@ -1,93 +1,95 @@
 .login-logo {
-/*    min-height: 100px; */
-/*    text-align: center; */
+    /*    min-height: 100px; */
+    /*    text-align: center; */
     width: 75%;
     display: block;
     margin-left: auto;
     margin-right: auto;
-  }
+}
 
-  .login-logo ion-img {
-    max-width: 256px;
+.login-logo ion-img {
+    max-width: 128px;
     margin-left: auto;
     margin-right: auto;
-  }
+}
 
-  .list {
+.list {
     margin-bottom: 0;
-  }
-  .item, .list, .item-content, .item-complex {
-    --ion-background-color: transparent !important;
-  }
+}
 
-  .login-form-wrapper {
+.item,
+.list,
+.item-content,
+.item-complex {
+    --ion-background-color: transparent !important;
+}
+
+.login-form-wrapper {
     text-align: center;
     max-width: 50vw;
     margin: 0 auto;
-  }
+}
 
-  @media only screen and (max-width: 600px) {
+@media only screen and (max-width: 600px) {
     .login-form-wrapper {
-      max-width: 90vw;
+        max-width: 90vw;
     }
-  }
+}
 
-  .btn-group {
-  }
+.btn-group {}
 
-  .login-btn {
+.login-btn {
     width: 40vw !important;
     margin-left: auto;
     margin-right: auto;
-  }
+}
 
-  .magic-wand-btn {
+.magic-wand-btn {
     margin-left: auto;
     margin-right: auto;
-
     width: 25% !important;
     text-align: center
-  }
+}
 
-  .invalid{
+.invalid {
     border-bottom: 1px solid rgba(255, 0, 0, 0.71);
-  }
+}
 
-  .item-md.item-block .item-inner {
+.item-md.item-block .item-inner {
     padding-right: 0px !important;
     border-bottom: #fff !important;
-  }
+}
 
-  ion-content {
+ion-content {
     --background-color: transparent;
     --ion-color-base: transparent !important;
     --background: black;
-  }
+}
 
-  ion-list {
+ion-list {
     --background: transparent !important;
     --ion-background-color: rgba(53, 54, 56, 0.8) !important;
-  }
+}
 
-  ion-input {
+ion-input {
     color: white;
-  }
+}
 
-  .input-clear-icon {
+.input-clear-icon {
     color: white;
-  }
+}
 
-  ion-toolbar {
+ion-toolbar {
     --background: transparent !important;
     --background-color: transparent;
     --ion-color-base: transparent !important;
-  }
+}
 
-  ion-footer {
+ion-footer {
     position: fixed;
     bottom: 0;
-  }
+}
 
-  p.info-message {
+p.info-message {
     color: white !important;
-  }
+}

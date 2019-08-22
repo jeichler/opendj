@@ -44,7 +44,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   playTrack() {
-    this.feService.playTrack(this.currentEvent,).subscribe((data) => {
+    this.feService.playTrack(this.currentEvent).subscribe((data) => {
       // console.log(data);
     },
     (err) => {
@@ -123,7 +123,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   async presentModal() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
-      componentProps: { 
+      componentProps: {
         currentEvent: this.currentEvent }
     });
     modal.onDidDismiss().then(res => {
@@ -195,7 +195,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     return index + ', ' + element.id;
   }
 
-  ionViewDidEnter() {
+  async ionViewDidEnter() {
     console.debug('Playlist page enter');
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
@@ -204,12 +204,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
       }
     }, 100);
 
-    this.userDataService.getUsername().then(data =>
-      this.username = data
-    );
-    this.userDataService.getCurator().then(data =>
-      this.isCurator = data
-    );
+    const u = await this.userDataService.getUser();
+    this.username = u.username;
+    this.isCurator = u.isCurator;
   }
 
   ionViewDidLeave() {
@@ -218,21 +215,21 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     console.debug('Playlist page init');
-  
-    let eventID = this.route.snapshot.paramMap.get('userEventID');
-    console.debug("Get Event %s from server", eventID);
-  
+
+    const eventID = this.route.snapshot.paramMap.get('userEventID');
+    console.debug('Get Event %s from server', eventID);
+
     this.currentEvent = await this.feService.readEvent(eventID).toPromise();
 //    this.currentEvent = new MusicEvent;
 //    this.currentEvent.eventID= "0";
-    console.debug("Event from Server: %s", JSON.stringify(this.currentEvent));
+    console.debug('Event from Server: %s', JSON.stringify(this.currentEvent));
 
-  
+
     this.websocketService.init(this.currentEvent.eventID);
     this.websocketService.refreshPlaylist();
 
     const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
-      console.debug("playlist-page - received playlist update");
+      console.debug('playlist-page - received playlist update');
       this.currentPlaylist = data as Playlist;
       if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
         this.computeETAForTracks(this.currentPlaylist);
@@ -305,7 +302,7 @@ export class PlaylistAddModalComponent implements OnInit {
   queryText = '';
   tracks: Array<Track>;
 
-  
+
   @ViewChild(IonSearchbar) myInput: IonSearchbar;
 
   setFocus() {

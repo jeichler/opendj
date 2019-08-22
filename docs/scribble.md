@@ -119,6 +119,7 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/push
 http://demo.opendj.io/api/service-playlist/v1/events/0/playlists/0
 
 
+
 # Add Track
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks
 

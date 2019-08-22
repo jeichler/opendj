@@ -1,4 +1,4 @@
-export class User {
+export class UserSessionState {
     username: string = "";
     isLoggedIn: boolean = false;
     isEventOwner: boolean = false;

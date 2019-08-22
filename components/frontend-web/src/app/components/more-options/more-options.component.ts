@@ -1,6 +1,6 @@
 import { PopoverController } from '@ionic/angular';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 
 @Component({
   selector: 'app-more-options',
@@ -16,9 +16,26 @@ export class MoreOptionsComponent implements OnInit {
 
   ngOnInit() {}
 
-  goTo(route: string) {
-    this.router.navigateByUrl(`${route}`);
-    this.popoverController.dismiss();
+  gotoUserLogin() {
+    console.debug('more-options#gotoUserLogin');
+    this.router.navigate([`_/login`], {state: {ctx: 'user'}});
   }
+
+  gotoCuratorLogin() {
+    console.debug('more-options#gotoCuratorLogin');
+    this.router.navigate([`_/login`], {state: {ctx: 'curator'}});
+  }
+
+  gotoEventOwnerLogin() {
+    console.debug('more-options#gotoEventOwnerLogin');
+    this.router.navigate([`_/login`], {state: {ctx: 'owner'}});
+  }
+
+  gotoLanding() {
+    console.debug('more-options#gotoLanding');
+   
+    this.router.navigate([`_/landing`]);
+  }
+
 
 }
