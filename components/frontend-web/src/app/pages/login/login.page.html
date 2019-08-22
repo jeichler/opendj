@@ -58,9 +58,16 @@
                 </ion-item>
 
 
-                <ion-button text-center (tap)="loginAction()" shape="round" type="submit" color="primary" expand="full" fill="outline">
-                    <a *ngIf="ctxIsOwner">Continue to Edit Event</a>
-                    <a *ngIf="!ctxIsOwner">Join Event</a>
+                <ion-button *ngIf="ctxIsOwner" text-center (tap)="loginOwner()" shape="round" type="submit" color="primary" expand="full" fill="outline">
+                    Continue to Event
+                </ion-button>
+
+                <ion-button *ngIf="ctxIsCurator" text-center (tap)="loginCurator()" shape="round" type="submit" color="primary" expand="full" fill="outline">
+                    Join as Curator
+                </ion-button>
+
+                <ion-button *ngIf="ctxIsUser" text-center (tap)="loginUser()" shape="round" type="submit" color="primary" expand="full" fill="outline">
+                    Join Event
                 </ion-button>
             </ion-list>
 

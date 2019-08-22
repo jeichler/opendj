@@ -47,7 +47,7 @@ Curatos -> Login as Event Owner
 
 
 @Component({
-  selector: 'app-login',
+  selector: 'login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })
@@ -75,18 +75,100 @@ export class LoginPage implements OnInit {
     public formBuilder: FormBuilder
   ) { }
 
-   loginAction() {
-    this.submitAttempt = true;
-    if (!this.loginForm.valid) {
-      return;
-    } else {
-/*
-      this.userDataService.login(this.loginForm.value.username, false).then(data => {
-        this.events.publish('user:login', [this.loginForm.value.username, false]);
-      });
-*/
+  userIsNowLoggedIn() {
+    console.debug('userIsNowLoggedIn');
+    this.currentUser.username = this.loginForm.value.username;
+    this.currentUser.isLoggedIn = true;
+    this.userDataService.updateUser(this.currentUser);
+  }
+
+  gotoEvent() {
+    console.debug('gotoEvent()');
+    this.currentUser.isEventOwner = true;
+    this.currentUser.isCurator = true;
+    this.userIsNowLoggedIn();
+    this.router.navigate([`ui/event`]);
+  }
+  gotoCurator() {
+    console.debug('gotoCurator()');
+    this.currentUser.isEventOwner = false;
+    this.currentUser.isCurator = true;
+    this.userIsNowLoggedIn();
+    this.router.navigate([`ui/playlist-curator`]);
+  }
+
+  gotoUser() {
+    console.debug('gotoUser()');
+    this.currentUser.isEventOwner = false;
+    this.currentUser.isCurator = false;
+    this.userIsNowLoggedIn();
+    this.router.navigate([`ui/playlist-user`]);
+  }
+
+  loginOwner() {
+    if (this.loginForm.valid) {
+      if (this.ctxIsEventKnown) {
+        if (this.currentEvent.passwordOwner) {
+          if (this.loginForm.value.password === this.currentEvent.passwordOwner) {
+            console.debug('correct owner password');
+            this.gotoEvent();
+          } else {
+            console.debug('wrong owner password');
+            // TODO: Visualize this
+          }
+        } else {
+          console.debug('event does not require owner password?!');
+          this.gotoEvent();
+        }
+      } else {
+        this.gotoEvent();
+      }
     }
   }
+
+  loginCurator() {
+    if (this.loginForm.valid) {
+      if (this.ctxIsEventKnown) {
+        if (this.currentEvent.passwordCurator) {
+          if (this.loginForm.value.password === this.currentEvent.passwordCurator) {
+            console.debug('correct curator password');
+            this.gotoCurator();
+          } else {
+            console.debug('wrong user password');
+            // TODO: Visualize this
+          }
+        } else {
+          console.debug('event does not require curator password');
+          this.gotoCurator();
+        }
+      } else {
+        console.error('loginUser() - event unknown - this should not happend?!');
+      }
+    }
+  }
+
+  loginUser() {
+    if (this.loginForm.valid) {
+      if (this.ctxIsEventKnown) {
+        if (this.currentEvent.passwordUser) {
+          if (this.loginForm.value.password === this.currentEvent.passwordUser) {
+            console.debug('correct user password');
+            this.gotoUser();
+          } else {
+            console.debug('wrong user password');
+            // TODO: Visualize this
+          }
+        } else {
+          console.debug('event does not require user password');
+          this.gotoUser();
+        }
+      } else {
+        console.error('loginUser() - event unknown - this should not happend?!');
+      }
+    }
+  }
+
+
 
   async presentMoreOptions(ev: any) {
     const popover = await this.popOverCtrl.create({
@@ -176,13 +258,12 @@ export class LoginPage implements OnInit {
   async ngOnInit() {
     console.debug('begin ngOnInit()');
     this.loginForm = this.formBuilder.group({
-      username: ['', Validators.compose([Validators.minLength(3), Validators.required])]
+      username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      password: ['', Validators.nullValidator]
     });
 
     console.debug('checking on user...');
     this.currentUser = await this.userDataService.getUser();
-
-    console.debug('win.hist.state=%s', JSON.stringify(window.history.state));
 
     console.debug('checking on what window.history.state has for us');
     if (window.history

@@ -10,6 +10,7 @@ import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+import { UserSessionState } from 'src/app/models/usersessionstate';
 
 @Component({
   selector: 'app-playlist',
@@ -22,7 +23,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   currentEvent: MusicEvent = null;
   currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
-  username: string = null;
+  userState: UserSessionState;
   isCurator = false;
   showOptions = false;
   isConnected = false;
@@ -128,7 +129,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     });
     modal.onDidDismiss().then(res => {
       if (res.data) {
-        this.feService.addTrack(this.currentEvent, res.data.id, 'spotify', this.username).subscribe(
+        this.feService.addTrack(this.currentEvent, res.data.id, 'spotify', this.userState.username).subscribe(
           data => {
             this.presentToast('Track added to playlist.');
           },
@@ -204,9 +205,8 @@ export class PlaylistPage implements OnInit, OnDestroy {
       }
     }, 100);
 
-    const u = await this.userDataService.getUser();
-    this.username = u.username;
-    this.isCurator = u.isCurator;
+    this.userState = await this.userDataService.getUser();
+    this.isCurator = this.userState.isCurator;
   }
 
   ionViewDidLeave() {
@@ -215,8 +215,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     console.debug('Playlist page init');
+    this.userState  = await this.userDataService.getUser();
+    const eventID = this.userState.currentEventID;
 
-    const eventID = this.route.snapshot.paramMap.get('userEventID');
     console.debug('Get Event %s from server', eventID);
 
     this.currentEvent = await this.feService.readEvent(eventID).toPromise();

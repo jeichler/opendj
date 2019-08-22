@@ -4,7 +4,7 @@ import { AlertController, MenuController, IonSlides } from '@ionic/angular';
 import { createUrlResolverWithoutPackagePrefix } from '@angular/compiler';
 
 @Component({
-  selector: '_/landing',
+  selector: 'landing',
   templateUrl: './landing.page.html',
   styleUrls: ['./landing.page.scss'],
 })
@@ -19,7 +19,7 @@ export class LandingPage implements OnInit {
 
   createOwnEvent() {
     console.debug('begin createOwnEvent');
-    this.router.navigate([`_/login`], {state: {ctx: 'owner'}});
+    this.router.navigate([`ui/login`], {state: {ctx: 'owner'}});
     console.debug('end createOwnEvent');
   }
 
@@ -49,9 +49,8 @@ export class LandingPage implements OnInit {
           text: 'Go!',
           handler: (result) => {
             if (result && result.eventID) {
-              console.debug('going to event %s', result.eventID);
-              this.router.navigate([`_/login`], {state: {ctx: 'owner', currentEventID: result.eventID}});
-              this.router.navigateByUrl('/' + result.eventID, { replaceUrl: true });
+              console.debug('landing: going to event %s', result.eventID);
+              this.router.navigate([`ui/login`], {state: {ctx: 'user', currentEventID: result.eventID}});
             }
           }
         }

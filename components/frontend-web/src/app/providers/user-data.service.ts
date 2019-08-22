@@ -18,6 +18,7 @@ export class UserDataService {
   ) { }
 
   getUser(): Promise<UserSessionState> {
+    console.debug('UserDataService#getUser');
     return this.storage.get('USER').then((value) => {
       if (!value) {
         console.debug('user-data-service#getUser(): not found in storage, returning new one');
@@ -28,10 +29,17 @@ export class UserDataService {
   }
 
   updateUser(u: UserSessionState) {
+    console.debug('UserDataService#updateUser');
     this.storage.set('USER',u).catch((err) => {
       console.error('user-data-service#updateUser failed',err);
     });
   }
+
+  logout() {
+    console.debug('UserDataService#logout');
+    this.storage.clear();
+  }
+
 /*
 
   login(username: string, isCurator: boolean): Promise<any> {

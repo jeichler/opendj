@@ -48,9 +48,8 @@ export class AppComponent implements OnInit {
   }
 
   logout() {
-    // Clear User Info:
-    this.userState = new UserSessionState();
-    this.saveUserState();
+    this.userDataService.logout();
+    this.router.navigate([`ui/login`]);
   }
 
   async ngOnInit() {
