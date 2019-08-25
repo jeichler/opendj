@@ -190,9 +190,15 @@ function emitPlaylist(socketOrNamespace, playlist) {
 }
 
 function emitEvent(socketOrNamespace, event) {
-    log.trace("begin emitEvent id=%s", event.eventID);
-    socketOrNamespace.emit('current-event', event);
-    log.trace("end emitEvent id=%s", event.eventID);
+    log.trace("begin emitEvent");
+    if (event) {
+        log.debug("emitEvent current-event for ID=%s", event.eventID);
+        socketOrNamespace.emit('current-event', event);
+    } else {
+        log.debug("emitEvent delete-event");
+        socketOrNamespace.emit("delete-event");
+    }
+    log.trace("end emitEvent");
 }
 
 async function emitEventToSocket(socket) {
