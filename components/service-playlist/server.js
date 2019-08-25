@@ -256,7 +256,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
         }
     }
 
-    log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, track);
+    log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 }
 
 function moveTrack(eventID, playlist, provider, trackID, newPos) {
