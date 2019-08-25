@@ -579,22 +579,28 @@ async function checkPlaylist(event, playlist) {
 }
 
 async function checkEvent(event) {
-    log.trace("begin checkEvent for id %s", event.eventID);
+    log.trace("begin checkEvent");
     try {
-        for (let playlistID of event.playlists) {
-            log.trace("get playlist");
-            let playlist = await getPlaylistWithID(event.eventID, playlistID);
-            if (!playlist) {
-                log.trace("playlist is not defined");
-                playlist = createEmptyPlaylist(event.eventID, playlistID);
+        if (event) {
+            log.debug("checkEvent for id %s", event.eventID);
+
+            for (let playlistID of event.playlists) {
+                log.trace("get playlist");
+                let playlist = await getPlaylistWithID(event.eventID, playlistID);
+                if (!playlist) {
+                    log.trace("playlist is not defined");
+                    playlist = createEmptyPlaylist(event.eventID, playlistID);
+                }
+                log.trace("check playlist");
+                await checkPlaylist(event, playlist)
             }
-            log.trace("check playlist");
-            await checkPlaylist(event, playlist)
+        } else {
+            log.debug("checkEvent - ignored for non-existing event");
         }
     } catch (err) {
         log.error("checkEvent %s failed with err %s - ignored", event.eventID, err);
     }
-    log.trace("end checkEvent for id %s", event.eventID);
+    log.trace("end checkEvent");
 }
 
 async function checkEvents() {
@@ -842,23 +848,35 @@ router.post('/events/:eventID/validate', async function(req, res) {
 
 router.get('/events/:eventID/playlists/:listID', async function(req, res) {
     log.trace("begin GET playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    let playlist = await getPlaylistForRequest(req);
-    updateCurrentTrackProgress(playlist);
-    res.status(200).send(playlist);
+    try {
+        let playlist = await getPlaylistForRequest(req);
+        updateCurrentTrackProgress(playlist);
+        res.status(200).send(playlist);
+    } catch (err) {
+        handleError(err, res);
+    }
 });
 
 router.get('/events/:eventID/playlists/:listID/currentTrack', async function(req, res) {
-    log.trace("begin GET currentTrack eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    let playlist = await getPlaylistForRequest(req);
-    updateCurrentTrackProgress(playlist);
-    res.status(200).send(playlist.currentTrack);
+    try {
+        log.trace("begin GET currentTrack eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+        let playlist = await getPlaylistForRequest(req);
+        updateCurrentTrackProgress(playlist);
+        res.status(200).send(playlist.currentTrack);
+    } catch (err) {
+        handleError(err, res);
+    }
 });
 
 router.get('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
-    log.trace("begin GET tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    let playlist = await getPlaylistForRequest(req);
-    updateCurrentTrackProgress(playlist);
-    res.status(200).send(playlist.nextTracks);
+    try {
+        log.trace("begin GET tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+        let playlist = await getPlaylistForRequest(req);
+        updateCurrentTrackProgress(playlist);
+        res.status(200).send(playlist.nextTracks);
+    } catch (err) {
+        handleError(err, res);
+    }
 });
 
 
@@ -905,27 +923,31 @@ router.get('/events/:eventID/playlists/:listID/next', async function(req, res) {
     });
 });
 
-
-
 router.get('/events/:eventID/playlists/:listID/push', async function(req, res) {
-    log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var playlist = await getPlaylistForRequest(req);
-    firePlaylistChangedEvent(req.params.eventID, playlist);
-    res.status(200).send(playlist);
+    try {
+        log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+        var playlist = await getPlaylistForRequest(req);
+        firePlaylistChangedEvent(req.params.eventID, playlist);
+        res.status(200).send(playlist);
+    } catch (err) {
+        handleError(err, res);
+    }
 });
 
 // Add Track:
 router.post('/events/:eventID/playlists/:listID/tracks', async function(req, res) {
-    log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    log.trace("body=%s", JSON.stringify(req.body));
-
-    let event = await getEventForRequest(req);
-    let playlist = getPlaylistForRequest(req);
-    let provider = req.body.provider;
-    let trackID = req.body.id;
-    let user = req.body.user;
+    if (log.isTraceEnabled()) {
+        log.trace("begin ADD track playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
+        log.trace("body=%s", JSON.stringify(req.body));
+    }
 
     try {
+        let event = await getEventForRequest(req);
+        let playlist = await getPlaylistForRequest(req);
+        let provider = req.body.provider;
+        let trackID = req.body.id;
+        let user = req.body.user;
+
         await addTrack(event, playlist, provider, trackID, user);
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
