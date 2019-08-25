@@ -233,7 +233,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
 
     // Okay, track can be added. Let's get the details
     try {
-        let track = await getTrackDetailsForTrackID(event.eventID, trackID);
+        let track = await getTrackDetailsForTrackID(event.eventID, provider + ":" + trackID);
         if (user)
             track.added_by = user;
         else
