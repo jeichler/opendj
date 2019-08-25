@@ -193,11 +193,10 @@ function emitEvent(socketOrNamespace, event) {
     log.trace("begin emitEvent");
     if (event) {
         log.debug("emitEvent current-event for ID=%s", event.eventID);
-        socketOrNamespace.emit('current-event', event);
     } else {
-        log.debug("emitEvent delete-event");
-        socketOrNamespace.emit("delete-event");
+        log.debug("emitEvent current-event with null - aka delete-event");
     }
+    socketOrNamespace.emit("current-event", event);
     log.trace("end emitEvent");
 }
 
@@ -205,12 +204,8 @@ async function emitEventToSocket(socket) {
     log.trace("begin emitEventToSocket");
     let eventID = getEventIDFromSocketNamespace(socket);
     let currentEvent = await getEventForEventID(eventID);
-    if (eventID && currentEvent) {
-        log.debug("emit current-event %s to socket %s", eventID, socket.id);
-        emitEvent(socket, currentEvent);
-    } else {
-        log.warn("We have no event for id %s ?!", eventID);
-    }
+    log.debug("emit current-event %s to socket %s", eventID, socket.id);
+    emitEvent(socket, currentEvent);
     log.trace("end emitEventToSocket");
 }
 
@@ -229,8 +224,12 @@ async function onRefreshPlaylist(socket) {
     try {
         let eventID = getEventIDFromSocketNamespace(socket);
         let event = await getEventForEventID(eventID);
-        let playlist = await getPlaylistForPlaylistID(eventID + ":" + event.activePlaylist);
-        emitPlaylist(socket, playlist);
+        if (event) {
+            let playlist = await getPlaylistForPlaylistID(eventID + ":" + event.activePlaylist);
+            emitPlaylist(socket, playlist);
+        } else {
+            log.debug("ignoring refresh request for non-existing playlist - probably it has been deleted");
+        }
     } catch (err) {
         log.error("onRefreshPlaylist failed - ignoring err %s", err);
     }
