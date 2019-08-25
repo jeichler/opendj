@@ -105,6 +105,12 @@ export class LoginPage implements OnInit {
     this.router.navigate([`ui/playlist-user`]);
   }
 
+  gotoLanding() {
+    console.debug('gotoLanding()');
+    this.userDataService.logout();
+    this.router.navigate([`ui/landing`]);
+  }
+
   wrongPassword() {
     this.loginForm.controls.password.setErrors({invalidKey: true});
   }
@@ -188,7 +194,11 @@ export class LoginPage implements OnInit {
     popover.onDidDismiss().then((newCtx) => {
       console.debug('onDidDismiss');
       if (newCtx !== null && newCtx.data) {
-        this.setContextFromString(newCtx.data);
+        if (newCtx.data === 'switch') {
+          this.handleEventDoesNotExists('');
+        } else {
+          this.setContextFromString(newCtx.data);
+        }
       }
     });
     return await popover.present();
@@ -226,9 +236,20 @@ export class LoginPage implements OnInit {
 
   async handleEventDoesNotExists(eventID: string) {
     console.debug('begin handleEventDoesNotExists');
+
+    let h = '';
+    let m = '';
+    if (eventID && eventID.length>0) {
+      h = 'Oh No!';
+      m = 'We couldn\'t find event ' + eventID + '?!?';
+    } else {
+      h = 'Search events';
+      m = 'Please enter an event ID to search for.<br>Look around, The ID should be advertised at the event location.<br>Or ask your host.';
+    }
+
     const popup = await this.alertController.create({
-      header: 'Oh no!!',
-      message: 'We couldn\'t find this event ?!?',
+      header: h,
+      message: m,
       inputs: [
         {
           name: 'eventID',
@@ -238,27 +259,30 @@ export class LoginPage implements OnInit {
       ],
       buttons: [
         {
-          text: '',
+          text: 'Cancel',
           role: 'cancel',
           cssClass: 'secondary',
           handler: () => {
-              // TODO:
-              // Logoff? - clear user state
-              // Redirect to landing?
-              throw new Error('Implement me!');
+            this.gotoLanding();
           }
         }, {
           text: 'Search again?!',
           handler: (result) => {
             if (result && result.eventID) {
-              throw new Error('Implement me!');
+              this.currentUser.currentEventID = result.eventID;
+              this.loadEvent();
+            } else {
+              this.gotoLanding();
             }
           }
         }, {
           text: 'Create this event!',
           handler: (result) => {
             if (result && result.eventID) {
-              throw new Error('Implement me!');
+              this.currentUser.currentEventID = result.eventID;
+              this.setContextFromString('owner');
+            } else {
+              this.gotoLanding();
             }
           }
         }
@@ -268,6 +292,28 @@ export class LoginPage implements OnInit {
     await popup.present();
 
     console.debug('end handleEventDoesNotExists');
+  }
+
+  async loadEvent() {
+    console.debug('begin loadEvent() for currentEventID >%s<', this.currentUser.currentEventID);
+    if (this.currentUser.currentEventID) {
+      console.debug('Loading event...');
+      this.currentEvent = await this.feService.readEvent(this.currentUser.currentEventID).toPromise();
+      if (this.currentEvent) {
+        console.debug('Loading event...OK');
+        console.debug(this.currentEvent);
+        this.ctxIsEventKnown = true;
+      } else {
+        console.debug('Loading event...NOT FOUND');
+        this.ctxIsEventKnown = false;
+        this.handleEventDoesNotExists(this.currentUser.currentEventID);
+      }
+    } else {
+      console.debug('no currentEventID - switching to ctx owner');
+      this.ctxIsEventKnown = false;
+      this.setContextFromString('owner');
+    }
+    console.debug('end loadEvent() for currentEventID >%s<', this.currentUser.currentEventID);
   }
 
   ngOnInit() {
@@ -319,24 +365,7 @@ export class LoginPage implements OnInit {
 
     this.userDataService.updateUser(this.currentUser);
 
-    console.debug('checking on currentEventID >%s<', this.currentUser.currentEventID);
-    if (this.currentUser.currentEventID) {
-      console.debug('Loading event...');
-      this.currentEvent = await this.feService.readEvent(this.currentUser.currentEventID).toPromise();
-      if (this.currentEvent) {
-        console.debug('Loading event...OK');
-        console.debug(this.currentEvent);
-        this.ctxIsEventKnown = true;
-      } else {
-        console.debug('Loading event...NOT FOUND');
-        this.ctxIsEventKnown = false;
-        this.handleEventDoesNotExists(this.currentUser.currentEventID);
-      }
-    } else {
-      console.debug('no currentEventID - switching to ctx owner');
-      this.ctxIsEventKnown = false;
-      this.setContextFromString('owner');
-    }
+    this.loadEvent();
 
     console.debug('end loginPage#ngOnEnter()');
   }

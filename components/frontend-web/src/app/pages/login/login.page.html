@@ -18,7 +18,7 @@
                     <a *ngIf="ctxIsEventKnown" text-wrap text-center style="color: #bbbbbb;">
                         Welcome to {{currentEvent.owner}}'s {{currentEvent.name}}!<br> 
                         We would like to know who you are, please enter a name.
-                        <a *ngIf="!currentEvent.passwordUser">
+                        <a *ngIf="!currentEvent.passwordUser" text-wrap text-center style="color: #bbbbbb;">
                         Of course, you can stay anonymous and use any alias. Click the magic wand to generate one.
                         </a>
                     </a>

@@ -33,17 +33,31 @@ export class WebsocketService {
         console.debug('end websocket init eventID=%s', eventID);
     }
 
-    getPlaylist() {
-        console.debug('begin websocket getPlaylist()');
+    observePlaylist() {
+        console.debug('begin websocket observePlaylist()');
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
                 console.debug('WebsocketService: Received playlist update');
                 observer.next(data);
             });
         });
-        console.debug('end websocket getPlaylist()');
+        console.debug('end websocket observePlaylist()');
         return observable;
     }
+
+    observeEvent() {
+        console.debug('begin websocket observeEvent()');
+        const observable = new Observable(observer => {
+            this.socket.on('current-event', (data) => {
+                console.debug('WebsocketService: Received event update');
+                observer.next(data);
+            });
+        });
+        console.debug('end websocket observeEvent()');
+        return observable;
+    }
+
+
 
     refreshPlaylist() {
         console.debug('begin websocket refreshPlaylist()');

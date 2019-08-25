@@ -3,16 +3,23 @@
         <ion-icon slot="start" name="log-in" color="dark"></ion-icon>
         <ion-label padding-left>Login as User</ion-label>
     </ion-item>
+
     <ion-item color="light" (click)="gotoCuratorLogin()">
         <ion-icon slot="start" name="log-in" color="dark"></ion-icon>
         <ion-label padding-left>Login as Curator</ion-label>
     </ion-item>
+
     <ion-item color="light" (click)="gotoEventOwnerLogin()">
         <ion-icon slot="start" name="log-in" color="dark"></ion-icon>
         <ion-label padding-left>Login as Event Owner</ion-label>
     </ion-item>
 
-    <ion-item color="light" (click)="gotoLanding()">
+    <ion-item color="light" (click)="switchEvent()">
+        <ion-icon slot="start" name="refresh" color="dark"></ion-icon>
+        <ion-label padding-left>Switch Event</ion-label>
+    </ion-item>
+
+    <ion-item color="light" (click)="gotoLanding() ">
         <ion-icon slot="start" name="log-out" color="dark"></ion-icon>
         <ion-label padding-left>Back to homepage</ion-label>
     </ion-item>

@@ -233,7 +233,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     this.websocketService.init(this.currentEvent.eventID);
 //    this.websocketService.refreshPlaylist();
 
-    const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
+    let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update');
       this.currentPlaylist = data as Playlist;
       if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
@@ -242,6 +242,20 @@ export class PlaylistPage implements OnInit, OnDestroy {
       console.debug(`playlist subscription: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
+
+    sub = this.websocketService.observeEvent().pipe().subscribe(data => {
+      console.debug('playlist-page - received event update');
+      this.currentEvent = data as MusicEvent;
+      if (this.currentEvent) {
+        console.info(`event update: `, this.currentEvent);
+      } else {
+        console.warn('Event has been deleted - navigating to landing page');
+        this.router.navigate([`ui/landing`]);
+      }
+    });
+    this.subscriptions.push(sub);
+
+
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
     }, 3000);

@@ -39,5 +39,10 @@ export class MoreOptionsComponent implements OnInit {
     this.router.navigate([`ui/landing`]);
   }
 
+  switchEvent() {
+    console.debug('more-options#switchEvent');
+    this.popOverCtrl.dismiss('switch');
+  }
+
 
 }
