@@ -53,8 +53,12 @@
 
                 <ion-item *ngIf="ctxIsUser && ctxIsEventKnown && currentEvent.passwordUser">
                     <ion-label position="stacked" color="light">Password</ion-label>
-                    <ion-input formControlName="password" type="password" clearInput="true">
+                    <ion-input formControlName="password" type="password" clearInput="true" [class.invalid]="!loginForm.controls.password.valid">
                     </ion-input>
+                </ion-item>
+
+                <ion-item *ngIf="!loginForm.controls.password.valid">
+                    <p style="color: red;">Invalid password</p>
                 </ion-item>
 
 

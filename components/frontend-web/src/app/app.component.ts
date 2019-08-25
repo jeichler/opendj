@@ -13,7 +13,7 @@ import { UserSessionState } from './models/usersessionstate';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent implements OnInit {
-  userState: UserSessionState;
+  userState =  new UserSessionState();
 
   constructor(
     public platform: Platform,
@@ -48,13 +48,20 @@ export class AppComponent implements OnInit {
   }
 
   logout() {
-    this.userDataService.logout();
+//    this.userDataService.logout();
     this.router.navigate([`ui/login`]);
   }
 
   async ngOnInit() {
     console.debug('begin ngOnInit()');
     await this.loadUserState();
+
+    this.events.subscribe('user:modified', newUser => {
+      console.debug('Received user:modified event');
+      this.userState = newUser;
+    });
+
+
     console.debug('end ngOnInit()');
   }
 

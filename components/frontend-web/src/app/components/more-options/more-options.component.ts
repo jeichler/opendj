@@ -12,29 +12,30 @@ export class MoreOptionsComponent implements OnInit {
 
   constructor(
     private router: Router,
-    public userDataService: UserDataService
-  ) { }
+    public userDataService: UserDataService,
+    public popOverCtrl: PopoverController,
+    ) { }
 
   ngOnInit() {}
 
   gotoUserLogin() {
     console.debug('more-options#gotoUserLogin');
-    this.router.navigate([`ui/login-user`], {state: {ctx: 'user'}});
+    this.popOverCtrl.dismiss('user');
   }
 
   gotoCuratorLogin() {
     console.debug('more-options#gotoCuratorLogin');
-    this.router.navigate([`ui/login-curator`], {state: {ctx: 'curator'}});
+    this.popOverCtrl.dismiss('curator');
   }
 
   gotoEventOwnerLogin() {
     console.debug('more-options#gotoEventOwnerLogin');
-    this.router.navigate([`ui/login-owner`], {state: {ctx: 'owner'}});
-  }
+    this.popOverCtrl.dismiss('owner');  }
 
   gotoLanding() {
     console.debug('more-options#gotoLanding');
     this.userDataService.logout();
+    this.popOverCtrl.dismiss();
     this.router.navigate([`ui/landing`]);
   }
 

@@ -105,7 +105,12 @@ export class LoginPage implements OnInit {
     this.router.navigate([`ui/playlist-user`]);
   }
 
+  wrongPassword() {
+    this.loginForm.controls.password.setErrors({invalidKey: true});
+  }
+
   loginOwner() {
+    console.debug('loginOwner()');
     if (this.loginForm.valid) {
       if (this.ctxIsEventKnown) {
         if (this.currentEvent.passwordOwner) {
@@ -114,7 +119,7 @@ export class LoginPage implements OnInit {
             this.gotoEvent();
           } else {
             console.debug('wrong owner password');
-            // TODO: Visualize this
+            this.wrongPassword();
           }
         } else {
           console.debug('event does not require owner password?!');
@@ -127,6 +132,7 @@ export class LoginPage implements OnInit {
   }
 
   loginCurator() {
+    console.debug('loginCurator()');
     if (this.loginForm.valid) {
       if (this.ctxIsEventKnown) {
         if (this.currentEvent.passwordCurator) {
@@ -134,8 +140,8 @@ export class LoginPage implements OnInit {
             console.debug('correct curator password');
             this.gotoCurator();
           } else {
-            console.debug('wrong user password');
-            // TODO: Visualize this
+            console.debug('wrong curator password');
+            this.wrongPassword();
           }
         } else {
           console.debug('event does not require curator password');
@@ -148,6 +154,7 @@ export class LoginPage implements OnInit {
   }
 
   loginUser() {
+    console.debug('loginUser()');
     if (this.loginForm.valid) {
       if (this.ctxIsEventKnown) {
         if (this.currentEvent.passwordUser) {
@@ -156,7 +163,7 @@ export class LoginPage implements OnInit {
             this.gotoUser();
           } else {
             console.debug('wrong user password');
-            // TODO: Visualize this
+            this.wrongPassword();
           }
         } else {
           console.debug('event does not require user password');
@@ -171,10 +178,18 @@ export class LoginPage implements OnInit {
 
 
   async presentMoreOptions(ev: any) {
+    console.debug('presentMoreOptions');
     const popover = await this.popOverCtrl.create({
       component: MoreOptionsComponent,
       event: ev,
       translucent: true
+    });
+
+    popover.onDidDismiss().then((newCtx) => {
+      console.debug('onDidDismiss');
+      if (newCtx !== null && newCtx.data) {
+        this.setContextFromString(newCtx.data);
+      }
     });
     return await popover.present();
   }
@@ -255,12 +270,16 @@ export class LoginPage implements OnInit {
     console.debug('end handleEventDoesNotExists');
   }
 
-  async ngOnInit() {
-    console.debug('begin ngOnInit()');
+  ngOnInit() {
+    console.debug('begin loginPage#ngOnInit()');
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       password: ['', Validators.nullValidator]
     });
+  }
+
+  async ionViewDidEnter() {
+    console.debug('begin loginPage#ngOnEnter()');
 
     console.debug('checking on user...');
     this.currentUser = await this.userDataService.getUser();
@@ -306,6 +325,7 @@ export class LoginPage implements OnInit {
       this.currentEvent = await this.feService.readEvent(this.currentUser.currentEventID).toPromise();
       if (this.currentEvent) {
         console.debug('Loading event...OK');
+        console.debug(this.currentEvent);
         this.ctxIsEventKnown = true;
       } else {
         console.debug('Loading event...NOT FOUND');
@@ -318,12 +338,12 @@ export class LoginPage implements OnInit {
       this.setContextFromString('owner');
     }
 
-    console.debug('end ngOnInit()');
+    console.debug('end loginPage#ngOnEnter()');
   }
 
   ionViewDidLeave() {
     console.debug('login page leave');
-    this.popOverCtrl.dismiss();
+//    this.popOverCtrl.dismiss();
   }
 
 

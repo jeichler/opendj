@@ -11,8 +11,8 @@ export class MusicEvent {
     maxUsers: number;
     maxDurationInMinutes: number;
     maxTracksInPlaylist: number;
-    eventStartsAt: String; // ISO DateTime as String
-    eventEndsAt: String; // ISO DateTime as String
+    eventStartsAt: string; // ISO DateTime as String
+    eventEndsAt: string; // ISO DateTime as String
     allowDuplicateTracks: boolean;
     progressPercentageRequiredForEffectivePlaylist: number;
     beginPlaybackAtEventStart: boolean;
@@ -24,7 +24,7 @@ export class MusicEvent {
     demoNoActualPlaying: boolean;
     demoAutoFillEmptyPlaylist: boolean;
     providers: Array<string>;
-    activePlaylist: number = 0;
+    activePlaylist = 0;
     playlists: [0];
     effectivePlaylist: Array<Track>;
 }

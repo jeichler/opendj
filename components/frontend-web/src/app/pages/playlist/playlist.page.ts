@@ -9,7 +9,7 @@ import { MusicEvent } from 'src/app/models/music-event';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserSessionState } from 'src/app/models/usersessionstate';
 
 @Component({
@@ -40,7 +40,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     public configService: ConfigService,
     public platform: Platform,
     private route: ActivatedRoute,
-
+    public router: Router,
     ) {
   }
 
@@ -224,10 +224,14 @@ export class PlaylistPage implements OnInit, OnDestroy {
 //    this.currentEvent = new MusicEvent;
 //    this.currentEvent.eventID= "0";
     console.debug('Event from Server: %s', JSON.stringify(this.currentEvent));
+    if (!this.currentEvent) {
+        console.error('coud not load event from server - something is wrong - redirect to logout');
+        this.router.navigate([`ui/login`]);
+      }
 
 
     this.websocketService.init(this.currentEvent.eventID);
-    this.websocketService.refreshPlaylist();
+//    this.websocketService.refreshPlaylist();
 
     const sub: Subscription = this.websocketService.getPlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update');

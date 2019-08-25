@@ -30,15 +30,19 @@ export class UserDataService {
 
   updateUser(u: UserSessionState) {
     console.debug('UserDataService#updateUser');
-    this.storage.set('USER',u).catch((err) => {
-      console.error('user-data-service#updateUser failed',err);
+    this.storage.set('USER', u).then( () => {
+      this.events.publish('user:modified', u);
+    }).catch((err) => {
+      console.error('user-data-service#updateUser failed', err);
     });
   }
 
   logout() {
     console.debug('UserDataService#logout');
-    this.storage.clear();
-  }
+    this.storage.clear().then( () => {
+      this.events.publish('user:logout');
+    });
+    }
 
 /*
 

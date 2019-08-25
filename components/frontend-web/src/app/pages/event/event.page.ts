@@ -17,7 +17,7 @@ import { UserSessionState } from 'src/app/models/usersessionstate';
 export class EventPage implements OnInit {
 
   eventForm: FormGroup;
-  event: MusicEvent;
+  event = new MusicEvent();
   userState: UserSessionState;
 //  submitAttempt: boolean;
   isCreate: boolean;
