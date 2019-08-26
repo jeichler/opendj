@@ -40,7 +40,7 @@ export class UserDataService {
   logout() {
     console.debug('UserDataService#logout');
     this.storage.clear().then( () => {
-      this.events.publish('user:logout');
+      // this.events.publish('user:logout');
     });
     }
 
