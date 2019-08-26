@@ -13,7 +13,8 @@ import { UserSessionState } from './models/usersessionstate';
   styleUrls: ['app.component.scss']
 })
 export class AppComponent implements OnInit {
-  userState =  new UserSessionState();
+
+  userState;
 
   constructor(
     public platform: Platform,
@@ -42,14 +43,15 @@ export class AppComponent implements OnInit {
     console.debug('loadUserState');
     this.userState = await this.userDataService.getUser();
   }
+
   private async saveUserState() {
     console.debug('saveUserState');
     await this.userDataService.updateUser(this.userState);
   }
 
   logout() {
-//    this.userDataService.logout();
-    this.router.navigate([`ui/login`]);
+    this.userDataService.logout();
+    this.router.navigate([`ui/landing`]);
   }
 
   async ngOnInit() {
@@ -60,9 +62,6 @@ export class AppComponent implements OnInit {
       console.debug('Received user:modified event');
       this.userState = newUser;
     });
-
-
-    console.debug('end ngOnInit()');
   }
 
 }

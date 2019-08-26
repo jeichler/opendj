@@ -18,6 +18,7 @@ export class MoreOptionsComponent implements OnInit {
 
   ngOnInit() {}
 
+  /*
   gotoUserLogin() {
     console.debug('more-options#gotoUserLogin');
     this.popOverCtrl.dismiss('user');
@@ -32,16 +33,27 @@ export class MoreOptionsComponent implements OnInit {
     console.debug('more-options#gotoEventOwnerLogin');
     this.popOverCtrl.dismiss('owner');  }
 
+  switchEvent() {
+    console.debug('more-options#switchEvent');
+    this.popOverCtrl.dismiss('switch');
+  }
+  */
+
   gotoLanding() {
     console.debug('more-options#gotoLanding');
+    // TODO: Why logout here?
     this.userDataService.logout();
     this.popOverCtrl.dismiss();
     this.router.navigate([`ui/landing`]);
   }
 
-  switchEvent() {
-    console.debug('more-options#switchEvent');
-    this.popOverCtrl.dismiss('switch');
+  dismiss(data) {
+    console.debug('more-options#dismiss: ' + data);
+    if (data) {
+      this.popOverCtrl.dismiss(data);
+    } else {
+      this.popOverCtrl.dismiss();
+    }
   }
 
 

@@ -239,7 +239,7 @@ export class LoginPage implements OnInit {
 
     let h = '';
     let m = '';
-    if (eventID && eventID.length>0) {
+    if (eventID && eventID.length > 0) {
       h = 'Oh No!';
       m = 'We couldn\'t find event ' + eventID + '?!?';
     } else {

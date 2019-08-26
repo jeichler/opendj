@@ -11,7 +11,7 @@ const routes: Routes = [
   { path: 'ui/playlist-user', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/playlist-curator', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/playlist-event', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
-  { path: ':userEventID', loadChildren: './pages/login/login.module#LoginPageModule' },
+  { path: ':userEventID', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard] }
 ];
 
 @NgModule({
