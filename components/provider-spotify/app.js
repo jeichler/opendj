@@ -1,6 +1,7 @@
 'use strict';
 
-const readline = require('readline')
+const readline = require('readline');
+const fs = require('fs');
 const compression = require('compression');
 const express = require('express');
 const app = express();
@@ -376,6 +377,78 @@ async function refreshExpiredTokens() {
 // ----------------------- spotify track logic ------------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
+
+const mapOfSimpleGenres = new Map();
+
+async function loadSimplifiedGenresFromFile() {
+    log.trace("begin loadSimplifiedGenresFromFile");
+    let rl = readline.createInterface({
+        input: fs.createReadStream('genresSimplified.txt')
+    });
+
+    let line_no = 0;
+    rl.on('line', function(line) {
+        line_no++;
+        mapOfSimpleGenres.set(line, line_no);
+    });
+    rl.on('close', function(line) {
+        log.info('Loaded %s simple genres', line_no);
+    });
+}
+
+// Reduces a genre string like
+// "album rock, blues-rock, classic rock, hard rock, psychedelic rock, rock"
+// to simple "rock"
+function simplifyGenre(complexGenreString) {
+    log.trace("begin simplifyGenre");
+
+    let simpleGenre = null;
+
+    if (complexGenreString) {
+        // in 90% of all cases, we have something like "album rock", "hard rock"
+        // So we take the first genre, take the last word and check if this is in our map
+        // of simple genres. In the example, this would be "rock":
+        let genres = complexGenreString.split(", ");
+        for (let i = 0; i < genres.length && !simpleGenre; i++) {
+            let genre = genres[i];
+            let words = genre.split(' ');
+            let lastWord = words[words.length - 1];
+            if (mapOfSimpleGenres.has(lastWord)) {
+                simpleGenre = lastWord;
+            } else {
+                // Hm, the last word only did not work. Maybe we look at something like "hip hop", so
+                // let's try the last two words:
+                if (words.length >= 2) {
+                    let lastTwoWords = words[words.length - 2] + ' ' + words[words.length - 1];
+                    if (mapOfSimpleGenres.has(lastTwoWords)) {
+                        simpleGenre = lastTwoWords;
+                    }
+                }
+            }
+
+            if (!simpleGenre) {
+                // Maybe I am thinking to complex and things are very very easy:
+                if (mapOfSimpleGenres.has(genre)) {
+                    simpleGenre = genre;
+                }
+            }
+        }
+
+        if (!simpleGenre) {
+            log.warn("Could not simplify genre %s", complexGenreString);
+        }
+    }
+
+
+    if (!simpleGenre) {
+        // Last Resort - we simply dont know:
+        simpleGenre = "unknown";
+    }
+
+    log.trace("end simplifyGenre");
+    return simpleGenre;
+}
+
 function mapSpotifyTrackToOpenDJTrack(sptTrack) {
     let odjTrack = {};
     odjTrack.id = sptTrack.id;
@@ -471,6 +544,8 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
         result.genre = collapseArrayIntoSingleString(result.genre, artistResult.body.genres, SPOTIFY_TRACK_DETAIL_NUM_GENRES);
         log.trace("genre after artist.genres=%s", result.genre);
     }
+    result.genreSimple = simplifyGenre(result.genre);
+    result.genreSimpleNum = mapOfSimpleGenres.get(result.genreSimple);
 
     if (audioFeaturesResult && audioFeaturesResult.body) {
         result.danceability = Math.round(audioFeaturesResult.body.danceability * 100);
@@ -663,9 +738,9 @@ async function play(eventID, trackID, pos) {
     } catch (err) {
         log.debug("play failed with err=%s - will try to handle this", err);
         try {
+            // res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
             await handlePlayError(err, options, event, api);
             log.debug("play was successful after handling initial error");
-            // res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
         } catch (err2) {
             log.debug("play failed after handling initial error with new error=%s", err2);
             throw {
@@ -948,8 +1023,10 @@ app.use("/api/provider-spotify/v1", router);
 
 setImmediate(async function() {
     try {
+        await loadSimplifiedGenresFromFile();
         cacheTracks = await connectToCache("TRACKS");
         cacheState = await connectToCache("PROVIDER_SPOTIFY_STATE");
+
 
         log.info("Initial token refresh");
         await refreshExpiredTokens();
