@@ -7,6 +7,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { CreateEventPage } from './create-event.page';
+import { TooltipModule } from 'ng2-tooltip-directive';
 
 const routes: Routes = [
   {
@@ -21,6 +22,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     SharedModule,
     IonicModule,
+    TooltipModule,
     RouterModule.forChild(routes)
   ],
   declarations: [CreateEventPage]
