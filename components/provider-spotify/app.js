@@ -1,5 +1,6 @@
 'use strict';
 
+const readline = require('readline')
 const compression = require('compression');
 const express = require('express');
 const app = express();
@@ -12,7 +13,7 @@ log.level = process.env.LOG_LEVEL || "trace";
 
 const PORT = process.env.PORT || 8081;
 const COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
-var readyState = {
+const readyState = {
     datagridClient: false,
     refreshExpiredTokens: false,
     lastError: ""
@@ -98,34 +99,34 @@ function handleCacheError(cache, err) {
 // ------------------- spotify authentication stuff -------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
-var SpotifyWebApi = require('spotify-web-api-node');
-var spotifyClientID = process.env.SPOTIFY_CLIENT_ID || "-unknown-";
-var spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET || "-unknown-";
-var spotifyRedirectUri = process.env.SPOTIFY_CALLBACK_URL || "-unknown-";
-var spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private', 'user-read-email'];
+const SpotifyWebApi = require('spotify-web-api-node');
+const spotifyClientID = process.env.SPOTIFY_CLIENT_ID || "-unknown-";
+const spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET || "-unknown-";
+const spotifyRedirectUri = process.env.SPOTIFY_CALLBACK_URL || "-unknown-";
+const spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private', 'user-read-email'];
 
 // Interval we check for expired tokens:
-var SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
+const SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
 
 
 // Offset we refresh a token BEFORE it expires - to be sure, we do this 5 minutes BEFORE
 // it expires:
-var SPOTIFY_REFRESH_TOKEN_OFFSET = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET || "300000";
+const SPOTIFY_REFRESH_TOKEN_OFFSET = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET || "300000";
 
 // To avoid that several pods refresh at the same time, we add some random
 // value (up to 3 min) to the offset:
-var SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM || "180000";
+const SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM = process.env.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM || "180000";
 
 // Number of genres to return for track details:
-var SPOTIFY_TRACK_DETAIL_NUM_GENRES = process.env.SPOTIFY_TRACK_DETAIL_NUM_GENRES || "2";
-var SPOTIFY_TRACK_DETAIL_NUM_ARTISTS = process.env.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS || "2";
+const SPOTIFY_TRACK_DETAIL_NUM_GENRES = process.env.SPOTIFY_TRACK_DETAIL_NUM_GENRES || "2";
+const SPOTIFY_TRACK_DETAIL_NUM_ARTISTS = process.env.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS || "2";
 
-var SPOTIFY_SEARCH_LIMIT = process.env.SPOTIFY_SEARCH_LIMIT || "20";
+const SPOTIFY_SEARCH_LIMIT = process.env.SPOTIFY_SEARCH_LIMIT || "20";
 
-var SPOTIFY_AUTOSELECT_DEVICE = (process.env.SPOTIFY_AUTOSELECT_DEVICE || 'true') == 'true';
-var SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
-var SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1000";
-var SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "1000";
+const SPOTIFY_AUTOSELECT_DEVICE = (process.env.SPOTIFY_AUTOSELECT_DEVICE || 'true') == 'true';
+const SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
+const SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1000";
+const SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "1000";
 
 
 // Map of Spotify API Objects:
@@ -136,7 +137,7 @@ var mapOfSpotifyApis = {
 }
 
 // Example Object for an Event State - this is clone for all events:
-var eventStatePrototype = {
+const eventStatePrototype = {
     eventID: "-1", // ID of Music Event  
     access_token: "",
     refresh_token: "",
@@ -207,7 +208,7 @@ async function getEventStateForEvent(eventID) {
 }
 
 function updateEventTokensFromSpotifyBody(eventState, body) {
-    var now = new Date();
+    let now = new Date();
     log.debug("updateEventTokensFromSpotifyBody body=%s", JSON.stringify(body));
     if (body['access_token']) {
         log.trace("received new access token");
@@ -231,10 +232,10 @@ function updateEventTokensFromSpotifyBody(eventState, body) {
 // step1: - generate the login URL / redirect....
 router.get('/events/:eventID/providers/spotify/login', async function(req, res) {
         log.debug("getSpotifyLoginURL");
-        var eventID = req.params.eventID;
-        var event = await getEventStateForEvent(eventID);
-        var spotifyApi = getSpotifyApiForEvent(event);
-        var authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
+        let eventID = req.params.eventID;
+        let event = await getEventStateForEvent(eventID);
+        let spotifyApi = getSpotifyApiForEvent(event);
+        let authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
         log.debug("authorizeURL=%s", authorizeURL);
 
         // Unless we have an event regisgration page, we
@@ -250,17 +251,17 @@ router.get('/events/:eventID/providers/spotify/login', async function(req, res) 
 // We receive a code and need to trade that token into tokens:
 router.get('/auth_callback', async function(req, res) {
     log.trace("auth_callback start req=%s", JSON.stringify(req.query));
-    var code = req.query.code;
-    var state = req.query.state;
-    var eventID = state;
+    let code = req.query.code;
+    let state = req.query.state;
+    let eventID = state;
     log.debug("code = %s, state=%s", code, state);
 
     // TODO: Check on STATE!
 
     // Trade CODE into TOKENS:
     log.debug("authorizationCodeGrant with code=%s", code);
-    var eventState = await getEventStateForEvent(eventID);
-    var spotifyApi = getSpotifyApiForEvent(eventState);
+    let eventState = await getEventStateForEvent(eventID);
+    let spotifyApi = getSpotifyApiForEvent(eventState);
     spotifyApi.authorizationCodeGrant(code).then(
         async function(data) {
             try {
@@ -307,9 +308,9 @@ function refreshAccessToken(event) {
         return;
     }
 
-    var expTs = Date.parse(event.token_expires);
-    var expTsOrig = expTs;
-    var now = Date.now();
+    let expTs = Date.parse(event.token_expires);
+    let expTsOrig = expTs;
+    let now = Date.now();
 
     // Access token is valid typically for 1hour (3600seconds)
     // We refresh it a bit before it expieres, to ensure smooth transition:
@@ -328,7 +329,7 @@ function refreshAccessToken(event) {
     if (expTs < now) {
         log.info("refreshAccessToken: access token for eventID=%s is about to expire in %s sec - initiating refresh... ", event.eventID, (expTsOrig - now) / 1000);
 
-        var api = getSpotifyApiForEvent(event);
+        let api = getSpotifyApiForEvent(event);
         api.refreshAccessToken().then(
             function(data) {
                 log.info("access token for^ eventID=%s is expired - initiating refresh...SUCCESS", event.eventID);
@@ -376,7 +377,7 @@ async function refreshExpiredTokens() {
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 function mapSpotifyTrackToOpenDJTrack(sptTrack) {
-    var odjTrack = {};
+    let odjTrack = {};
     odjTrack.id = sptTrack.id;
     odjTrack.name = sptTrack.name;
 
@@ -413,7 +414,7 @@ function mapSpotifyTrackToOpenDJTrack(sptTrack) {
 
 
 function mapSpotifySearchResultToOpenDJSearchResult(spotifyResult) {
-    var result = [];
+    let result = [];
     for (let sptTrack of spotifyResult.tracks.items) {
         result.push(mapSpotifyTrackToOpenDJTrack(sptTrack));
     }
@@ -422,7 +423,7 @@ function mapSpotifySearchResultToOpenDJSearchResult(spotifyResult) {
 }
 
 function timesCharExistInString(str, chr) {
-    var total = 0,
+    let total = 0,
         last_location = 0,
         single_char = (chr + '')[0];
     while (last_location = str.indexOf(single_char, last_location) + 1) {
@@ -433,10 +434,10 @@ function timesCharExistInString(str, chr) {
 
 function collapseArrayIntoSingleString(currentString, arrayOfStrings, maxEntries) {
     log.trace("begin collapseArrayIntoSingleString current=%s, array=%s, max=%i", currentString, arrayOfStrings, maxEntries);
-    var result = currentString;
+    let result = currentString;
 
     if (arrayOfStrings && arrayOfStrings.length > 0) {
-        var numEntries = timesCharExistInString(result, ',');
+        let numEntries = timesCharExistInString(result, ',');
         if (numEntries == 0 && currentString.length > 0) numEntries = 1;
 
         for (let i = 0; i < arrayOfStrings.length; i++) {
@@ -453,7 +454,7 @@ function collapseArrayIntoSingleString(currentString, arrayOfStrings, maxEntries
 
 function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistResult, audioFeaturesResult) {
     log.trace("begin mapSpotifyTrackResultsToOpenDJTrack");
-    var result = {};
+    let result = {};
     if (trackResult && trackResult.body) {
         result = mapSpotifyTrackToOpenDJTrack(trackResult.body);
     }
@@ -493,19 +494,18 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
     return result;
 }
 
-async function getTrackDetails(eventID, trackID) {
-    log.trace("begin getTrackDetails eventID=%s, trackID=%s", eventID, trackID);
+async function getTrackDetails(event, trackID) {
+    log.trace("begin getTrackDetails eventID=%s, trackID=%s", event.eventID, trackID);
 
     let trackResult = null;
     let audioFeaturesResult = null;
     let albumResult = null;
     let artistResult = null;
     let result = null;
-    let event = await getEventStateForEvent(eventID);
     let api = getSpotifyApiForEvent(event);
 
     // If TrackID contains a "spotify:track:" prefix, we need to remove it:
-    var colonPos = trackID.lastIndexOf(":");
+    let colonPos = trackID.lastIndexOf(":");
     if (colonPos != -1) {
         trackID = trackID.substring(colonPos + 1);
     }
@@ -609,8 +609,8 @@ async function getTrackDetails(eventID, trackID) {
 async function pause(eventID) {
     log.trace("begin pause ");
 
-    var event = await getEventStateForEvent(eventID);
-    var api = getSpotifyApiForEvent(event);
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
     await api.pause({ device_id: event.currentDevice });
     log.info("PAUSE eventID=%s", eventID);
@@ -624,18 +624,18 @@ async function play(eventID, trackID, pos) {
     log.trace("begin play");
 
     log.debug("play eventID=%s, trackID=%s, pos=%s", eventID, trackID, pos);
-    var event = await getEventStateForEvent(eventID);
-    var api = getSpotifyApiForEvent(event);
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
 
 
     // If TrackID contains a "spotify:track:" prefix, we need to remove it:
-    var colonPos = trackID.lastIndexOf(":");
+    let colonPos = trackID.lastIndexOf(":");
     if (colonPos != -1) {
         trackID = trackID.substring(colonPos + 1);
     }
-    var uris = ["spotify:track:" + trackID];
-    var options = { uris: uris };
+    let uris = ["spotify:track:" + trackID];
+    let options = { uris: uris };
 
     if (event.currentDevice) {
         log.debug("event has currentDevice set - using it");
@@ -688,7 +688,7 @@ async function handlePlayError(err, options, event, api) {
     log.debug("Play failed despite retry. err=" + err);
     if (SPOTIFY_AUTOSELECT_DEVICE && ("" + err).includes("Not Found")) {
         log.debug("expected shit happend - device not found - try autoselect a device");
-        var deviceChanged = await autoSelectDevice(api, event);
+        let deviceChanged = await autoSelectDevice(api, event);
         if (deviceChanged) {
             log.debug("AutoSelect did change device setting, so play it again, same!");
             options.device_id = event.currentDevice;
@@ -711,17 +711,17 @@ async function autoSelectDevice(api, event) {
     log.trace("begin autoSelectDevice");
 
     log.debug("Asking spotify about available devices");
-    var data = await api.getMyDevices()
+    let data = await api.getMyDevices()
     log.debug("Response from spotify getMyDevices: " + JSON.stringify(data.body));
-    var devices = data.body.devices;
-    var result = false;
+    let devices = data.body.devices;
+    let result = false;
     if (devices.length == 0) {
         log.debug("device list is empty");
         throw { code: "SPTFY-100", msg: "No devices available - Please start spotify on the desired playback device" };
     }
     // Per default, we take the first device. If there is an active
     // one, we prefer that:
-    var deviceId = devices[0].id;
+    let deviceId = devices[0].id;
     for (let device of devices) {
         if (device.is_active) {
             log.debug("selecting active device ", device.id);
@@ -776,9 +776,9 @@ function handleError(err, response) {
 router.get('/events/:eventID/providers/spotify/currentTrack', async function(req, res) {
     log.debug("getCurrentTrack");
 
-    var eventID = req.params.eventID;
-    var event = await getEventStateForEvent(eventID);
-    var api = getSpotifyApiForEvent(event);
+    let eventID = req.params.eventID;
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
     api.getMyCurrentPlaybackState({}).then(function(data) {
         log.debug("Now Playing: ", data.body);
@@ -792,9 +792,9 @@ router.get('/events/:eventID/providers/spotify/currentTrack', async function(req
 router.get('/events/:eventID/providers/spotify/devices', async function(req, res) {
     log.trace("getAvailableDevices begin");
 
-    var eventID = req.params.eventID;
-    var event = await getEventStateForEvent(eventID);
-    var api = getSpotifyApiForEvent(event);
+    let eventID = req.params.eventID;
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
     api.getMyDevices().then(function(data) {
         log.debug("getAvailableDevices:", data.body);
@@ -810,10 +810,10 @@ router.get('/events/:eventID/providers/spotify/devices', async function(req, res
 router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
     log.trace("searchTrack begin");
 
-    var eventID = req.params.eventID;
-    var query = req.query.q
-    var event = await getEventStateForEvent(eventID);
-    var api = getSpotifyApiForEvent(event);
+    let eventID = req.params.eventID;
+    let query = req.query.q
+    let event = await getEventStateForEvent(eventID);
+    let api = getSpotifyApiForEvent(event);
 
     api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT }).then(function(data) {
         res.send(mapSpotifySearchResultToOpenDJSearchResult(data.body));
@@ -829,7 +829,8 @@ router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(
     log.trace("begin route get tracks");
 
     try {
-        let result = await getTrackDetails(req.params.eventID, req.params.trackID);
+        let event = await getEventStateForEvent(req.params.eventID);
+        let result = await getTrackDetails(event, req.params.trackID);
         res.send(result);
     } catch (err) {
         log.error("trackDetails() outer catch err=", err);
@@ -860,9 +861,9 @@ router.get('/events/:eventID/providers/spotify/play/:trackID', async function(re
     log.trace("begin play route");
 
     try {
-        var eventID = req.params.eventID;
-        var trackID = req.params.trackID;
-        var pos = req.query.pos;
+        let eventID = req.params.eventID;
+        let trackID = req.params.trackID;
+        let pos = req.query.pos;
 
         await play(eventID, trackID, pos);
         res.status(200).send("ok");
@@ -876,7 +877,7 @@ router.get('/events/:eventID/providers/spotify/play/:trackID', async function(re
 router.get('/ready', function(req, res) {
     log.trace("ready begin");
     // Default: not ready:
-    var status = 500;
+    let status = 500;
     if (readyState.datagridClient &&
         readyState.refreshExpiredTokens) {
         status = 200;
@@ -885,8 +886,63 @@ router.get('/ready', function(req, res) {
     res.status(status).send(JSON.stringify(readyState));
 });
 
+router.get('/internal/searchPlaylist', async function(req, res) {
+    log.trace("begin export_playlist");
 
+    try {
+        let query = req.query.q;
+        let event = await getEventStateForEvent('0');
+        let api = getSpotifyApiForEvent(event);
 
+        let data = await api.searchPlaylists(query);
+        res.send(data.body);
+    } catch (err) {
+        handleError(err, res);
+    }
+});
+
+router.get('/internal/exportPlaylist', async function(req, res) {
+    log.trace("begin export_playlist");
+
+    try {
+        let id = req.query.id;
+        let delay = req.query.delay;
+        let event = await getEventStateForEvent('0');
+        let api = getSpotifyApiForEvent(event);
+        let trackDetails = new Array;
+
+        log.trace("geting playlist");
+        let data = await api.getPlaylist(id, { limit: 200, offset: 0 });
+        let tracks = data.body.tracks.items;
+        if (!delay) {
+            delay = 100;
+        }
+
+        let meta = {
+            id: data.body.id,
+            name: data.body.name,
+            description: data.body.description,
+            followers: data.body.followers.total,
+            owner: data.body.owner.display_name,
+            url: data.body.external_urls.spotify,
+        };
+
+        log.info("exportPlaylist: Getting track details for %s tracks.", tracks.length);
+        for (let i = 0; i < tracks.length; i++) {
+            let trackID = tracks[i].track.id;
+            let trackDetail = await getTrackDetails(event, trackID);
+            trackDetails.push(trackDetail);
+            log.trace("TrackID=%s", trackID);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        // res.send(data.body);
+        res.send(JSON.stringify({ meta: meta, tracks: trackDetails }, null, 4));
+        // res.send({ meta: meta, tracks: trackDetails });
+
+    } catch (err) {
+        handleError(err, res);
+    }
+});
 
 app.use("/api/provider-spotify/v1", router);
 
