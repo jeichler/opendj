@@ -11,6 +11,7 @@ export class Track {
     provider: string;
     popularity: number;
     genre: string;
+    genreSimple: string;
     danceability: number;
     energy: number;
     acousticness: number;
@@ -18,5 +19,6 @@ export class Track {
     liveness: number;
     happiness: number;
     bpm: number;
+    // tslint:disable-next-line:variable-name
     added_by: string;
 }
