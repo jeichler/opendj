@@ -18,9 +18,7 @@ export class LandingPage implements OnInit {
   ) { }
 
   createOwnEvent() {
-    console.debug('begin createOwnEvent');
-    this.router.navigate([`ui/login`], {state: {ctx: 'owner'}});
-    console.debug('end createOwnEvent');
+    this.router.navigate([`ui/create-event`]);
   }
 
   skip() {
@@ -50,7 +48,7 @@ export class LandingPage implements OnInit {
           handler: (result) => {
             if (result && result.eventID) {
               console.debug('landing: going to event %s', result.eventID);
-              this.router.navigate([`ui/login`], {state: {ctx: 'user', currentEventID: result.eventID}});
+              this.router.navigate(['ui/event/' + result.eventID]);
             }
           }
         }
@@ -58,7 +56,6 @@ export class LandingPage implements OnInit {
     });
 
     await popup.present();
-    console.debug('end joinExistingEvent');
   }
 
 
