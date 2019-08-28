@@ -5,7 +5,8 @@
         </ion-buttons>
 
         <ion-title color="light">
-            Configure your OpenDJ Event
+            <span *ngIf="isCreate">Create OpenDJ Event</span>
+            <span *ngIf="!isCreate">Update OpenDJ Event</span>
         </ion-title>
         <ion-buttons slot="end">
             <ion-button color="light" (tap)='refresh()'>
@@ -36,7 +37,7 @@
 
             <ion-list style="background: transparent !important;">
                 <ion-item-group>
-                    <ion-item-divider>
+                    <ion-item-divider mode="md">
                         <ion-label>Event data</ion-label>
                     </ion-item-divider>
 
@@ -70,7 +71,7 @@
                 </ion-item-group>
 
                 <ion-item-group>
-                    <ion-item-divider>
+                    <ion-item-divider mode="md">
                         <ion-label>Event configuration</ion-label>
                     </ion-item-divider>
 
@@ -126,16 +127,21 @@
                 </ion-item-group>
 
                 <ion-item-group>
-                    <ion-item-divider>
+                    <ion-item-divider mode="md">
                         <ion-label>Event Account Settings</ion-label>
                     </ion-item-divider>
 
+                    <ion-item tooltip="Your Username as Event owner" placement="left" *ngIf="isCreate">
+                        <ion-label>Owner Username:</ion-label>
+                        <ion-input type="text" formControlName="userName" color="primary" text-right></ion-input>
+                    </ion-item>
+
                     <ion-item tooltip="Choose your owner password to login later" placement="left">
-                        <ion-label>Password for Owner:</ion-label>
+                        <ion-label>Owner Password:</ion-label>
                         <ion-input type="text" formControlName="passwordOwner" color="primary" text-right></ion-input>
                     </ion-item>
                     <ion-item tooltip="Define a password for all curators of the event" placement="left">
-                        <ion-label>Password for Curators:</ion-label>
+                        <ion-label>Curator Password:</ion-label>
                         <ion-input type="text" formControlName="passwordCurator" color="primary" text-right></ion-input>
                     </ion-item>
                     <ion-item
@@ -158,7 +164,7 @@
                 </ion-item-group>
 
                 <ion-item-group>
-                    <ion-item-divider>
+                    <ion-item-divider mode="md">
                         <ion-label>Demo configuration</ion-label>
                     </ion-item-divider>
 
@@ -180,13 +186,10 @@
 
                 </ion-item-group>
 
-                <ion-button *ngIf="isCreate" [disabled]="!eventForm.valid" expand="full" shape="round"
-                    (tap)="create(eventForm)">Create</ion-button>
-                <ion-button *ngIf="!isCreate" [disabled]="!eventForm.valid" expand="full" shape="round"
-                    (tap)="update(eventForm)">Update</ion-button>
-                <ion-button *ngIf="!isCreate" expand="full" shape="round" (tap)="delete(eventForm)">Delete</ion-button>
-                <ion-button *ngIf="!isCreate" expand="full" shape="round" (tap)="enterEvent(eventForm)">Enter
-                </ion-button>
+                <ion-button *ngIf="isCreate" expand="full" shape="round"
+                    (tap)="create(eventForm)">Create Event</ion-button>
+                <ion-button *ngIf="!isCreate" expand="full" shape="round"
+                    (tap)="update(eventForm)">Update Event</ion-button>
 
             </ion-list>
 

@@ -14,13 +14,22 @@
 
     <div class="event-form-wrapper">
 
+        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)" style="background-color: #111; padding: 10px;">   
+            <p style="color: #fff; font-size: 18px;">You are logged in as Event owner.</p>
+            <ion-button (tap)="editEvent()">
+                    <ion-icon name="build" slot="start" ></ion-icon>
+                    Edit</ion-button>
+            <ion-button color="danger" (tap)="deleteEvent()">
+                    <ion-icon name="trash" slot="start"></ion-icon>
+                    Delete</ion-button>
+        </ion-card>
+
         <ion-card *ngIf="event" style="background-color: #111;">
-            <div style="position: absolute; top: 20px; right: 20px;">
-                <ion-button slot="end">Owner Login</ion-button>
+            <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState.isLoggedIn">
+                <ion-button slot="end" (tap)="presentModal('owner')">Owner Login</ion-button>
             </div>
-            <ion-img
-                src="https://blogmedia.evbstatic.com/wp-content/uploads/wpmulti/sites/8/shutterstock_199419065.jpg">
-            </ion-img>
+            <img  src="assets/img/event_hdr.jpg" />
+            
             <ion-card-header>
                 <ion-card-title>{{event.name}}</ion-card-title>
                 <ion-card-subtitle>Organized by {{event.owner}}</ion-card-subtitle>
@@ -29,27 +38,33 @@
             <ion-card-content>
                 <ion-chip color="light">
                     <ion-icon name="calendar" color="success"></ion-icon>
-                    <ion-label color="light">{{event.eventStartsAt}}</ion-label>
+                    <ion-label color="light">{{formatDate(event.eventStartsAt)}}</ion-label>
                 </ion-chip>
                 <ion-chip color="light">
                     <ion-icon name="calendar" color="danger"></ion-icon>
-                    <ion-label color="light">{{event.eventEndsAt}}</ion-label>
+                    <ion-label color="light">{{formatDate(event.eventEndsAt)}}</ion-label>
                 </ion-chip>
                 <ion-chip color="light">
                     <ion-icon name="people" color="light"></ion-icon>
-                    <ion-label color="light">{{event.maxUsers}}</ion-label>
+                    <ion-label color="light">Max {{event.maxUsers}} Users </ion-label>
                 </ion-chip>
 
                 <p style="color: rgb(66, 70, 75);">This is a static description for this event</p><br />
                 <p></p>
-                <hr/>
+                <hr />
                 <div style="margin: 0 auto;">
-                    <ion-button shape="round" color="primary" fill="outline">Join as User</ion-button>
-                    <ion-button shape="round" color="primary" fill="outline">Join as Curator</ion-button>
+                    <ion-button *ngIf="!userState.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('user')">Join as User
+                    </ion-button>
+                    <ion-button *ngIf="!userState.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('curator')">Join as
+                        Curator</ion-button>
                 </div>
             </ion-card-content>
         </ion-card>
 
+        <div style="margin: 0 auto;" *ngIf="userState?.isLoggedIn">
+            <ion-button shape="round" color="danger" fill="outline" (tap)="logout()">Logout
+            </ion-button>
+        </div>
 
 
     </div>

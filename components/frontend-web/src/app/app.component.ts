@@ -15,7 +15,7 @@ import { UserSessionState } from './models/usersessionstate';
 export class AppComponent implements OnInit {
 
   // userState is important for displaying the menu options
-  userState;
+  userState = new UserSessionState();
 
   constructor(
     public platform: Platform,
@@ -52,12 +52,20 @@ export class AppComponent implements OnInit {
     this.events.subscribe('sessionState:modified', state => {
       console.debug('Received sessionState:modified event');
       this.userState = state;
+      this.userDataService.updateUser(state);
     });
+
+    this.events.subscribe('user:logout', data => {
+      console.debug('Received user:logout event');
+      this.userState = new UserSessionState();
+      this.userDataService.updateUser(this.userState);
+      this.router.navigate([`ui/landing`]);
+    });
+
   }
 
   logout() {
-    this.userDataService.logout();
-    this.router.navigate([`ui/landing`]);
+    this.events.publish('user:logout');
   }
 
   async ngOnInit() {

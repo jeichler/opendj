@@ -1,6 +1,6 @@
 <ion-app>
 
-    <ion-menu>
+    <ion-menu swipe-gesture="false">
         <ion-content fullscreen color="dark">
 
             <ion-header>
@@ -10,16 +10,13 @@
             </ion-header>
 
             <ion-list no-padding color="dark">
-
-                <ion-menu-toggle autoHide="false" *ngIf="!userState?.isLoggedIn">
-                    <ion-item [routerDirection]="'root'" routerLink="/ui/landing" color="opendj">
+                <ion-menu-toggle>
+                    <ion-item [routerDirection]="'backward'" routerLink="/ui/landing" color="opendj" *ngIf="!userState?.isLoggedIn">
                         <ion-icon slot="start" [name]="'home'"></ion-icon>
                         <ion-label>Start</ion-label>
                     </ion-item>
-                </ion-menu-toggle>
 
-                <ion-menu-toggle *ngIf="userState?.isLoggedIn" autoHide="false">
-                    <ion-item color="dark">
+                    <ion-item color="dark" *ngIf="userState?.isLoggedIn">
                         <ion-icon slot="start" name="contact"></ion-icon>
                         <ion-label>
                             {{userState.username}}
@@ -28,10 +25,8 @@
                             color="yellow"></ion-icon>
                         <ion-icon slot="end" name="star" *ngIf="userState?.isEventOwner" color="red"></ion-icon>
                     </ion-item>
-                </ion-menu-toggle>
 
-                <ion-menu-toggle auto-hide="false">
-                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/playlist-user"
+                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/playlist-user" 
                         color="opendj">
                         <ion-icon slot="start" [name]="'musical-notes'"></ion-icon>
                         <ion-label>User View</ion-label>
@@ -42,23 +37,19 @@
                         <ion-label>Curator View</ion-label>
                     </ion-item>
 
-                    <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/event"
+                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/event/{{userState.currentEventID}}"
                         color="opendj">
                         <ion-icon slot="start" [name]="'options'"></ion-icon>
-                        <ion-label>Edit Event</ion-label>
+                        <ion-label>Event</ion-label>
                     </ion-item>
 
-                </ion-menu-toggle>
-
-                <ion-menu-toggle autoHide="false" *ngIf="userState?.isLoggedIn">
-                    <ion-item button (click)="logout()" color="opendj">
+                    <ion-item button (click)="logout()" color="opendj" *ngIf="userState?.isLoggedIn">
                         <ion-icon slot="start" name="log-out"></ion-icon>
                         <ion-label>
                             Logout
                         </ion-label>
                     </ion-item>
                 </ion-menu-toggle>
-
             </ion-list>
         </ion-content>
     </ion-menu>

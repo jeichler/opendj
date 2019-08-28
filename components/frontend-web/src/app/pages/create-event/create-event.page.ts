@@ -16,11 +16,10 @@ import { UserSessionState } from 'src/app/models/usersessionstate';
 })
 export class CreateEventPage implements OnInit {
 
-
   eventForm: FormGroup;
   event = new MusicEvent();
   userState: UserSessionState;
-//  submitAttempt: boolean;
+  submitAttempt: boolean;
   isCreate: boolean;
 
   constructor(
@@ -32,36 +31,27 @@ export class CreateEventPage implements OnInit {
     private route: ActivatedRoute,
   ) { }
 
-  /*
-  resetForm() {
-    console.log('resetting form');
-    this.submitAttempt = false;
-    this.event = new MusicEvent;
-    this.eventForm.reset();
-
-    this.eventForm.patchValue({
-      eventID: '4711',
-      eventStartsAt: new Date().toISOString(),
-      allowDuplicateTracks: false
-    });
-  }
-  */
-
   create({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('begin create');
+    console.debug('begin create Event');
+    console.debug(value);
 
     if (valid) {
-      console.debug('Calling server side create event...');
       Object.assign(this.event, value);
-      this.event.owner = this.userState.username;
+      this.event.owner = value.userName;
+
       this.feService.createEvent(this.event).subscribe((event) => {
         console.debug('Calling server side create event...SUCCESS');
         this.event = event;
         this.mapEventToForm(this.eventForm, this.event);
         this.isCreate = false;
+
+        this.userState = new UserSessionState();
+        this.userState.username = event.owner;
         this.userState.currentEventID = this.event.eventID;
         this.userState.isEventOwner = true;
-        this.userDataService.updateUser(this.userState);
+        this.userState.isCurator = true;
+        this.userState.isLoggedIn = true;
+        this.events.publish('sessionState:modified', this.userState);
       },
       (err) => {
         console.error('Calling server side create event...FAILED', err);
@@ -69,7 +59,6 @@ export class CreateEventPage implements OnInit {
     } else {
       console.debug('Form is not valid, ignoring create request');
     }
-    console.debug('end create');
   }
 
   update({ value, valid }: { value: any, valid: boolean }) {
@@ -92,6 +81,7 @@ export class CreateEventPage implements OnInit {
     console.debug('end update');
   }
 
+  /*
   delete({ value, valid }: { value: any, valid: boolean }) {
     console.debug('begin delete');
     console.debug('Calling server side delete event...');
@@ -106,13 +96,7 @@ export class CreateEventPage implements OnInit {
     });
 
   }
-  enterEvent({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('begin enterEvent - navigating to playlist');
-    this.router.navigate([`ui/playlist-user`]);
-    console.debug('end enterEvent');
-
-  }
-
+*/
    validateEventID(eventIDControl: FormControl) {
     console.debug('begin validateEventID eventID=%s', eventIDControl.value);
     const eventID =  eventIDControl.value;
@@ -121,58 +105,42 @@ export class CreateEventPage implements OnInit {
       this.event.eventID = eventID;
       this.feService.validateEvent(this.event);
     }
-
     console.debug('end validateEventID');
-  }
-
-
-  async refresh() {
-    console.debug('begin refresh');
-
-    this.userState  = await this.userDataService.getUser();
-    const eventID = this.userState.currentEventID;
-
-    if (eventID) {
-      console.debug('Get Event %s from server', eventID);
-      this.event = await this.feService.readEvent(eventID).toPromise();
-      if (this.event) {
-        console.debug('Event from Server received');
-        this.isCreate = false;
-      } else {
-        console.info('Event %s not found on server', eventID);
-        // TODO: Redirect to Landing Page
-
-        // For testing purposes, we switch into create mode:
-        this.event = await this.feService.readEvent(null).toPromise();
-        this.event.eventID = eventID;
-        this.event.name = eventID;
-        this.event.url = 'www.opendj.io/' + eventID;
-        this.isCreate = true;
-        }
-    } else {
-      console.debug('Did not receive an event ID - get default from server for create');
-      this.event = await this.feService.readEvent(null).toPromise();
-      this.isCreate = true;
-    }
-    console.debug('Map Event to Form: %s', JSON.stringify(this.event));
-    this.mapEventToForm(this.eventForm, this.event);
-
-
-    console.debug('end refresh');
   }
 
   mapEventToForm(f: FormGroup, e: MusicEvent) {
     f.patchValue(e);
   }
 
-  ngOnInit() {
+  async refresh() {
+    console.debug('refresh');
+
+    this.userState  = await this.userDataService.getUser();
+
+    if (!this.userState.isLoggedIn) {
+      this.event = await this.feService.readEvent(null).toPromise();
+      this.isCreate = true;
+    }
+    if (this.userState.isLoggedIn && this.userState.isEventOwner) {
+      this.isCreate = false;
+      this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
+    }
+    this.mapEventToForm(this.eventForm, this.event);
+  }
+
+  async ionViewDidEnter() {
+    await this.refresh();
+  }
+
+  async ngOnInit() {
 
     this.eventForm = this.formBuilder.group({
       eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required, this.validateEventID.bind(this)] )],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: ['', Validators.nullValidator],
       maxUsers: ['', Validators.nullValidator],
-      passwordOwner: ['', Validators.nullValidator],
+      userName: ['', Validators.nullValidator],
+      passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       passwordCurator: ['', Validators.nullValidator],
       passwordUser: ['', Validators.nullValidator],
       maxDurationInMinutes: ['', Validators.nullValidator],
@@ -190,7 +158,8 @@ export class CreateEventPage implements OnInit {
       demoAutoFillEmptyPlaylist: [false, Validators.nullValidator]
     });
 
-    this.refresh();
+    // this.refresh();
+
   }
 
 }
