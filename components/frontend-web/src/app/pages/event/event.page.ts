@@ -167,10 +167,10 @@ export class EventPage implements OnDestroy {
 
   <form [formGroup]="loginForm">
 
-    <ion-list no-lines padding style="background: transparent !important; margin: 0 20px;">
+    <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
 
     <ion-item style="--ion-background-color: transparent !important; color: white;">
-          <ion-input formControlName="username" type="text" clearInput="true" autofocus="true" placeholder="Username">
+          <ion-input formControlName="username" type="text" clearInput="true" placeholder="Username">
           </ion-input>
           <ion-note slot="end" *ngIf="context !== 'owner'">
               <ion-button (tap)="generateUsername()" shape="round" color="primary" size="small">
@@ -178,12 +178,11 @@ export class EventPage implements OnDestroy {
               </ion-button>
           </ion-note>
     </ion-item>
-    <ion-item *ngIf="!loginForm.controls.username.valid  && submitAttempt">
+    <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
         <p style="color: red;">Minimum length for username is 3.</p>
     </ion-item>
 
-    <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')"
-    style="--ion-background-color: transparent !important; color: white;">
+    <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" style="--ion-background-color: transparent !important; color: white;">
         <ion-input formControlName="password" type="password" clearInput="true" placeholder="Password">
         </ion-input>
     </ion-item>
@@ -191,7 +190,7 @@ export class EventPage implements OnDestroy {
     </ion-list>
 
     <div style="text-align: center;">
-        <ion-button type="submit" shape="round" color="primary" fill="outline" (tap)="join(loginForm)">
+        <ion-button type="submit" shape="round" color="primary" fill="outline" (tap)="join()">
         <span *ngIf="context === 'user'">Join as User</span>
         <span *ngIf="context === 'owner'">Login as Owner</span>
         <span *ngIf="context === 'curator'">Join as Curator</span>
@@ -230,8 +229,19 @@ export class LoginModalComponent implements OnInit {
     public feService: FEService,
     public formBuilder: FormBuilder,
     private events: Events,
-    private router: Router
+    private router: Router,
+    public toastController: ToastController,
   ) {
+  }
+
+  async presentToast(data) {
+    const toast = await this.toastController.create({
+      message: data,
+      position: 'top',
+      color: 'light',
+      duration: 2000
+    });
+    toast.present();
   }
 
   async dismiss(data) {
@@ -281,19 +291,35 @@ export class LoginModalComponent implements OnInit {
   async join() {
     console.debug('join...');
     if (this.loginForm.valid) {
+
       if (this.context === 'user') {
         this.events.publish('sessionState:modified', this.getSessionStateForContext());
         this.router.navigate([`ui/playlist-user`]);
+        this.presentToast('You have successfully joined this Event! Start contributing!');
+        await this.dismiss(null);
       }
-      if (this.context === 'owner' && this.currentEvent.passwordOwner === this.loginForm.value.password) {
-        this.events.publish('sessionState:modified', this.getSessionStateForContext());
-        this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
+
+      if (this.context === 'owner') {
+        if ( this.currentEvent.passwordOwner === this.loginForm.value.password ) {
+          this.events.publish('sessionState:modified', this.getSessionStateForContext());
+          this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
+          this.presentToast('You have successfully loggedin as Event Owner');
+          await this.dismiss(null);
+        } else {
+          this.presentToast('Please check your credentials');
+        }
       }
-      if (this.context === 'curator' && this.currentEvent.passwordCurator === this.loginForm.value.password) {
-        this.events.publish('sessionState:modified', this.getSessionStateForContext());
-        this.router.navigate([`ui/playlist-curator`]);
+
+      if (this.context === 'curator' ) {
+        if (this.currentEvent.passwordCurator === this.loginForm.value.password) {
+          this.events.publish('sessionState:modified', this.getSessionStateForContext());
+          this.router.navigate([`ui/playlist-curator`]);
+          this.presentToast('You have successfully joined this Event as Curator. Rock it!!');
+          await this.dismiss(null);
+        } else {
+          this.presentToast('Please check your credentials');
+        }
       }
-      await this.dismiss(null);
     }
   }
 

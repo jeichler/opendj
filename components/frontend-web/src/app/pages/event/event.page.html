@@ -14,22 +14,25 @@
 
     <div class="event-form-wrapper">
 
-        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)" style="background-color: #111; padding: 10px;">   
+        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)"
+            style="background-color: #111; padding: 10px;">
             <p style="color: #fff; font-size: 18px;">You are logged in as Event owner.</p>
             <ion-button (tap)="editEvent()">
-                    <ion-icon name="build" slot="start" ></ion-icon>
-                    Edit</ion-button>
+                <ion-icon name="build" slot="start"></ion-icon>
+                Edit
+            </ion-button>
             <ion-button color="danger" (tap)="deleteAlertConfirm()">
-                    <ion-icon name="trash" slot="start"></ion-icon>
-                    Delete</ion-button>
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Delete
+            </ion-button>
         </ion-card>
 
         <ion-card *ngIf="event" style="background-color: #111;">
-            <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState.isLoggedIn">
-                <ion-button slot="end" (tap)="presentModal('owner')">Owner Login</ion-button>
+            <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState?.isLoggedIn">
+                <ion-button (tap)="presentModal('owner')">Owner Login</ion-button>
             </div>
-            <img  src="assets/img/event_hdr.jpg" />
-            
+            <img src="assets/img/event_hdr.jpg" />
+
             <ion-card-header>
                 <ion-card-title>{{event.name}}</ion-card-title>
                 <ion-card-subtitle>Organized by {{event.owner}}</ion-card-subtitle>
@@ -51,21 +54,24 @@
 
                 <p style="color: rgb(66, 70, 75);">This is a static description for this event</p><br />
                 <p></p>
-                <hr />
+                
                 <div style="margin: 0 auto;">
-                    <ion-button *ngIf="!userState.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('user')">Join as User
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
+                        (tap)="presentModal('user')">Join as User
                     </ion-button>
-                    <ion-button *ngIf="!userState.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('curator')">Join as
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
+                        (tap)="presentModal('curator')">Join as
                         Curator</ion-button>
                 </div>
+                
             </ion-card-content>
+
         </ion-card>
 
         <div style="margin: 0 auto;" *ngIf="userState?.isLoggedIn">
             <ion-button shape="round" color="danger" fill="outline" (tap)="logout()">Logout
             </ion-button>
         </div>
-
 
     </div>
 
