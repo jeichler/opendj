@@ -710,9 +710,9 @@ async function deleteEvent(eventID) {
 
         if (event.playlists && event.playlists.length > 0) {
             log.debug("Removing playlist for event %s", eventID);
-            for (let playlist of event.playlists) {
-                log.debug("Remove playlist %s from grid", playlist.playlistID);
-                await removeFromGrid(gridPlaylists, event.eventID + ":" + playlist.playlistID);
+            for (let playlistID of event.playlists) {
+                log.debug("Remove playlist %s from grid", playlistID);
+                await removeFromGrid(gridPlaylists, event.eventID + ":" + playlistID);
             };
         } else {
             log.trace("no playlists to delete");
