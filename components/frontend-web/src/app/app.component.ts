@@ -14,7 +14,8 @@ import { UserSessionState } from './models/usersessionstate';
 })
 export class AppComponent implements OnInit {
 
-  userState;
+  // userState is important for displaying the menu options
+  userState = new UserSessionState();
 
   constructor(
     public platform: Platform,
@@ -26,11 +27,12 @@ export class AppComponent implements OnInit {
     private userDataService: UserDataService
   ) {
     this.initializeApp();
+    this.registerEventSubscribers();
   }
 
   initializeApp() {
     this.platform.ready().then((readySource) => {
-      console.log(`Platform: ${readySource}`);
+      console.debug(`Running on Platform: ${readySource}`);
 
       if (readySource === 'cordova') {
         this.statusBar.styleDefault();
@@ -44,24 +46,31 @@ export class AppComponent implements OnInit {
     this.userState = await this.userDataService.getUser();
   }
 
-  private async saveUserState() {
-    console.debug('saveUserState');
-    await this.userDataService.updateUser(this.userState);
+  registerEventSubscribers() {
+    console.debug('registerEventSubscribers');
+
+    this.events.subscribe('sessionState:modified', state => {
+      console.debug('Received sessionState:modified event');
+      this.userState = state;
+      this.userDataService.updateUser(state);
+    });
+
+    this.events.subscribe('user:logout', data => {
+      console.debug('Received user:logout event');
+      this.userState = new UserSessionState();
+      this.userDataService.updateUser(this.userState);
+      this.router.navigate([`ui/landing`]);
+    });
+
   }
 
   logout() {
-    this.userDataService.logout();
-    this.router.navigate([`ui/landing`]);
+    this.events.publish('user:logout');
   }
 
   async ngOnInit() {
-    console.debug('begin ngOnInit()');
+    console.debug('ngOnInit()');
     await this.loadUserState();
-
-    this.events.subscribe('user:modified', newUser => {
-      console.debug('Received user:modified event');
-      this.userState = newUser;
-    });
   }
 
 }

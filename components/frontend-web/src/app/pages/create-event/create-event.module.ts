@@ -1,34 +1,30 @@
-import { SharedModule } from 'src/app/components/shared.module';
 import { NgModule } from '@angular/core';
+import { SharedModule } from 'src/app/components/shared.module';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { LoginPage } from './login.page';
-import { MoreOptionsComponent } from 'src/app/components/more-options/more-options.component';
+import { CreateEventPage } from './create-event.page';
+import { TooltipModule } from 'ng2-tooltip-directive';
 
 const routes: Routes = [
   {
     path: '',
-    component: LoginPage
+    component: CreateEventPage
   }
 ];
 
 @NgModule({
   imports: [
     CommonModule,
-    SharedModule,
     ReactiveFormsModule,
+    SharedModule,
     IonicModule,
+    TooltipModule,
     RouterModule.forChild(routes)
   ],
-  entryComponents: [
-    MoreOptionsComponent
-  ],
-  declarations: [
-    LoginPage
-  ]
+  declarations: [CreateEventPage]
 })
-export class LoginPageModule {}
+export class CreateEventPageModule {}

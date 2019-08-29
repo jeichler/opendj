@@ -5,13 +5,8 @@
         </ion-buttons>
 
         <ion-title color="light">
-            Configure your OpenDJ Event
+            {{event?.name}}
         </ion-title>
-        <ion-buttons slot="end">
-            <ion-button color="light" (tap)='refresh()'>
-                <ion-icon name="refresh"></ion-icon>
-            </ion-button>
-        </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
@@ -19,139 +14,65 @@
 
     <div class="event-form-wrapper">
 
-        <ion-card *ngIf="isCreate" style="background-color: #111;">
-            <ion-item>
-                <ion-icon name="wine" slot="start" color="light"></ion-icon>
-                <ion-label text-wrap>Create your own OpenDJ Music Event!</ion-label>
-                <ion-button fill="outline" slot="end">Help?</ion-button>
-            </ion-item>
-
-            <ion-card-content>
-                Fill in your data and create your individual OpenDJ Party Event. Share your party link with friends, colleagues and people around the globe...
-            </ion-card-content>
+        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)"
+            style="background-color: #111; padding: 10px;">
+            <p style="color: #fff; font-size: 18px;">You are logged in as Event owner.</p>
+            <ion-button (tap)="editEvent()">
+                <ion-icon name="build" slot="start"></ion-icon>
+                Edit
+            </ion-button>
+            <ion-button color="danger" (tap)="deleteAlertConfirm()">
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Delete
+            </ion-button>
         </ion-card>
 
-        <form [formGroup]="eventForm">
+        <ion-card *ngIf="event" style="background-color: #111;">
+            <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState?.isLoggedIn">
+                <ion-button (tap)="presentModal('owner')">Owner Login</ion-button>
+            </div>
+            <img src="assets/img/event_hdr.jpg" />
 
-            <ion-list style="background: transparent !important;">
+            <ion-card-header>
+                <ion-card-title>{{event.name}}</ion-card-title>
+                <ion-card-subtitle>Organized by {{event.owner}}</ion-card-subtitle>
+            </ion-card-header>
 
-                <ion-item>
-                    <ion-label>ID:</ion-label>
-                    <ion-input [disabled]="!isCreate" type="text" formControlName="eventID" color="primary" text-right></ion-input>
-                </ion-item>
+            <ion-card-content>
+                <ion-chip color="light">
+                    <ion-icon name="calendar" color="success"></ion-icon>
+                    <ion-label color="light">{{formatDate(event.eventStartsAt)}}</ion-label>
+                </ion-chip>
+                <ion-chip color="light">
+                    <ion-icon name="calendar" color="danger"></ion-icon>
+                    <ion-label color="light">{{formatDate(event.eventEndsAt)}}</ion-label>
+                </ion-chip>
+                <ion-chip color="light">
+                    <ion-icon name="people" color="light"></ion-icon>
+                    <ion-label color="light">Max {{event.maxUsers}} Users </ion-label>
+                </ion-chip>
 
-                <ion-item>
-                    <ion-label>Event Name:</ion-label>
-                    <ion-input type="text" formControlName="name" color="primary" text-right></ion-input>
-                </ion-item>
+                <p style="color: rgb(66, 70, 75);">This is a static description for this event</p><br />
+                <p></p>
+                
+                <div style="margin: 0 auto;">
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
+                        (tap)="presentModal('user')">Join as User
+                    </ion-button>
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
+                        (tap)="presentModal('curator')">Join as
+                        Curator</ion-button>
+                </div>
+                
+            </ion-card-content>
 
-                <ion-item>
-                    <ion-label>Link</ion-label>
-                    <ion-input disabled="true" type="text" formControlName="url" color="primary" text-right></ion-input>
-                </ion-item>
+        </ion-card>
 
-                <ion-item>
-                    <ion-label>Password for Owner:</ion-label>
-                    <ion-input type="text" formControlName="passwordOwner" color="primary" text-right></ion-input>
-                </ion-item>
-                <ion-item>
-                    <ion-label>Password for Curators:</ion-label>
-                    <ion-input type="text" formControlName="passwordCurator" color="primary" text-right></ion-input>
-                </ion-item>
-                <ion-item>
-                    <ion-label>Password for Users:</ion-label>
-                    <ion-input type="text" formControlName="passwordUser" color="primary" text-right></ion-input>
-                </ion-item>
+        <div style="margin: 0 auto;" *ngIf="userState?.isLoggedIn">
+            <ion-button shape="round" color="danger" fill="outline" (tap)="logout()">Logout
+            </ion-button>
+        </div>
 
-                <ion-item>
-                    <ion-label>MusicProvider</ion-label>
-                    <ion-note slot="end">
-                        <ion-button [disabled]="isCreate" color="primary" size="small" href="/api/provider-spotify/v1/events/{{event.eventID}}/providers/spotify/login">
-                            Add Spotify
-                        </ion-button>
-                    </ion-note>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label text-wrap>Max number of users</ion-label>
-                    <ion-input type="number" formControlName="maxUsers" color="primary" text-right></ion-input>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Duration of event</ion-label>
-                    <ion-input type="number" formControlName="maxDurationInMinutes" color="primary" text-right></ion-input>
-                    <ion-label>min</ion-label>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label text-wrap>Max number of tracks in playlist</ion-label>
-                    <ion-input type="number" formControlName="maxTracksInPlaylist" color="primary" text-right></ion-input>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Event starts</ion-label>
-                    <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Event ends </ion-label>
-                    <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Duplicate tracks allowed</ion-label>
-                    <ion-toggle color="primary" formControlName="allowDuplicateTracks"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>All users are curators</ion-label>
-                    <ion-toggle color="primary" formControlName="everybodyIsCurator"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Pause on play error</ion-label>
-                    <ion-toggle color="primary" formControlName="pauseOnPlayError"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Users can like tracks</ion-label>
-                    <ion-toggle color="primary" formControlName="enableTrackLiking"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Users can hate tracks</ion-label>
-                    <ion-toggle color="primary" formControlName="enableTrackHating"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label>Play progress required</ion-label>
-                    <ion-input type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" text-right></ion-input>
-                    <ion-label>%</ion-label>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label color="primary" text-wrap>Demo Mode: Auto Skip after</ion-label>
-                    <ion-input color="primary" type="number" formControlName="demoAutoskip" text-right></ion-input>
-                    <ion-label>s</ion-label>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label color="primary" text-wrap>Demo Mode: no actual playing of tracks</ion-label>
-                    <ion-toggle color="primary" formControlName="demoNoActualPlaying"></ion-toggle>
-                </ion-item>
-
-                <ion-item>
-                    <ion-label color="primary" text-wrap>Demo Mode: Fill Empty Playlist</ion-label>
-                    <ion-toggle color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
-                </ion-item>
-                <ion-button *ngIf="isCreate" [disabled]="!eventForm.valid" expand="full" shape="round" (tap)="create(eventForm)">Create</ion-button>
-                <ion-button *ngIf="!isCreate" [disabled]="!eventForm.valid" expand="full" shape="round" (tap)="update(eventForm)">Update</ion-button>
-                <ion-button *ngIf="!isCreate" expand="full" shape="round" (tap)="delete(eventForm)">Delete</ion-button>
-                <ion-button *ngIf="!isCreate" expand="full" shape="round" (tap)="enterEvent(eventForm)">Enter</ion-button>
-
-            </ion-list>
-
-        </form>
     </div>
 
 </ion-content>

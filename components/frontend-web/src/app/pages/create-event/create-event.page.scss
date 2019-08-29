@@ -17,16 +17,9 @@
 }
 
 .item-label {
-    color: #fff;
+    color: #aaa;
 }
 
+ion-item{ --border-color: #333; }
 
-ion-badge { margin-right: 10px;}
-ion-card-title { color: #fff;}
-ion-input {
-    color: white;
-}
-
-.input-clear-icon {
-    color: white;
-}
+ion-item-divider {font-size: 20px; color: #3880ff; margin-top: 20px;}

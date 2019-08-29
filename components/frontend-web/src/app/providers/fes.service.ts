@@ -8,8 +8,6 @@ import { ConfigService } from './config.service';
 import { retry, catchError } from 'rxjs/operators';
 import { MusicEvent } from '../models/music-event';
 
-
-
 @Injectable({
     providedIn: 'root'
 })
@@ -20,14 +18,13 @@ export class FEService {
     private EMPTY_TRACK_RESULT: Observable<Track[]> = new Observable();
 
     constructor(public http: HttpClient, public confService: ConfigService) {
-        console.debug('begin FEService constructor');
+        console.debug('FEService constructor');
         this.SPOTIFY_PROVIDER_API = this.confService.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = this.confService.PLAYLIST_PROVIDER_API;
-        console.debug('end FEService constructor');
     }
 
     handleError(error) {
-        console.error('fes service: handleError', error);
+        console.error('FEService: handleError', error);
         let errorMessage = '';
         if (error.error instanceof ErrorEvent) {
           // client-side error

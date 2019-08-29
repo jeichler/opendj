@@ -124,6 +124,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   async presentModal() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
+      mode: 'md',
       componentProps: {
         currentEvent: this.currentEvent }
     });

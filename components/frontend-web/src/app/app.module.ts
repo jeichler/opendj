@@ -10,7 +10,6 @@ import { IonicStorageModule } from '@ionic/storage';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-// import { EnvServiceProvider } from './providers/env.service.provider';
 import { MockService } from './providers/mock.service';
 import { WebsocketService } from './providers/websocket.service';
 import { ConfigService } from './providers/config.service';
@@ -28,7 +27,6 @@ import { ConfigService } from './providers/config.service';
     ConfigService,
     StatusBar,
     SplashScreen,
-    // EnvServiceProvider,
     MockService,
     WebsocketService,
     {
