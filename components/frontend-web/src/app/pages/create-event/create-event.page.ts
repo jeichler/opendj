@@ -37,7 +37,6 @@ export class CreateEventPage implements OnInit {
 
     if (valid) {
       Object.assign(this.event, value);
-      this.event.owner = value.userName;
 
       this.feService.createEvent(this.event).subscribe((event) => {
         console.debug('createEvent -> SUCCESS');
@@ -129,8 +128,9 @@ export class CreateEventPage implements OnInit {
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: [''],
       maxUsers: [0, Validators.min(1)],
-      userName: [''],
+      owner: [''],
       passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      // ToDo: Only Required if everybodyIsCurator is false
       passwordCurator: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       passwordUser: [''],
       maxDurationInMinutes: [0, Validators.min(10)],
@@ -139,6 +139,7 @@ export class CreateEventPage implements OnInit {
       eventEndsAt: [new Date().toISOString(), Validators.required],
       allowDuplicateTracks: [false],
       progressPercentageRequiredForEffectivePlaylist: [false],
+      beginPlaybackAtEventStart: [false],
       everybodyIsCurator: [false],
       pauseOnPlayError: [false],
       enableTrackLiking: [false],
