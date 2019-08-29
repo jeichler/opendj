@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Events, ModalController } from '@ionic/angular';
+import { Events, ModalController, ToastController } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
@@ -13,7 +13,7 @@ import * as moment from 'moment';
   templateUrl: './event.page.html',
   styleUrls: ['./event.page.scss'],
 })
-export class EventPage implements OnInit, OnDestroy {
+export class EventPage implements OnDestroy {
 
   event: MusicEvent;
   userState: UserSessionState;
@@ -25,12 +25,13 @@ export class EventPage implements OnInit, OnDestroy {
     public userDataService: UserDataService,
     public feService: FEService,
     private route: ActivatedRoute,
-    public modalController: ModalController
+    public modalController: ModalController,
+    public toastController: ToastController,
   ) {
     this.navigationSubscription = this.router.events.subscribe((e: any) => {
       if (e instanceof NavigationEnd) {
-        console.debug('reinitialise page');
-        this.ngOnInit();
+        console.debug('catching nav end -> init page');
+        this.init();
       }
     });
   }
@@ -47,12 +48,19 @@ export class EventPage implements OnInit, OnDestroy {
     });
 
     modal.onDidDismiss().then(res => {
-      if (res.data) {
-
-      }
-
+      // if (res.data) {}
     });
     return await modal.present();
+  }
+
+  async presentToast(data) {
+    const toast = await this.toastController.create({
+      message: data,
+      position: 'top',
+      color: 'light',
+      duration: 2000
+    });
+    toast.present();
   }
 
   formatDate(date) {
@@ -67,10 +75,13 @@ export class EventPage implements OnInit, OnDestroy {
   deleteEvent() {
     console.debug('deleteEvent');
     this.feService.deleteEvent(this.event.eventID).subscribe((event) => {
-      console.debug('Calling server side delete event...SUCCESS');
-      // this.events.publish('user:logout');
+      console.debug('deleteEvent -> SUCCESS');
+      this.clearNavSubscription();
+      this.presentToast('You have successfully DELETED this event. Now redirecting to Landing page.');
+      this.events.publish('user:logout');
     },
       (err) => {
+        this.presentToast('ERROR: Event could not be deleted');
         console.error('Calling server side delete event...FAILED', err);
       });
   }
@@ -79,12 +90,14 @@ export class EventPage implements OnInit, OnDestroy {
     this.events.publish('user:logout');
   }
 
-  async init() {
-
+  clearNavSubscription() {
+    if (this.navigationSubscription) {
+      this.navigationSubscription.unsubscribe();
+    }
   }
 
-  async ngOnInit() {
-    console.debug('initialize');
+  async init() {
+    console.debug('init');
     this.userState = await this.userDataService.getUser();
     const eventID = this.route.snapshot.paramMap.get('eventId');
     this.event = await this.feService.readEvent(eventID).toPromise();
@@ -92,14 +105,16 @@ export class EventPage implements OnInit, OnDestroy {
 
     // redirect to landing page if event doesn't exist
     if (this.event === null) {
+      console.debug('Event not found -> redirect to landing page');
+      this.presentToast('SORRY! Event could not be found. Now redirecting to Landing page.');
+      this.clearNavSubscription();
       this.router.navigateByUrl('ui/landing');
     }
   }
 
   ngOnDestroy() {
-    if (this.navigationSubscription) {
-      this.navigationSubscription.unsubscribe();
-    }
+    console.debug('ngOnDestroy');
+    this.clearNavSubscription();
   }
 }
 
@@ -238,7 +253,7 @@ export class LoginModalComponent implements OnInit {
   }
 
   async join() {
-    console.debug('join event...');
+    console.debug('join...');
     if (this.loginForm.valid) {
       if (this.context === 'user') {
         this.events.publish('sessionState:modified', this.getSessionStateForContext());
@@ -257,8 +272,7 @@ export class LoginModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.debug(this.currentEvent);
-    console.debug(this.context);
+    console.debug('ngOnInit');
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       password: ['', Validators.nullValidator]

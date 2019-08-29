@@ -14,29 +14,22 @@ export class AuthGuard implements CanActivate {
         state: RouterStateSnapshot): boolean {
 
         const url: string = state.url;
-        console.debug('AuthGuard#canActivate called: state.url=%s', url);
+        console.debug('canActivate -> state.url=%s', url);
         return this.checkLoginStatus(url);
     }
 
     checkLoginStatus(url: string): any {
-        console.debug('begin checkLoginStatus url=%s', url);
         const urlString = url;
         return this.userDataService.getUser().then(user => {
-            console.debug(user);
             let result = false;
             if (!user.isLoggedIn) {
-                console.debug('checkLoginStatus: user is not logged in');
-                if (url.startsWith('/ui/')) {
-                    this.router.navigateByUrl('ui/login', {state: {ctx: 'owner'}});
-                } else {
-                    this.router.navigateByUrl('ui/login', {state: {ctx: 'user', currentEventID: urlString.substring(1)}});
-                }
+                console.debug('checkLoginStatus -> user is not logged in, redirect to landing');
+                this.router.navigateByUrl('ui/landing');
                 result = false;
             } else {
-                console.debug('checkLoginStatus: user is logged in');
+                console.debug('checkLoginStatus -> user is logged in');
                 result = true;
             }
-            console.debug('end checkLoginStatus url=%s result=%s', url, result);
             return result;
         });
 
