@@ -27,7 +27,6 @@ import { ConfigService } from './providers/config.service';
     ConfigService,
     StatusBar,
     SplashScreen,
-    // EnvServiceProvider,
     MockService,
     WebsocketService,
     {

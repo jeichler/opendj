@@ -9,17 +9,16 @@ export class WebsocketService {
     // Our socket connection
     private socket = null;
 
-    constructor(private confService: ConfigService) {
-    }
+    constructor(private confService: ConfigService) {}
 
 // TODO: Add "query" parameter with event ID to be received by server:
     init(eventID: string) {
-        console.debug('begin websocket init eventID=%s', eventID);
+        console.debug('init ws -> eventID=%s', eventID);
 
         // Use /event/<EventID> as socket.io Namespace, which must be added to host parameter:
         const hostStr = this.confService.websocketHost + '/event/' + eventID;
         const pathStr = this.confService.websocketPath;
-        console.debug('connect to websocket host=%s, path=%s', hostStr, pathStr);
+        console.debug('connect to ws host=%s, path=%s', hostStr, pathStr);
 
         this.socket = io(hostStr, {
             reconnectionAttempts: Infinity,
@@ -30,39 +29,35 @@ export class WebsocketService {
             timeout: 20000,
             path: pathStr
         });
-        console.debug('end websocket init eventID=%s', eventID);
     }
 
     observePlaylist() {
-        console.debug('begin websocket observePlaylist()');
+        console.debug('observePlaylist');
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
-                console.debug('WebsocketService: Received playlist update');
+                console.debug('observePlaylist -> Received playlist update');
                 observer.next(data);
             });
         });
-        console.debug('end websocket observePlaylist()');
         return observable;
     }
 
     observeEvent() {
-        console.debug('begin websocket observeEvent()');
+        console.debug('observeEvent');
         const observable = new Observable(observer => {
             this.socket.on('current-event', (data) => {
-                console.debug('WebsocketService: Received event update');
+                console.debug('observeEvent -> Received event update');
                 observer.next(data);
             });
         });
-        console.debug('end websocket observeEvent()');
         return observable;
     }
 
 
 
     refreshPlaylist() {
-        console.debug('begin websocket refreshPlaylist()');
+        console.debug('refreshPlaylist');
         this.socket.emit('refresh-playlist');
-        console.debug('end websocket refreshPlaylist()');
     }
 
     isConnected() {
@@ -70,12 +65,12 @@ export class WebsocketService {
     }
 
     disconnect() {
-        console.info('WebsocketService: disconnect');
+        console.info('disconnect');
         return this.socket.disconnect();
     }
 
     connect() {
-        console.info('WebsocketService: connect');
+        console.info('connect');
         return this.socket.connect();
     }
 

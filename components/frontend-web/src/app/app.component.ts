@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit() {
-    console.debug('begin ngOnInit()');
+    console.debug('ngOnInit()');
     await this.loadUserState();
   }
 
