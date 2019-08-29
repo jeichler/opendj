@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Events, ModalController, ToastController } from '@ionic/angular';
+import { Events, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
@@ -27,6 +27,7 @@ export class EventPage implements OnDestroy {
     private route: ActivatedRoute,
     public modalController: ModalController,
     public toastController: ToastController,
+    public alertController: AlertController
   ) {
     this.navigationSubscription = this.router.events.subscribe((e: any) => {
       if (e instanceof NavigationEnd) {
@@ -71,6 +72,31 @@ export class EventPage implements OnDestroy {
     console.debug('editEvent');
     this.router.navigateByUrl('/ui/create-event');
   }
+
+  async deleteAlertConfirm() {
+    const alert = await this.alertController.create({
+      header: 'Delete Event!',
+      message: 'Are you sure you want to <strong>delete</strong> this event?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (data) => {
+
+          }
+        }, {
+          text: 'Okay',
+          handler: () => {
+            this.deleteEvent();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
 
   deleteEvent() {
     console.debug('deleteEvent');
