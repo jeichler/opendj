@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Events } from '@ionic/angular';
+import { Events, ToastController, IonContent } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl, ValidatorFn, AbstractControl } from '@angular/forms';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
-import { timingSafeEqual } from 'crypto';
-import { refreshDescendantViews } from '@angular/core/src/render3/instructions';
 import { UserSessionState } from 'src/app/models/usersessionstate';
+import { EventIdValidator } from 'src/app/validators/eventId-validator';
 
 @Component({
   selector: 'app-create-event',
@@ -16,6 +15,7 @@ import { UserSessionState } from 'src/app/models/usersessionstate';
 })
 export class CreateEventPage implements OnInit {
 
+  @ViewChild(IonContent) content: IonContent;
   eventForm: FormGroup;
   event = new MusicEvent();
   userState: UserSessionState;
@@ -28,11 +28,11 @@ export class CreateEventPage implements OnInit {
     public userDataService: UserDataService,
     public feService: FEService,
     public formBuilder: FormBuilder,
-    private route: ActivatedRoute,
+    public toastController: ToastController
   ) { }
 
   create({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('begin create Event');
+    console.debug('create');
     console.debug(value);
 
     if (valid) {
@@ -40,7 +40,7 @@ export class CreateEventPage implements OnInit {
       this.event.owner = value.userName;
 
       this.feService.createEvent(this.event).subscribe((event) => {
-        console.debug('Calling server side create event...SUCCESS');
+        console.debug('createEvent -> SUCCESS');
         this.event = event;
         this.mapEventToForm(this.eventForm, this.event);
         this.isCreate = false;
@@ -52,74 +52,62 @@ export class CreateEventPage implements OnInit {
         this.userState.isCurator = true;
         this.userState.isLoggedIn = true;
         this.events.publish('sessionState:modified', this.userState);
+        this.presentToast('You have successfully created this event. You have been also logged in as owner to this event.');
+        this.content.scrollToTop();
       },
       (err) => {
         console.error('Calling server side create event...FAILED', err);
+        this.presentToast('ERROR creating this event');
       });
     } else {
       console.debug('Form is not valid, ignoring create request');
+      this.presentToast('Form is not valid! Please submit all required data.');
     }
   }
 
   update({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('begin update');
+    console.debug('update');
     if (valid) {
-      console.debug('Calling server side update event...');
       Object.assign(this.event, value);
+
       this.feService.updateEvent(this.event).subscribe((event) => {
-        console.debug('Calling server side update event...SUCCESS');
+        console.debug('updateEvent -> SUCCESS');
         this.event = event;
         this.mapEventToForm(this.eventForm, this.event);
         this.isCreate = false;
+        this.presentToast('You have successfully updated this event.');
+        this.content.scrollToTop();
       },
       (err) => {
         console.error('Calling server side update event...FAILED', err);
+        this.presentToast('ERROR updating this event');
       });
     } else {
       console.debug('Form is not valid, ignoring update request');
+      this.presentToast('Form is not valid! Please submit all required data.');
     }
-    console.debug('end update');
   }
 
-  /*
-  delete({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('begin delete');
-    console.debug('Calling server side delete event...');
-    this.feService.deleteEvent(value.eventID).subscribe((event) => {
-      console.debug('Calling server side delete event...SUCCESS');
-      this.event = event;
-      this.mapEventToForm(this.eventForm, this.event);
-      this.isCreate = true;
-    },
-    (err) => {
-      console.error('Calling server side delete event...FAILED', err);
+  async presentToast(data) {
+    const toast = await this.toastController.create({
+      message: data,
+      position: 'top',
+      color: 'light',
+      duration: 2000
     });
-
-  }
-*/
-   validateEventID(eventIDControl: FormControl) {
-    console.debug('begin validateEventID eventID=%s', eventIDControl.value);
-    const eventID =  eventIDControl.value;
-    if (eventID.length >= 3) {
-      console.debug('validate with Server');
-      this.event.eventID = eventID;
-      this.feService.validateEvent(this.event);
-    }
-    console.debug('end validateEventID');
+    toast.present();
   }
 
   mapEventToForm(f: FormGroup, e: MusicEvent) {
     f.patchValue(e);
   }
 
-  async refresh() {
-    console.debug('refresh');
-
+  async refreshState() {
+    console.debug('refreshState');
     this.userState  = await this.userDataService.getUser();
-
     if (!this.userState.isLoggedIn) {
-      this.event = await this.feService.readEvent(null).toPromise();
       this.isCreate = true;
+      this.event = await this.feService.readEvent(null).toPromise();
     }
     if (this.userState.isLoggedIn && this.userState.isEventOwner) {
       this.isCreate = false;
@@ -129,36 +117,36 @@ export class CreateEventPage implements OnInit {
   }
 
   async ionViewDidEnter() {
-    await this.refresh();
+    console.debug('ionViewDidEnter');
+    await this.refreshState();
   }
 
   async ngOnInit() {
-
+    console.debug('ngOnInit');
     this.eventForm = this.formBuilder.group({
-      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required, this.validateEventID.bind(this)] )],
+      // TODO: add this async validator ->  EventIdValidator
+      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required]), null ],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
-      url: ['', Validators.nullValidator],
-      maxUsers: ['', Validators.nullValidator],
-      userName: ['', Validators.nullValidator],
+      url: [''],
+      maxUsers: [0, Validators.min(1)],
+      userName: [''],
       passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
-      passwordCurator: ['', Validators.nullValidator],
-      passwordUser: ['', Validators.nullValidator],
-      maxDurationInMinutes: ['', Validators.nullValidator],
-      maxTracksInPlaylist: ['', Validators.nullValidator],
-      eventStartsAt: [new Date().toISOString(), Validators.nullValidator],
-      eventEndsAt: ['', Validators.nullValidator],
-      allowDuplicateTracks: [false, Validators.nullValidator],
-      progressPercentageRequiredForEffectivePlaylist: [false, Validators.nullValidator],
-      everybodyIsCurator: [false, Validators.nullValidator],
-      pauseOnPlayError: [false, Validators.nullValidator],
-      enableTrackLiking: [false, Validators.nullValidator],
-      enableTrackHating: [false, Validators.nullValidator],
-      demoAutoskip: ['', Validators.nullValidator],
-      demoNoActualPlaying: [false, Validators.nullValidator],
-      demoAutoFillEmptyPlaylist: [false, Validators.nullValidator]
+      passwordCurator: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      passwordUser: [''],
+      maxDurationInMinutes: [0, Validators.min(10)],
+      maxTracksInPlaylist: [0, Validators.min(2)],
+      eventStartsAt: [new Date().toISOString(), Validators.required],
+      eventEndsAt: [new Date().toISOString(), Validators.required],
+      allowDuplicateTracks: [false],
+      progressPercentageRequiredForEffectivePlaylist: [false],
+      everybodyIsCurator: [false],
+      pauseOnPlayError: [false],
+      enableTrackLiking: [false],
+      enableTrackHating: [false],
+      demoAutoskip: [''],
+      demoNoActualPlaying: [false],
+      demoAutoFillEmptyPlaylist: [false]
     });
-
-    // this.refresh();
 
   }
 

@@ -35,7 +35,7 @@
 
         <form [formGroup]="eventForm">
 
-            <ion-list style="background: transparent !important;">
+            <ion-list style="background: transparent !important;" lines="none">
                 <ion-item-group>
                     <ion-item-divider mode="md">
                         <ion-label>Event data</ion-label>
@@ -43,8 +43,9 @@
 
                     <ion-item tooltip="This is the event ID" placement="left">
                         <ion-label>ID:</ion-label>
-                        <ion-input type="text" formControlName="eventID" color="primary"
-                            text-right></ion-input>
+                        <ion-input type="text" formControlName="eventID" color="primary" text-right>
+
+                        </ion-input>
                     </ion-item>
 
                     <ion-item tooltip="The title of your event" placement="left">
