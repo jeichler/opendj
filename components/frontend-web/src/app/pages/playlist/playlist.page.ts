@@ -11,6 +11,7 @@ import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserSessionState } from 'src/app/models/usersessionstate';
+import { LoginModalComponent } from 'src/app/components/login-modal/login-modal.component';
 
 @Component({
   selector: 'app-playlist',
@@ -42,6 +43,23 @@ export class PlaylistPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public router: Router,
     ) {
+  }
+
+  async presentLoginModal(ctx) {
+    const modal = await this.modalController.create({
+      component: LoginModalComponent,
+      animated: true,
+      mode: 'md',
+      componentProps: {
+        currentEvent: this.currentEvent,
+        context: ctx
+      }
+    });
+
+    modal.onDidDismiss().then(res => {
+      // if (res.data) {}
+    });
+    return await modal.present();
   }
 
   playTrack() {

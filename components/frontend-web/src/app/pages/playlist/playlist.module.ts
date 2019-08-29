@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { PlaylistPage, PlaylistAddModalComponent } from './playlist.page';
 import { CurrentTrackComponent } from 'src/app/components/current-track/current-track.component';
 import { SharedModule } from 'src/app/components/shared.module';
+import { LoginModalComponent } from 'src/app/components/login-modal/login-modal.component';
 
 @NgModule({
   imports: [
@@ -26,7 +27,8 @@ import { SharedModule } from 'src/app/components/shared.module';
   ],
   entryComponents: [
     PlaylistAddModalComponent,
-    CurrentTrackComponent
+    CurrentTrackComponent,
+    LoginModalComponent
   ]
 })
 export class PlaylistPageModule { }

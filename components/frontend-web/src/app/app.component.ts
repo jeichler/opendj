@@ -57,9 +57,16 @@ export class AppComponent implements OnInit {
 
     this.events.subscribe('user:logout', data => {
       console.debug('Received user:logout event');
+      let redirectUrl;
+      if ( data && data.redirect ) {
+        redirectUrl = data.redirect;
+      } else {
+        redirectUrl = 'ui/event/' + this.userState.currentEventID;
+      }
+
       this.userState = new UserSessionState();
       this.userDataService.updateUser(this.userState);
-      this.router.navigate([`ui/landing`]);
+      this.router.navigate([redirectUrl]);
     });
 
   }
