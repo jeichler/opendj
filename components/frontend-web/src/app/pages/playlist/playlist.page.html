@@ -42,7 +42,9 @@
 
                 <ion-item color="dark">
                     <ion-thumbnail slot="start" (press)="toggleOptions()">
-                        <img src="{{item.image_url}}">
+                        <a href="{{item.image_url_ref}}" target="_blank">
+                            <img src="{{item.image_url}}">
+                        </a>
                     </ion-thumbnail>
                     <ion-label>{{item.name}}
                         <br />

@@ -471,14 +471,16 @@ function mapSpotifyTrackToOpenDJTrack(sptTrack) {
     // Use the album images. Spotify returns widest first, we want the smallest, thus
     // we return the last:
     if (sptTrack.album.images.length > 0) {
-        odjTrack.image_url = sptTrack.album.images[sptTrack.album.images.length - 1].url
+        odjTrack.image_url = sptTrack.album.images[sptTrack.album.images.length - 1].url;
+        odjTrack.image_url_ref = sptTrack.album.external_urls.spotify;
     } else {
         // TODO: Return URL to OpenDJ Logo
         odjTrack.image_url = "";
     }
 
-    odjTrack.duration_ms = sptTrack.duration_ms
+    odjTrack.duration_ms = sptTrack.duration_ms;
     odjTrack.preview = sptTrack.preview_url;
+    odjTrack.previewViaApp = sptTrack.external_urls.spotify;
     odjTrack.popularity = sptTrack.popularity;
     odjTrack.provider = "spotify";
 

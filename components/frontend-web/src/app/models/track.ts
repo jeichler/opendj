@@ -6,8 +6,11 @@ export class Track {
     // tslint:disable-next-line:variable-name
     image_url: string;
     // tslint:disable-next-line:variable-name
+    image_url_ref: string;
+    // tslint:disable-next-line:variable-name
     duration_ms: number;
     preview: string;
+    previewViaApp: string;
     provider: string;
     popularity: number;
     genre: string;

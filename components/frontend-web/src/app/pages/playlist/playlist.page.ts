@@ -320,12 +320,17 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
     <ion-item color="light" *ngFor="let item of tracks">
       <ion-thumbnail slot="start">
-        <img src="{{item.image_url}}">
+        <a href="{{item.image_url_ref}}" target="_blank">
+          <img src="{{item.image_url}}">
+        </a>
       </ion-thumbnail>
       <ion-label text-wrap>{{item.name}}<br />
         <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
       </ion-label>
       <p>
+      <a *ngIf="item.preview" href="{{item.preview}}" target="_blank">
+        <img  src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" height="28"/>
+      </a>
         <ion-button (tap)="dismiss(item)">Add</ion-button>
       </p>
     </ion-item>
