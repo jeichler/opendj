@@ -54,10 +54,17 @@
               <br/>
             </span>
                         <span style="font-size: 14px; color: #999;">
-              {{item.artist}} {{item.year}} eta {{item.eta}}</span>
+                            {{item.artist}} {{item.year}} eta {{item.eta}}
+                        </span>
+                        <a *ngIf="isCurator" href="{{item.previewViaApp}}" target="_blank">
+                            <ion-img *ngIf="isCurator" float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-left:10px"></ion-img>
+                        </a>
+                        <ion-img *ngIf="!isCurator" float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px"></ion-img>
+
                         <ion-badge color="medium" float-right>
                             {{item.added_by}}
                         </ion-badge>
+
                         <ion-label *ngIf="isCurator">
                             <span style="font-size: 14px; color: #999;">
               {{item.genre}}</span>
