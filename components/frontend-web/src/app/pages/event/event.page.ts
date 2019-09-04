@@ -74,14 +74,23 @@ export class EventPage implements OnDestroy {
       translucent: true
     });
 
-    popover.onDidDismiss().then((newCtx) => {
-      console.debug('onDidDismiss');
+    popover.onDidDismiss().then(ev => {
+      if ( ev !== null && ev.data) {
+        console.debug('onDidDismiss data=%s', ev.data);
 
-      if (newCtx !== null && newCtx.data) {
-        if (newCtx.data === 'switch') {
-          // TODO
-        } else {
-          // TODO
+        switch (ev.data) {
+          case 'user':
+            break;
+          case 'curator':
+            break;
+          case 'owner':
+            break;
+          case 'switch':
+          break;
+          case 'landing':
+          break;
+          default:
+            throw new Error('Unexpected data from more options popover dismis:' + ev.data);
         }
       }
     });
@@ -202,9 +211,7 @@ export class MoreOptionsComponent implements OnInit {
 
   gotoLanding() {
     console.debug('more-options#gotoLanding');
-    this.userDataService.logout();
-    this.popOverCtrl.dismiss();
-    this.router.navigate([`ui/landing`]);
+    this.popOverCtrl.dismiss('landing');
   }
 
   switchEvent() {

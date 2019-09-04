@@ -5,6 +5,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ModalController, Events, ToastController } from '@ionic/angular';
 import { FEService } from 'src/app/providers/fes.service';
 import { Router } from '@angular/router';
+import { UsernameGeneratorService } from 'src/app/providers/username-generator.service';
 
 @Component({
   selector: 'app-login-modal',
@@ -13,17 +14,6 @@ import { Router } from '@angular/router';
 })
 export class LoginModalComponent implements OnInit {
 
-  listOfAnimals = [
-    'Alligator', 'Anteater', 'Armadillo', 'Auroch', 'Axolotl', 'Badger', 'Bat', 'Bear', 'Beaver', 'Blobfish', 'Buffalo',
-    'Camel', 'Capybara', 'Chameleon', 'Cheetah', 'Chinchilla', 'Chipmunk', 'Chupacabra', 'Cormorant', 'Coyote', 'Crow',
-    'Dingo', 'Dinosaur', 'Dog', 'Dolphin', 'Duck', 'DumboOctopus', 'Elephant', 'Ferret', 'Fox', 'Frog',
-    'Giraffe', 'Goose', 'Gopher', 'Grizzly', 'Hamster', 'Hedgehog', 'Hippo', 'Hyena',
-    'Ibex', 'Ifrit', 'Iguana', 'Jackal', 'Jackalope', 'Kangaroo', 'Kiwi', 'Koala', 'Kraken',
-    'Lemur', 'Leopard', 'Liger', 'Lion', 'Llama', 'Loris', 'Manatee', 'Mink', 'Monkey', 'Moose', 'Narwhal',
-    'NyanCat', 'Orangutan', 'Otter', 'Panda', 'Penguin', 'Platypus', 'Pumpkin', 'Python', 'Quagga', 'Quokka',
-    'Rabbit', 'Raccoon', 'Rhino', 'Sheep', 'Shrew', 'Skunk', 'Squirrel', 'Tiger', 'Turtle', 'Unicorn',
-    'Walrus', 'Wolf', 'Wolverine', 'Wombat'
-  ];
 
   // Data passed in by componentProps
   @Input() currentEvent: MusicEvent;
@@ -36,6 +26,7 @@ export class LoginModalComponent implements OnInit {
   constructor(
     public modalController: ModalController,
     public feService: FEService,
+    public usergenerator: UsernameGeneratorService,
     public formBuilder: FormBuilder,
     private events: Events,
     private router: Router,
@@ -62,15 +53,9 @@ export class LoginModalComponent implements OnInit {
     this.loginForm.reset();
   }
 
-  userNameGeneratorForZoe() {
-    const animal = this.listOfAnimals[Math.floor(Math.random() * this.listOfAnimals.length)];
-    const num = Math.floor(Math.random() * 100) + 1;
-    return 'Anon' + animal + num;
-  }
-
   generateUsername() {
     this.loginForm.patchValue({
-      username: this.userNameGeneratorForZoe()
+      username: this.usergenerator.generateUsernameForZoe()
     });
   }
 
