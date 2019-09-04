@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Events, ModalController, ToastController, AlertController } from '@ionic/angular';
+import { Events, ModalController, ToastController, AlertController, PopoverController } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
@@ -28,7 +28,8 @@ export class EventPage implements OnDestroy {
     private route: ActivatedRoute,
     public modalController: ModalController,
     public toastController: ToastController,
-    public alertController: AlertController
+    public alertController: AlertController,
+    public popOverCtrl: PopoverController
   ) {
     this.navigationSubscription = this.router.events.subscribe((e: any) => {
       if (e instanceof NavigationEnd) {
@@ -63,6 +64,28 @@ export class EventPage implements OnDestroy {
       duration: 2000
     });
     toast.present();
+  }
+
+  async presentMoreOptions(ev: any) {
+    console.debug('presentMoreOptions');
+    const popover = await this.popOverCtrl.create({
+      component: MoreOptionsComponent,
+      event: ev,
+      translucent: true
+    });
+
+    popover.onDidDismiss().then((newCtx) => {
+      console.debug('onDidDismiss');
+
+      if (newCtx !== null && newCtx.data) {
+        if (newCtx.data === 'switch') {
+          // TODO
+        } else {
+          // TODO
+        }
+      }
+    });
+    return await popover.present();
   }
 
   formatDate(date) {
@@ -145,3 +168,47 @@ export class EventPage implements OnDestroy {
   }
 }
 
+
+/**
+ * More Login-Options
+ */
+@Component({
+  selector: 'event-more-options',
+  templateUrl: 'more-options-component.html'
+})
+export class MoreOptionsComponent implements OnInit {
+
+  constructor(
+    private router: Router,
+    public userDataService: UserDataService,
+    public popOverCtrl: PopoverController,
+    ) { }
+
+  ngOnInit() {}
+
+  gotoUserLogin() {
+    console.debug('more-options#gotoUserLogin');
+    this.popOverCtrl.dismiss('user');
+  }
+
+  gotoCuratorLogin() {
+    console.debug('more-options#gotoCuratorLogin');
+    this.popOverCtrl.dismiss('curator');
+  }
+
+  gotoEventOwnerLogin() {
+    console.debug('more-options#gotoEventOwnerLogin');
+    this.popOverCtrl.dismiss('owner');  }
+
+  gotoLanding() {
+    console.debug('more-options#gotoLanding');
+    this.userDataService.logout();
+    this.popOverCtrl.dismiss();
+    this.router.navigate([`ui/landing`]);
+  }
+
+  switchEvent() {
+    console.debug('more-options#switchEvent');
+    this.popOverCtrl.dismiss('switch');
+  }
+}

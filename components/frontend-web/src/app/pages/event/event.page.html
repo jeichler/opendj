@@ -7,6 +7,13 @@
         <ion-title color="light">
             {{event?.name}}
         </ion-title>
+
+        <ion-buttons slot="end" margin-right>
+            <ion-button color="light" (click)="presentMoreOptions($event)">
+                <ion-icon slot="icon-only" name="more"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+
     </ion-toolbar>
 </ion-header>
 
@@ -14,8 +21,9 @@
 
     <div class="event-form-wrapper">
 
-        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)"
-            style="background-color: #111; padding: 10px;">
+
+        <!-- 
+        <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)" style="background-color: #111; padding: 10px;">
             <p style="color: #fff; font-size: 18px;">You are logged in as Event owner.</p>
             <ion-button (tap)="editEvent()">
                 <ion-icon name="build" slot="start"></ion-icon>
@@ -26,12 +34,14 @@
                 Delete
             </ion-button>
         </ion-card>
+-->
 
         <ion-card *ngIf="event" style="background-color: #111;">
             <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState?.isLoggedIn">
                 <ion-button (tap)="presentModal('owner')">Owner Login</ion-button>
             </div>
-            <img src="assets/img/event_hdr.jpg" />
+            <img src="assets/img/event_hdr.jpg" style="margin: auto" />
+
 
             <ion-card-header>
                 <ion-card-title>{{event.name}}</ion-card-title>
@@ -39,6 +49,7 @@
             </ion-card-header>
 
             <ion-card-content>
+                <!--                
                 <ion-chip color="light">
                     <ion-icon name="calendar" color="success"></ion-icon>
                     <ion-label color="light">{{formatDate(event.eventStartsAt)}}</ion-label>
@@ -51,19 +62,19 @@
                     <ion-icon name="people" color="light"></ion-icon>
                     <ion-label color="light">Max {{event.maxUsers}} Users </ion-label>
                 </ion-chip>
-
-                <p style="color: rgb(66, 70, 75);">This is a static description for this event</p><br />
+-->
+                <p style="color: white;">
+                    Welcome to OpenDJ! We would like to know who you are, please enter a name. <br/> Of course, you can stay anonymous and use any alias. Click the magic wand to generate one. <br/> Use the options button for other roles.<br/>
+                </p><br />
                 <p></p>
-                
+
                 <div style="margin: 0 auto;">
-                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
-                        (tap)="presentModal('user')">Join as User
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('user')">Join as User
                     </ion-button>
-                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline"
-                        (tap)="presentModal('curator')">Join as
-                        Curator</ion-button>
+                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('curator')">Join as Curator
+                    </ion-button>
                 </div>
-                
+
             </ion-card-content>
 
         </ion-card>
