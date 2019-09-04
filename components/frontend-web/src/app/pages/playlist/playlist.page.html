@@ -12,12 +12,6 @@
             <ion-button color="light" *ngIf="isConnected">
                 <ion-icon name="wifi"></ion-icon>
             </ion-button>
-            <ion-button color="light" (tap)="presentLoginModal('curator')" *ngIf="!userState?.isCurator && !userState?.isEventOwner">
-                <ion-icon name="log-in"></ion-icon>
-            </ion-button>
-            <ion-button color="light" (tap)="presentLoginModal('owner')" *ngIf="userState?.isCurator && !userState?.isEventOwner">
-                <ion-icon name="log-in"></ion-icon>
-            </ion-button>
         </ion-buttons>
 
     </ion-toolbar>
