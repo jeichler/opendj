@@ -1,4 +1,3 @@
-import { LoginModalComponent } from './../../components/login-modal/login-modal.component';
 import { NgModule } from '@angular/core';
 import { SharedModule } from 'src/app/components/shared.module';
 import { CommonModule } from '@angular/common';
@@ -7,7 +6,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { EventPage, MoreOptionsComponent} from './event.page';
+import { EventPage, MoreOptionsComponent, LoginModalComponent} from './event.page';
 
 const routes: Routes = [
   {
@@ -26,7 +25,8 @@ const routes: Routes = [
   ],
   declarations: [
     EventPage,
-    MoreOptionsComponent
+    MoreOptionsComponent,
+    LoginModalComponent
   ],
   entryComponents: [
     LoginModalComponent,

@@ -7,7 +7,7 @@ import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
-import { LoginModalComponent } from 'src/app/components/login-modal/login-modal.component';
+import { UsernameGeneratorService } from 'src/app/providers/username-generator.service';
 
 @Component({
   selector: 'event',
@@ -74,23 +74,27 @@ export class EventPage implements OnDestroy {
       translucent: true
     });
 
-    popover.onDidDismiss().then(ev => {
-      if ( ev !== null && ev.data) {
-        console.debug('onDidDismiss data=%s', ev.data);
+    popover.onDidDismiss().then(info => {
+      if ( info !== null && info.data) {
+        console.debug('onDidDismiss data=%s', info.data);
 
-        switch (ev.data) {
+        switch (info.data) {
           case 'user':
-            break;
           case 'curator':
-            break;
           case 'owner':
+            this.presentModal(info.data);
             break;
-          case 'switch':
+
+            case 'switch':
+          // TODO
           break;
+
           case 'landing':
+          // TODO
           break;
+
           default:
-            throw new Error('Unexpected data from more options popover dismis:' + ev.data);
+            throw new Error('Unexpected data from more options popover dismis:' + info.data);
         }
       }
     });
@@ -218,4 +222,128 @@ export class MoreOptionsComponent implements OnInit {
     console.debug('more-options#switchEvent');
     this.popOverCtrl.dismiss('switch');
   }
+}
+
+
+/**
+ * Login Modal
+ */
+@Component({
+  selector: 'app-login-modal',
+  templateUrl: './login-modal.component.html',
+  styleUrls: ['./login-modal.component.scss'],
+})
+export class LoginModalComponent implements OnInit {
+
+
+  // Data passed in by componentProps
+  @Input() currentEvent: MusicEvent;
+  @Input() context: string;
+
+  loginForm: FormGroup;
+  submitAttempt: boolean;
+
+
+  constructor(
+    public modalController: ModalController,
+    public feService: FEService,
+    public usergenerator: UsernameGeneratorService,
+    public formBuilder: FormBuilder,
+    private events: Events,
+    private router: Router,
+    public toastController: ToastController,
+  ) {
+  }
+
+  async presentToast(data) {
+    const toast = await this.toastController.create({
+      message: data,
+      position: 'top',
+      color: 'light',
+      duration: 2000
+    });
+    toast.present();
+  }
+
+  async dismiss(data) {
+    await this.modalController.dismiss(data);
+    this.resetForm();
+  }
+
+  resetForm() {
+    this.loginForm.reset();
+  }
+
+  generateUsername() {
+    this.loginForm.patchValue({
+      username: this.usergenerator.generateUsernameForZoe()
+    });
+  }
+
+  getSessionStateForContext(): UserSessionState {
+    const state = new UserSessionState();
+    if (this.context === 'user') {
+      state.currentEventID = this.currentEvent.eventID;
+      state.isLoggedIn = true;
+      state.username = this.loginForm.value.username;
+    }
+    if (this.context === 'owner') {
+      state.currentEventID = this.currentEvent.eventID;
+      state.isLoggedIn = true;
+      state.username = this.loginForm.value.username;
+      state.isCurator = true;
+      state.isEventOwner = true;
+    }
+    if (this.context === 'curator') {
+      state.currentEventID = this.currentEvent.eventID;
+      state.isLoggedIn = true;
+      state.username = this.loginForm.value.username;
+      state.isCurator = true;
+    }
+    return state;
+  }
+
+  async join() {
+    console.debug('join...');
+    if (this.loginForm.valid) {
+
+      if (this.context === 'user') {
+        this.events.publish('sessionState:modified', this.getSessionStateForContext());
+        this.router.navigate([`ui/playlist-user`]);
+        this.presentToast('You have successfully joined this Event! Start contributing!');
+        await this.dismiss(null);
+      }
+
+      if (this.context === 'owner') {
+        if ( this.currentEvent.passwordOwner === this.loginForm.value.password ) {
+          this.events.publish('sessionState:modified', this.getSessionStateForContext());
+          this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
+          this.presentToast('You have successfully loggedin as Event Owner');
+          await this.dismiss(null);
+        } else {
+          this.presentToast('Please check your credentials');
+        }
+      }
+
+      if (this.context === 'curator' ) {
+        if (this.currentEvent.passwordCurator === this.loginForm.value.password) {
+          this.events.publish('sessionState:modified', this.getSessionStateForContext());
+          this.router.navigate([`ui/playlist-curator`]);
+          this.presentToast('You have successfully joined this Event as Curator. Rock it!!');
+          await this.dismiss(null);
+        } else {
+          this.presentToast('Please check your credentials');
+        }
+      }
+    }
+  }
+
+  ngOnInit() {
+    console.debug('ngOnInit');
+    this.loginForm = this.formBuilder.group({
+      username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      password: ['', Validators.nullValidator]
+    });
+  }
+
 }

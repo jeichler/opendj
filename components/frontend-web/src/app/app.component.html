@@ -21,26 +21,22 @@
                         <ion-label>
                             {{userState.username}}
                         </ion-label>
-                        <ion-icon slot="end" name="star" *ngIf="userState?.isCurator && !userState?.isEventOwner"
-                            color="yellow"></ion-icon>
+                        <ion-icon slot="end" name="star" *ngIf="userState?.isCurator && !userState?.isEventOwner" color="yellow"></ion-icon>
                         <ion-icon slot="end" name="star" *ngIf="userState?.isEventOwner" color="red"></ion-icon>
                     </ion-item>
 
-                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/playlist-user" 
-                        color="opendj">
+                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/playlist-user" color="opendj">
                         <ion-icon slot="start" [name]="'musical-notes'"></ion-icon>
                         <ion-label>User View</ion-label>
                     </ion-item>
-                    <ion-item *ngIf="userState?.isCurator" [routerDirection]="'root'" routerLink="/ui/playlist-curator"
-                        color="opendj">
+                    <ion-item *ngIf="userState?.isCurator" [routerDirection]="'root'" routerLink="/ui/playlist-curator" color="opendj">
                         <ion-icon slot="start" [name]="'navigate'"></ion-icon>
                         <ion-label>Curator View</ion-label>
                     </ion-item>
 
-                    <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/event/{{userState.currentEventID}}"
-                        color="opendj">
+                    <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/create-event" color="opendj">
                         <ion-icon slot="start" [name]="'options'"></ion-icon>
-                        <ion-label>Event</ion-label>
+                        <ion-label>Edit Event</ion-label>
                     </ion-item>
 
                     <ion-item button (click)="logout()" color="opendj" *ngIf="userState?.isLoggedIn">
