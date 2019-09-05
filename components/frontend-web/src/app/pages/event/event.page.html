@@ -5,7 +5,7 @@
         </ion-buttons>
 
         <ion-title color="light">
-            {{event?.name}}
+            OpenDJ
         </ion-title>
 
         <ion-buttons slot="end" margin-right>
@@ -37,15 +37,14 @@
 -->
 
         <ion-card *ngIf="event" style="background-color: #111;">
-            <div style="position: absolute; top: 20px; right: 20px;" *ngIf="!userState?.isLoggedIn">
-                <ion-button (tap)="presentModal('owner')">Owner Login</ion-button>
-            </div>
-            <img src="assets/img/event_hdr.jpg" style="margin: auto; width: 256px;  " />
 
 
             <ion-card-header>
-                <ion-card-title>{{event.name}}</ion-card-title>
-                <ion-card-subtitle>Organized by {{event.owner}}</ion-card-subtitle>
+                <img src="assets/img/event_hdr.jpg" style="margin: auto; width: 178px;  " />
+                <div style="width: 100%;  position: absolute;  top: 75px; color: #fff;">
+                    <ion-card-title>{{event.name}}</ion-card-title>
+                    <ion-card-subtitle style="color: white">Organized by {{event.owner}}</ion-card-subtitle>
+                </div>
             </ion-card-header>
 
             <ion-card-content>
@@ -64,25 +63,51 @@
                 </ion-chip>
 -->
                 <p style="color: white;">
-                    Welcome to OpenDJ! We would like to know who you are, please enter a name. <br/> Of course, you can stay anonymous and use any alias. Click the magic wand to generate one. <br/> Use the options button for other roles.<br/>
-                </p><br />
-                <p></p>
+                    Welcome to OpenDJ! We would like to know who you are, please enter a name.
+                    <span *ngIf="event.passwordUser !==''">
+                        Ask your host about the password of the event (our look around, it might be advertised).
+                    </span>
+                    <span *ngIf="event.passwordUser ==''">
+                        You can stay anonymous and use any alias. Click the magic wand to generate one.
+                    </span>
 
-                <div style="margin: 0 auto;">
-                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('user')">Join as User
-                    </ion-button>
-                    <ion-button *ngIf="!userState?.isLoggedIn" shape="round" color="primary" fill="outline" (tap)="presentModal('curator')">Join as Curator
-                    </ion-button>
-                </div>
+                </p>
+
+                <form [formGroup]="loginForm">
+                    <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
+
+                        <ion-item style="--ion-background-color: transparent !important; color: white;">
+                            <ion-input formControlName="username" type="text" clearInput="true" placeholder="Username">
+                            </ion-input>
+                            <ion-note slot="end">
+                                <ion-button (tap)="generateUsername()" shape="round" color="primary" size="small" fill="outline">
+                                    <ion-icon name="color-wand"></ion-icon>
+                                </ion-button>
+                            </ion-note>
+                        </ion-item>
+                        <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
+                            <p style="color: red;">Minimum length for username is 3.</p>
+                        </ion-item>
+
+                        <ion-item *ngIf="event.passwordUser !==''" style="--ion-background-color: transparent !important; color: white;">
+                            <ion-input formControlName="password" type="password" clearInput="true" placeholder="Password">
+                            </ion-input>
+                        </ion-item>
+
+                    </ion-list>
+
+                    <div style="text-align: center;">
+                        <ion-button type="submit" shape="round" color="primary" (tap)="join()" style="width: 75%">
+                            Join Event
+                        </ion-button>
+                    </div>
+
+                </form>
 
             </ion-card-content>
 
         </ion-card>
 
-        <div style="margin: 0 auto;" *ngIf="userState?.isLoggedIn">
-            <ion-button shape="round" color="danger" fill="outline" (tap)="logout()">Logout
-            </ion-button>
-        </div>
 
     </div>
 

@@ -14,22 +14,26 @@ import { UsernameGeneratorService } from 'src/app/providers/username-generator.s
   templateUrl: './event.page.html',
   styleUrls: ['./event.page.scss'],
 })
-export class EventPage implements OnDestroy {
+export class EventPage implements OnDestroy, OnInit {
 
   event: MusicEvent;
   userState: UserSessionState;
   navigationSubscription;
+  loginForm: FormGroup;
+  submitAttempt: boolean;
 
   constructor(
     public router: Router,
     private events: Events,
     public userDataService: UserDataService,
     public feService: FEService,
+    public usergenerator: UsernameGeneratorService,
     private route: ActivatedRoute,
     public modalController: ModalController,
     public toastController: ToastController,
     public alertController: AlertController,
-    public popOverCtrl: PopoverController
+    public popOverCtrl: PopoverController,
+    public formBuilder: FormBuilder,
   ) {
     this.navigationSubscription = this.router.events.subscribe((e: any) => {
       if (e instanceof NavigationEnd) {
@@ -175,9 +179,23 @@ export class EventPage implements OnDestroy {
     }
   }
 
+  ngOnInit() {
+    console.debug('ngOnInit');
+    this.loginForm = this.formBuilder.group({
+      username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      password: ['', Validators.nullValidator]
+    });
+  }
+
   ngOnDestroy() {
     console.debug('ngOnDestroy');
     this.clearNavSubscription();
+  }
+
+  generateUsername() {
+    this.loginForm.patchValue({
+      username: this.usergenerator.generateUsernameForZoe()
+    });
   }
 }
 
@@ -280,21 +298,21 @@ export class LoginModalComponent implements OnInit {
     });
   }
 
-  getSessionStateForContext(): UserSessionState {
+  getSessionStateForContext(ctx): UserSessionState {
     const state = new UserSessionState();
-    if (this.context === 'user') {
+    if (ctx === 'user') {
       state.currentEventID = this.currentEvent.eventID;
       state.isLoggedIn = true;
       state.username = this.loginForm.value.username;
     }
-    if (this.context === 'owner') {
+    if (ctx === 'owner') {
       state.currentEventID = this.currentEvent.eventID;
       state.isLoggedIn = true;
       state.username = this.loginForm.value.username;
       state.isCurator = true;
       state.isEventOwner = true;
     }
-    if (this.context === 'curator') {
+    if (ctx === 'curator') {
       state.currentEventID = this.currentEvent.eventID;
       state.isLoggedIn = true;
       state.username = this.loginForm.value.username;
@@ -303,43 +321,50 @@ export class LoginModalComponent implements OnInit {
     return state;
   }
 
-  async join() {
-    console.debug('join...');
-    if (this.loginForm.valid) {
+  async login(event: MusicEvent, ctx: string, username: string, password: string) {
+    if (ctx === 'user') {
+      this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
+      this.router.navigate([`ui/playlist-user`]);
+      this.presentToast('You have successfully joined this Event! Start contributing!');
+      await this.dismiss(null);
+    }
 
-      if (this.context === 'user') {
-        this.events.publish('sessionState:modified', this.getSessionStateForContext());
-        this.router.navigate([`ui/playlist-user`]);
-        this.presentToast('You have successfully joined this Event! Start contributing!');
+    if (ctx === 'owner') {
+      if (event.passwordOwner === password
+          && event.owner === username
+        ) {
+        this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
+        this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
+        this.presentToast('You have successfully loggedin as Event Owner');
         await this.dismiss(null);
+      } else {
+        this.presentToast('Please check your credentials');
       }
+    }
 
-      if (this.context === 'owner') {
-        if ( this.currentEvent.passwordOwner === this.loginForm.value.password ) {
-          this.events.publish('sessionState:modified', this.getSessionStateForContext());
-          this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
-          this.presentToast('You have successfully loggedin as Event Owner');
-          await this.dismiss(null);
-        } else {
-          this.presentToast('Please check your credentials');
-        }
-      }
-
-      if (this.context === 'curator' ) {
-        if (this.currentEvent.passwordCurator === this.loginForm.value.password) {
-          this.events.publish('sessionState:modified', this.getSessionStateForContext());
-          this.router.navigate([`ui/playlist-curator`]);
-          this.presentToast('You have successfully joined this Event as Curator. Rock it!!');
-          await this.dismiss(null);
-        } else {
-          this.presentToast('Please check your credentials');
-        }
+    if (ctx === 'curator' ) {
+      if (event.passwordCurator === password) {
+        this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
+        this.router.navigate([`ui/playlist-curator`]);
+        this.presentToast('You have successfully joined this Event as Curator. Rock it!!');
+        await this.dismiss(null);
+      } else {
+        this.presentToast('Please check your credentials');
       }
     }
   }
 
+
+  async join() {
+    console.debug('join...');
+
+    if (this.loginForm.valid) {
+      await this.login(this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
+    }
+  }
+
   ngOnInit() {
-    console.debug('ngOnInit');
+    console.debug('loginModal#ngOnInit');
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       password: ['', Validators.nullValidator]

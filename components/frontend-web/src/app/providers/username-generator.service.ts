@@ -22,7 +22,7 @@ export class UsernameGeneratorService {
 
   generateUsernameForZoe() {
     const animal = this.listOfAnimals[Math.floor(Math.random() * this.listOfAnimals.length)];
-    const num = Math.floor(Math.random() * 10000) + 1;
+    const num = Math.floor(Math.random() * 100) + 1;
     return 'Anon' + animal + num;
   }
 

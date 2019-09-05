@@ -4,7 +4,6 @@ import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CurrentTrackComponent } from './current-track/current-track.component';
 import { PlaylistItemComponent } from './playlist-item/playlist-item.component';
-import { LoginModalComponent } from './login-modal/login-modal.component';
 
 @NgModule({
   imports: [
@@ -12,7 +11,7 @@ import { LoginModalComponent } from './login-modal/login-modal.component';
     IonicModule,
     ReactiveFormsModule
   ],
-  declarations: [ LoginModalComponent, CurrentTrackComponent, PlaylistItemComponent ],
-  exports: [ LoginModalComponent, CurrentTrackComponent, PlaylistItemComponent ]
+  declarations: [ CurrentTrackComponent, PlaylistItemComponent ],
+  exports: [ CurrentTrackComponent, PlaylistItemComponent ]
 })
 export class SharedModule {}
