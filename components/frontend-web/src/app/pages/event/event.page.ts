@@ -22,6 +22,67 @@ export class EventPage implements OnDestroy, OnInit {
   loginForm: FormGroup;
   submitAttempt: boolean;
 
+  static getSessionStateForContext(ctx: string, eventID: string, username: string): UserSessionState {
+    const state = new UserSessionState();
+    if (ctx === 'user') {
+      state.currentEventID = eventID;
+      state.isLoggedIn = true;
+      state.username = username;
+    }
+    if (ctx === 'owner') {
+      state.currentEventID = eventID;
+      state.isLoggedIn = true;
+      state.username = username;
+      state.isCurator = true;
+      state.isEventOwner = true;
+    }
+    if (ctx === 'curator') {
+      state.currentEventID = eventID;
+      state.isLoggedIn = true;
+      state.username = username;
+      state.isCurator = true;
+    }
+    return state;
+  }
+
+  static login(component, event: MusicEvent, ctx: string, username: string, password: string) {
+    if (ctx === 'user') {
+      component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+      component.router.navigate([`ui/playlist-user`]);
+      component.presentToast('You have successfully joined this Event! Start contributing!');
+      if (component.dismiss) {
+        component.dismiss(null);
+      }
+    }
+
+    if (ctx === 'owner') {
+      if (event.passwordOwner === password && event.owner === username) {
+        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+        component.router.navigate(['ui/create-event']);
+        component.presentToast('You have successfully logged in as Event Owner');
+        if (component.dismiss) {
+          component.dismiss(null);
+        }
+      } else {
+        component.presentToast('Please check your credentials');
+      }
+    }
+
+    if (ctx === 'curator' ) {
+      if (event.passwordCurator === password) {
+        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+        component.router.navigate([`ui/playlist-curator`]);
+        component.presentToast('You have successfully joined this Event as Curator. Rock it!!');
+        if (component.dismiss) {
+          component.dismiss(null);
+        }
+      } else {
+        component.presentToast('Please check your credentials');
+      }
+    }
+  }
+
+
   constructor(
     public router: Router,
     private events: Events,
@@ -89,12 +150,12 @@ export class EventPage implements OnDestroy, OnInit {
             this.presentModal(info.data);
             break;
 
-            case 'switch':
-          // TODO
-          break;
+          case 'switch':
+            this.switchEvent();
+            break;
 
           case 'landing':
-          // TODO
+          this.router.navigate(['ui/landing']);
           break;
 
           default:
@@ -105,53 +166,52 @@ export class EventPage implements OnDestroy, OnInit {
     return await popover.present();
   }
 
-  formatDate(date) {
-    return moment(date).format('DD.MM.YYYY | HH:MM');
-  }
+  async switchEvent() {
+    console.debug('begin switchEvent');
 
-  editEvent() {
-    console.debug('editEvent');
-    this.router.navigateByUrl('/ui/create-event');
-  }
-
-  async deleteAlertConfirm() {
-    const alert = await this.alertController.create({
-      header: 'Delete Event!',
-      message: 'Are you sure you want to <strong>delete</strong> this event?',
+    const popup = await this.alertController.create({
+      header: 'Switch Event',
+      message: 'Please enter the ID of the event.<br>Look around, it should be advertised at the event location.<br>Ask your host!',
+      inputs: [
+        {
+          name: 'eventID',
+          type: 'text',
+          placeholder: 'demo'
+        },
+      ],
       buttons: [
         {
           text: 'Cancel',
           role: 'cancel',
           cssClass: 'secondary',
-          handler: (data) => {
-
-          }
         }, {
-          text: 'Okay',
-          handler: () => {
-            this.deleteEvent();
+          text: 'Go!',
+          handler: (result) => {
+            if (result && result.eventID) {
+              console.debug('landing: going to event %s', result.eventID);
+              this.router.navigate(['ui/event/' + result.eventID]);
+            }
           }
         }
       ]
     });
 
-    await alert.present();
+    await popup.present();
   }
 
 
-  deleteEvent() {
-    console.debug('deleteEvent');
-    this.feService.deleteEvent(this.event.eventID).subscribe((event) => {
-      console.debug('deleteEvent -> SUCCESS');
-      this.clearNavSubscription();
-      this.presentToast('You have successfully DELETED this event. Now redirecting to Landing page.');
-      this.events.publish('user:logout', { redirect: 'ui/landing' });
-    },
-      (err) => {
-        this.presentToast('ERROR: Event could not be deleted');
-        console.error('Calling server side delete event...FAILED', err);
-      });
+  formatDate(date) {
+    return moment(date).format('DD.MM.YYYY | HH:MM');
   }
+
+
+  join() {
+    console.debug('loginModal#join...');
+    if (this.loginForm.valid) {
+      EventPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
+    }
+  }
+
 
   logout() {
     this.events.publish('user:logout');
@@ -262,6 +322,7 @@ export class LoginModalComponent implements OnInit {
   submitAttempt: boolean;
 
 
+
   constructor(
     public modalController: ModalController,
     public feService: FEService,
@@ -298,68 +359,10 @@ export class LoginModalComponent implements OnInit {
     });
   }
 
-  getSessionStateForContext(ctx): UserSessionState {
-    const state = new UserSessionState();
-    if (ctx === 'user') {
-      state.currentEventID = this.currentEvent.eventID;
-      state.isLoggedIn = true;
-      state.username = this.loginForm.value.username;
-    }
-    if (ctx === 'owner') {
-      state.currentEventID = this.currentEvent.eventID;
-      state.isLoggedIn = true;
-      state.username = this.loginForm.value.username;
-      state.isCurator = true;
-      state.isEventOwner = true;
-    }
-    if (ctx === 'curator') {
-      state.currentEventID = this.currentEvent.eventID;
-      state.isLoggedIn = true;
-      state.username = this.loginForm.value.username;
-      state.isCurator = true;
-    }
-    return state;
-  }
-
-  async login(event: MusicEvent, ctx: string, username: string, password: string) {
-    if (ctx === 'user') {
-      this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
-      this.router.navigate([`ui/playlist-user`]);
-      this.presentToast('You have successfully joined this Event! Start contributing!');
-      await this.dismiss(null);
-    }
-
-    if (ctx === 'owner') {
-      if (event.passwordOwner === password
-          && event.owner === username
-        ) {
-        this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
-        this.router.navigate(['ui/event/' + this.currentEvent.eventID]);
-        this.presentToast('You have successfully loggedin as Event Owner');
-        await this.dismiss(null);
-      } else {
-        this.presentToast('Please check your credentials');
-      }
-    }
-
-    if (ctx === 'curator' ) {
-      if (event.passwordCurator === password) {
-        this.events.publish('sessionState:modified', this.getSessionStateForContext(ctx));
-        this.router.navigate([`ui/playlist-curator`]);
-        this.presentToast('You have successfully joined this Event as Curator. Rock it!!');
-        await this.dismiss(null);
-      } else {
-        this.presentToast('Please check your credentials');
-      }
-    }
-  }
-
-
-  async join() {
-    console.debug('join...');
-
+  join() {
+    console.debug('loginModal#join...');
     if (this.loginForm.valid) {
-      await this.login(this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
+      EventPage.login(this, this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
     }
   }
 

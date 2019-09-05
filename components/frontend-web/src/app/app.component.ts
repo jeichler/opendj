@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
     });
 
     this.events.subscribe('user:logout', data => {
-      console.debug('Received user:logout event');
+      console.debug('Received user:logout event', data);
       let redirectUrl;
       if ( data && data.redirect ) {
         redirectUrl = data.redirect;
@@ -74,6 +74,11 @@ export class AppComponent implements OnInit {
   logout() {
     this.events.publish('user:logout');
   }
+
+  home() {
+    this.events.publish('user:logout', {redirect: 'ui/landing'});
+  }
+
 
   async ngOnInit() {
     console.debug('ngOnInit()');
