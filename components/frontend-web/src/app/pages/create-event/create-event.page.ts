@@ -1,12 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Events, ToastController, IonContent } from '@ionic/angular';
+import { Events, ToastController, IonContent, AlertController } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { FormBuilder, FormGroup, Validators, FormControl, ValidatorFn, AbstractControl } from '@angular/forms';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
-import { EventIdValidator } from 'src/app/validators/eventId-validator';
+import { EventIdValidator } from 'src/app/validators/eventId-validator';
 
 @Component({
   selector: 'app-create-event',
@@ -20,7 +20,7 @@ export class CreateEventPage implements OnInit {
   event = new MusicEvent();
   userState: UserSessionState;
   submitAttempt: boolean;
-  isCreate: boolean;
+  showHelp = false;
 
   constructor(
     public router: Router,
@@ -28,21 +28,43 @@ export class CreateEventPage implements OnInit {
     public userDataService: UserDataService,
     public feService: FEService,
     public formBuilder: FormBuilder,
-    public toastController: ToastController
+    public toastController: ToastController,
+    public alertController: AlertController,
   ) { }
 
-  create({ value, valid }: { value: any, valid: boolean }) {
+  private async presentToast(data) {
+    const toast = await this.toastController.create({
+      message: data,
+      position: 'top',
+      color: 'light',
+      duration: 2000
+    });
+    toast.present();
+  }
+
+  private mapEventToForm(f: FormGroup, e: MusicEvent) {
+    f.patchValue(e);
+  }
+
+  public async toggleHelp() {
+    if (this.showHelp) {
+      this.showHelp = false;
+    } else {
+      this.showHelp = true;
+    }
+  }
+
+  public async create({ value, valid }: { value: any, valid: boolean }) {
     console.debug('create');
     console.debug(value);
 
     if (valid) {
       Object.assign(this.event, value);
 
-      this.feService.createEvent(this.event).subscribe((event) => {
+      await this.feService.createEvent(this.event).subscribe((event) => {
         console.debug('createEvent -> SUCCESS');
         this.event = event;
         this.mapEventToForm(this.eventForm, this.event);
-        this.isCreate = false;
 
         this.userState = new UserSessionState();
         this.userState.username = event.owner;
@@ -54,62 +76,92 @@ export class CreateEventPage implements OnInit {
         this.presentToast('You have successfully created this event. You have been also logged in as owner to this event.');
         this.content.scrollToTop();
       },
-      (err) => {
-        console.error('Calling server side create event...FAILED', err);
-        this.presentToast('ERROR creating this event');
-      });
+        (err) => {
+          console.error('Calling server side create event...FAILED', err);
+          this.presentToast('ERROR creating this event');
+        });
     } else {
       console.debug('Form is not valid, ignoring create request');
       this.presentToast('Form is not valid! Please submit all required data.');
     }
   }
 
-  update({ value, valid }: { value: any, valid: boolean }) {
+  public async update({ value, valid }: { value: any, valid: boolean }) {
     console.debug('update');
     if (valid) {
       Object.assign(this.event, value);
 
-      this.feService.updateEvent(this.event).subscribe((event) => {
+      await this.feService.updateEvent(this.event).subscribe((event) => {
         console.debug('updateEvent -> SUCCESS');
         this.event = event;
         this.mapEventToForm(this.eventForm, this.event);
-        this.isCreate = false;
         this.presentToast('You have successfully updated this event.');
         this.content.scrollToTop();
       },
-      (err) => {
-        console.error('Calling server side update event...FAILED', err);
-        this.presentToast('ERROR updating this event');
-      });
+        (err) => {
+          console.error('Calling server side update event...FAILED', err);
+          this.presentToast('ERROR updating this event');
+        });
     } else {
       console.debug('Form is not valid, ignoring update request');
       this.presentToast('Form is not valid! Please submit all required data.');
     }
   }
 
-  async presentToast(data) {
-    const toast = await this.toastController.create({
-      message: data,
-      position: 'top',
-      color: 'light',
-      duration: 2000
+  public async deleteAlertConfirm() {
+    const alert = await this.alertController.create({
+      header: 'Delete Event!',
+      message: 'Are you sure you want to <strong>delete</strong> this event?',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: (data) => {
+
+          }
+        }, {
+          text: 'Okay',
+          handler: () => {
+            this.deleteEvent();
+          }
+        }
+      ]
     });
-    toast.present();
+    await alert.present();
   }
 
-  mapEventToForm(f: FormGroup, e: MusicEvent) {
-    f.patchValue(e);
+  private async deleteEvent() {
+    console.debug('deleteEvent');
+    await this.feService.deleteEvent(this.event.eventID).subscribe(async (event) => {
+      console.debug('deleteEvent -> SUCCESS');
+      this.presentToast('You have successfully DELETED this event.');
+      this.userState = new UserSessionState();
+      this.events.publish('sessionState:modified', this.userState);
+      this.event = await this.feService.readEvent(null).toPromise();
+      this.mapEventToForm(this.eventForm, this.event);
+      this.content.scrollToTop();
+    },
+      (err) => {
+        this.presentToast('ERROR: Event could not be deleted');
+        console.error('Calling server side delete event...FAILED', err);
+      });
   }
 
-  async refreshState() {
+  public async refreshState() {
     console.debug('refreshState');
-    this.userState  = await this.userDataService.getUser();
+    this.userState = await this.userDataService.getUser();
+    // if the user is logged in as user or curator, he should not have access to this page -> redirect to playlist
+    if (this.userState.isLoggedIn && !this.userState.isEventOwner) {
+      this.router.navigateByUrl('ui/playlist-user');
+      return;
+    }
+    // if user is not logged in -> load new default event.
     if (!this.userState.isLoggedIn) {
-      this.isCreate = true;
       this.event = await this.feService.readEvent(null).toPromise();
     }
+    // if the user is the owner, load the event data
     if (this.userState.isLoggedIn && this.userState.isEventOwner) {
-      this.isCreate = false;
       this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
     }
     this.mapEventToForm(this.eventForm, this.event);
@@ -124,7 +176,7 @@ export class CreateEventPage implements OnInit {
     console.debug('ngOnInit');
     this.eventForm = this.formBuilder.group({
       // TODO: add this async validator ->  EventIdValidator
-      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required]), null ],
+      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required]), null],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: [''],
       maxUsers: [0, Validators.min(1)],
