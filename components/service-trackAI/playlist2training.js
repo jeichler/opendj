@@ -81,14 +81,51 @@ function loadPlaylistFromFile(fname) {
     return playlist;
 }
 
-function processPlaylistFile(fname) {
-    let playlist = loadPlaylistFromFile(fname);
-    let tracklist = createTracklist(playlist);
-    outputBegin();
-    deriveInputdataFromTracklist(tracklist);
-    outputEnd();
+function addPlaylistFileToTrackMap(fname, trackmap) {
+    let newPlaylist = loadPlaylistFromFile(fname);
+
+    for (let i = 0; i < newPlaylist.tracks.length; i++) {
+        let trackID = newPlaylist.tracks[i].id;
+        let track = newPlaylist.tracks[i];
+        trackmap.set(trackID, track);
+    }
+}
+
+function outputTrackMap(map) {
+    log.trace("begin outputTrackMap");
+
+    const trackArray = [];
+    for (const track of map.values()) {
+        trackArray.push(track);
+    }
+
+    log.trace("write out file");
+    const out = fs.createWriteStream('output.json');
+    out.write(JSON.stringify(trackArray, null, 3));
+    out.end();
+
+    log.trace("end outputTrackMap");
 }
 
 
 // Main:
-processPlaylistFile("rawdata/37i9dQZF1DWTJ7xPn4vNaz.json");
+var mapOfTracks = new Map();
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX8a1tdzq5tbM.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX9EM98aZosoy.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DWVWiyE9VDkCO.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX4Y4RhrZqHhr.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DXaXB8fQg7xif.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX7F6T2n2fegs.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX8FwnYE6PRvL.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX0IlCGIUGBsA.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX1rVvRgjX59F.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX1spT6G94GFC.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DWTJ7xPn4vNaz.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/19PgP2QSGPcm6Ve8VhbtpG.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/37i9dQZF1DWWzBc3TOlaAV.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/1R0T3Qg2tlXVTj32YRKsHL.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/439GRGyrRa8lcML6cuLtj0.json", mapOfTracks);
+addPlaylistFileToTrackMap("rawdata/0Dl1xDgujU3jfiQp93XQh8.json", mapOfTracks);
+//addPlaylistFileToTrackMap("rawdata/37i9dQZF1DX9wC1KY45plY.json", mapOfTracks);
+
+outputTrackMap(mapOfTracks);
