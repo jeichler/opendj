@@ -1,0 +1,19 @@
+# Demo Env is running in employee openshift
+# Due to kafka constraints with certs, the namespace MUST
+# be dfroehli-opendj-dev
+specific:
+  COMMON:
+    NAMESPACE: "dfroehli-opendj-prd"
+    DNS_BASENAME: "www.opendj.io"
+    GIT:
+      REF: "master"
+    CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-prd"
+  BACKEND_EVENTSTORE:
+    KAFKA:
+      OPERATOR_AVAILABLE: false
+      TOPIC_CMD:  oc --namespace dfroehli-opendj-dev rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+  PROVIDER_SPOTIFY:
+    SPOTIFY_CALLBACK_URL: "http://www.opendj.io/api/provider-spotify/v1/auth_callback"
+  FRONTEND_WEB:
+    USE_ACME_CERTS: "true"
+    USE_RUNTIME_IMAGE: false
