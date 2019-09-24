@@ -271,7 +271,7 @@ router.get('/auth_callback', async function(req, res) {
                 log.debug("authorization code granted for eventID=%s!", eventID);
 
                 // Set tokens on the Event Object to use it in later spotify API calls:
-                let continueWith = "/events/" + eventID + "/owner";
+                let continueWith = "/" + eventID;
                 updateEventTokensFromSpotifyBody(eventState, data.body);
                 fireEventStateChange(eventState);
 
