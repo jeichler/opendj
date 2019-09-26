@@ -36,7 +36,7 @@ def predict():
         newposition, cluster_id = executemodel.putTrackIntoList(newTrack, currentList)
         print ("newposition : "+str(newposition))
         res["position"] = newposition
-        res["newTrack"]["cluster_id"] = cluster_id.astype(str).astype(numpy.int32)
+        res["newTrack"]["cluster_id"] = cluster_id.item()
     except TypeError as e:
         res["position"] = 2
 
