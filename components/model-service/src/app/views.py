@@ -21,8 +21,8 @@ def predict():
 
     res = req
 
-    res = res[0]['position'] = 1
-    res = make_response(jsonify(currentList), 200)
+    res = res['position'] = 1
+    res = make_response(jsonify(res), 200)
     return res
 
 
