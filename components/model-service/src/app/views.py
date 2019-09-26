@@ -19,7 +19,9 @@ def predict():
 
     print ("name : "+name+" genreSimpleNum : "+genreSimpleNum+" danceability : "+danceability+" year : "+year)
 
-    currentList = name = req["currentList"]
+    res = req
+
+    res = res[0]['position'] = 1
     res = make_response(jsonify(currentList), 200)
     return res
 
