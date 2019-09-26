@@ -253,7 +253,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
                 });
 
                 log.trace("response from model service", JSON.stringify(response));
-                let body = JSON.parse(response.body);
+                let body = JSON.parse(response);
 
                 // We get the track with the new cluster_id attribute back, so we need to store it:
                 track = body.newTrack;
