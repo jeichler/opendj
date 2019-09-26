@@ -64,12 +64,11 @@ def predict(newTrack):
 def putTrackIntoList(newTrack, currentList):
 
     # First, identify the cluster of the track.
-    predictedCluster = predict(newTrack)
-    newTrack["cluster_id"] = predictedCluster
+    predictedCluster
 
     # Now decide where to put it in the list.
     if len(currentList) == 0:
-        return 0
+        return 0, predictedCluster
 
     else:
 
@@ -83,7 +82,7 @@ def putTrackIntoList(newTrack, currentList):
                 while currentList[i]["cluster_id"] == predictedCluster and i < len(currentList):
                     i += 1
 
-                return i
+                return i, predictedCluster
 
         existingClusters = {}
 
@@ -92,11 +91,9 @@ def putTrackIntoList(newTrack, currentList):
                 existingClusters[currentList[i]["cluster_id"]] = i
 
         if(len(existingClusters.keys())) == 1:
-            return len(currentList)
+            return len(currentList), predictedCluster
         else:
 
             # Exclude the first value, because we don't want to put the track at the beginning of the list
             position_index = random.randint(1, len(existingClusters.values()) - 1)
-            return list(existingClusters.values())[position_index]
-
-
+            return list(existingClusters.values())[position_index], predictedCluster
