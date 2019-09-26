@@ -196,6 +196,7 @@ export class CreateEventPage implements OnInit {
       pauseOnPlayError: [false],
       enableTrackLiking: [false],
       enableTrackHating: [false],
+      enableTrackAI: [false],
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false]

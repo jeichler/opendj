@@ -20,6 +20,7 @@ export class MusicEvent {
     pauseOnPlayError: boolean;
     enableTrackLiking: boolean;
     enableTrackHating: boolean;
+    enableTrackAI: boolean;
     demoAutoskip: number;
     demoNoActualPlaying: boolean;
     demoAutoFillEmptyPlaylist: boolean;
