@@ -76,7 +76,7 @@ def putTrackIntoList(newTrack, currentList):
 
         # Search for the predicted cluster in the current list
         for i in range(len(currentList)):
-            if currentList[i]["cluster_id"] == predictedCluster:
+            if currentList[i]["cluster_id"] == predictedCluster.astype(str).astype(int):
                 clusterExists = True
 
                 while currentList[i]["cluster_id"] == predictedCluster and i < len(currentList):
@@ -97,3 +97,4 @@ def putTrackIntoList(newTrack, currentList):
             # Exclude the first value, because we don't want to put the track at the beginning of the list
             position_index = random.randint(1, len(existingClusters.values()) - 1)
             return list(existingClusters.values())[position_index], predictedCluster
+
