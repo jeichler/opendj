@@ -39,7 +39,8 @@
             "happiness": 73,
             "bpm": 117,
             "genreSimple": "rock",
-            "genreSimpleNum": 62
+            "genreSimpleNum": 62,
+            "cluster_id": 34
         },
         {
             "id": "59WN2psjkt1tyaxjspN8fp",
@@ -60,7 +61,8 @@
             "happiness": 66,
             "bpm": 89,
             "genreSimple": "metal",
-            "genreSimpleNum": 52
+            "genreSimpleNum": 52,
+            "cluster_id": 34
         },
         {
             "id": "3HfB5hBU0dmBt8T0iCmH42",
@@ -81,6 +83,7 @@
             "happiness": 13,
             "bpm": 92,
             "genreSimple": "rock",
-            "genreSimpleNum": 62
+            "genreSimpleNum": 62,
+            "cluster_id": 34
         },
     }

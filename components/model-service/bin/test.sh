@@ -2,6 +2,7 @@
 
 
 
-curl -X POST \
-  -d "@sampleCall.json" \
+curl -v -X POST \
+  -d '{"hello": "world"}'  \
+  --header "Content-Type: application/json" \
   https://model-service-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/predict
