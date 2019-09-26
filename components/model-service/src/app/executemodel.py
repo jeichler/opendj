@@ -64,7 +64,7 @@ def predict(newTrack):
 def putTrackIntoList(newTrack, currentList):
 
     # First, identify the cluster of the track.
-    predictedCluster
+    predictedCluster = predict(newTrack)
 
     # Now decide where to put it in the list.
     if len(currentList) == 0:

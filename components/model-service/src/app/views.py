@@ -31,11 +31,14 @@ def predict():
     #newposition = random.randrange(0, listlen)
     #res["position"] = newposition
     # end random posiyioning logic
+    try :
+        newposition, cluster_id = executemodel.putTrackIntoList(newTrack, currentList)
+        print ("newposition : "+str(newposition))
+        res["position"] = newposition
+        res["newTrack"]["cluster_id"] = cluster_id.astype(str).astype(int)
+    except TypeError as e:
+        res["position"] = 2
 
-    newposition, cluster_id = executemodel.putTrackIntoList(newTrack, currentList)
-    print ("newposition : "+str(newposition))
-    res["position"] = newposition
-    res["newTrack"]["cluster_id"] = cluster_id.astype(str).astype(int)
     res = make_response(jsonify(res), 200)
     return res
 
