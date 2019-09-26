@@ -1,11 +1,14 @@
 from flask import render_template, flash, redirect
 from app import app
 import urllib
+import json
+import jsonify
 from urllib.error import HTTPError
 
 @app.route('/predict', methods=['GET', 'POST'])
-def index():
-  return '7'
+def predict():
+    return jsonify(request.json)
+
 
 @app.route('/health', methods=['GET'])
 def health():
