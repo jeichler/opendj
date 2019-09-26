@@ -77,7 +77,7 @@ def putTrackIntoList(newTrack, currentList):
 
         # Search for the predicted cluster in the current list
         for i in range(len(currentList)):
-            if currentList[i]["cluster_id"] == int(predictedCluster):
+            if currentList[i]["cluster_id"] == predictedCluster.astype(str).astype(int):
                 clusterExists = True
 
                 while currentList[i]["cluster_id"] == predictedCluster and i < len(currentList):
