@@ -1,7 +1,6 @@
 from flask import render_template, flash, redirect
 from app import app
 import urllib
-import json
 import jsonify
 from urllib.error import HTTPError
 

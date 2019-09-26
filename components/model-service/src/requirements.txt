@@ -21,5 +21,4 @@ termcolor==1.1.0
 Werkzeug==0.15.5
 wrapt==1.11.2
 WTForms==2.2.1
-jsonify
-json
+jsonify==0.5
