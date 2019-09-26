@@ -50,7 +50,7 @@ const PORT = process.env.PORT || 8090;
 
 // Interval we check for expired tokens:
 const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8081/api/provider-spotify/v1/";
-const TRACKAI_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://model-service:8080/predict";
+const TRACKAI_PROVIDER_URL = process.env.TRACKAI_PROVIDER_URL || "http://model-service:8080/predict";
 
 // Defaults:
 const DEFAULT_TEST_EVENT_CREATE = (process.env.DEFAULT_TEST_EVENT_CREATE || 'true') == 'true';
