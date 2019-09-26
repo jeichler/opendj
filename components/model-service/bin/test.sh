@@ -3,5 +3,5 @@
 
 
 curl -X POST \
-  -d "@request1.json" \
+  -d "@sampleCall.json" \
   https://model-service-dfroehli-opendj-dev.apps.ocp1.stormshift.coe.muc.redhat.com/predict
