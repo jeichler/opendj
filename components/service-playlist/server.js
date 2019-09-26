@@ -50,6 +50,7 @@ const PORT = process.env.PORT || 8090;
 
 // Interval we check for expired tokens:
 const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8081/api/provider-spotify/v1/";
+const TRACKAI_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://model-service:8080/predict";
 
 // Defaults:
 const DEFAULT_TEST_EVENT_CREATE = (process.env.DEFAULT_TEST_EVENT_CREATE || 'true') == 'true';
@@ -239,9 +240,37 @@ async function addTrack(event, playlist, provider, trackID, user) {
         else
             track.added_by = "?";
 
-        // TODO: Insert AI/ML Code here to find the best position for this new track in the playlist
-        // Until this is available, we simply added to the end:
-        playlist.nextTracks.push(track);
+        if (event.enableTrackAI) {
+            log.trace("TrackAI enabled - call model service at " + TRACKAI_PROVIDER_URL);
+
+            let pos = 0;
+
+            try {
+                let response = await request.post({
+                    url: TRACKAI_PROVIDER_URL,
+                    body: { 'newTrack': track, 'currentList': playlist.nextTracks },
+                    json: true
+                }, function(error, response, body) {
+                    log.log(body);
+                });
+
+                log.trace("response from model service", JSON.stringify(response));
+                let body = JSON.parse(response.body);
+
+                // We get the track with the new cluster_id attribute back, so we need to store it:
+                track = body.newTrack;
+                pos = body.position;
+            } catch (aiFailed) {
+                log.error("Calling model service failed", aiFailed);
+            }
+
+            log.debug("TrackAI enabled - adding new track as pos ", pos);
+            playlist.nextTracks.splice(pos, 0, track);
+        } else {
+            log.trace("TrackAI disabled, adding to the end of the list");
+            playlist.nextTracks.push(track);
+
+        }
     } catch (err) {
         log.error("getTrackDetailsForTrackID failed!", err);
         throw { code: "PLYLST-130", msg: "Could not get details for track. Err=" + JSON.stringify(err) };
