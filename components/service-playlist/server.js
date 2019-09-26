@@ -253,11 +253,13 @@ async function addTrack(event, playlist, provider, trackID, user) {
                 });
 
                 log.trace("response from model service", JSON.stringify(response));
-                let body = JSON.parse(response);
+                // let body = JSON.parse(response);
+                let body = response;
 
                 // We get the track with the new cluster_id attribute back, so we need to store it:
                 track = body.newTrack;
                 pos = body.position;
+                log.debug("position from model service", pos);
             } catch (aiFailed) {
                 log.error("Calling model service failed", aiFailed);
             }
