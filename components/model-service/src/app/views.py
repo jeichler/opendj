@@ -9,7 +9,7 @@ from urllib.error import HTTPError
 def predict():
     req = request.get_json(silent=True)
     print(req)
-    return req
+    return '7'
 
 
 @app.route('/health', methods=['GET'])
