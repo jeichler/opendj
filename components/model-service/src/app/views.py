@@ -21,12 +21,15 @@ def predict():
 
     print ("name : "+str(name)+" genreSimpleNum : "+str(genreSimpleNum)+" danceability : "+str(danceability)+" year : "+str(year))
 
+    newTrack = req["newTrack"]
+    currentList = req["currentList"]
     res = req
+    res["position"] = 2
 
     # random posiyioning logic
-    listlen = len(req['currentList'])
-    newposition = random.randrange(0, listlen)
-    res["position"] = newposition
+    #listlen = len(req['currentList'])
+    #newposition = random.randrange(0, listlen)
+    #res["position"] = newposition
     # end random posiyioning logic
 
     res = make_response(jsonify(res), 200)

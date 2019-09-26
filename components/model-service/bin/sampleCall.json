@@ -63,7 +63,7 @@
             "bpm": 89,
             "genreSimple": "metal",
             "genreSimpleNum": 52,
-            "cluster_id": 34
+            "cluster_id": 27
         },
         {
             "id": "3HfB5hBU0dmBt8T0iCmH42",
@@ -85,7 +85,7 @@
             "bpm": 92,
             "genreSimple": "rock",
             "genreSimpleNum": 62,
-            "cluster_id": 34
+            "cluster_id": 25
         }]
     }
   }
