@@ -3,6 +3,7 @@ from app import app
 import urllib
 import jsonify
 import json
+import random
 from flask import request
 from flask import jsonify, make_response
 from urllib.error import HTTPError
@@ -21,7 +22,10 @@ def predict():
 
     res = req
 
-    res["position"] = 1
+    listlen = len(req['currentList'])
+    newposition = random.randrange(0, listlen)
+    res["position"] = newposition
+
     res = make_response(jsonify(res), 200)
     return res
 
