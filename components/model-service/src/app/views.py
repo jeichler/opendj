@@ -13,10 +13,14 @@ def predict():
     print(req)
 
     name = req["newTrack"]["name"]
+    genreSimpleNum = req["newTrack"]["genreSimpleNum"]
+    danceability = req["newTrack"]["danceability"]
+    year = req["newTrack"]["year"]
 
-    print (name)
+    print ("name : "+name+" genreSimpleNum : "+genreSimpleNum+" danceability : "+danceability+" year : "+year)
 
-    res = make_response(jsonify(req), 200)
+    currentList = name = req["currentList"]
+    res = make_response(jsonify(currentList), 200)
     return res
 
 
