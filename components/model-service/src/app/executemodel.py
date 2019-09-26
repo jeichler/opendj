@@ -65,6 +65,7 @@ def putTrackIntoList(newTrack, currentList):
 
     # First, identify the cluster of the track.
     predictedCluster = predict(newTrack)
+    newTrack["cluster_id"] = predictedCluster
 
     # Now decide where to put it in the list.
     if len(currentList) == 0:
