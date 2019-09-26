@@ -246,9 +246,11 @@ async function addTrack(event, playlist, provider, trackID, user) {
             let pos = 0;
 
             try {
+                track.cluster_id = -1;
+
                 let response = await request.post({
                     url: TRACKAI_PROVIDER_URL,
-                    body: { 'newTrack': track, 'currentList': playlist.nextTracks },
+                    body: { 'newTrack': track, 'currentList': playlist.nextTracks, 'position': -42 },
                     json: true
                 });
 
