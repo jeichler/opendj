@@ -32,6 +32,9 @@ def predict():
     #res["position"] = newposition
     # end random posiyioning logic
 
+    newposition = executemodel.putTrackIntoList(newTrack, currentList)
+    print ("newposition : "+str(newposition))
+    res["position"] = newposition
     res = make_response(jsonify(res), 200)
     return res
 
