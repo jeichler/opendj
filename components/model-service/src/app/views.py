@@ -22,9 +22,11 @@ def predict():
 
     res = req
 
+    # random posiyioning logic
     listlen = len(req['currentList'])
     newposition = random.randrange(0, listlen)
     res["position"] = newposition
+    # end random posiyioning logic
 
     res = make_response(jsonify(res), 200)
     return res
