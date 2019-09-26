@@ -17,7 +17,7 @@ def predict():
     danceability = req["newTrack"]["danceability"]
     year = req["newTrack"]["year"]
 
-    print ("name : "+name+" genreSimpleNum : "+genreSimpleNum+" danceability : "+danceability+" year : "+year)
+    print ("name : "+str(name)+" genreSimpleNum : "+str(genreSimpleNum)+" danceability : "+str(danceability)+" year : "+str(year))
 
     res = req
 
