@@ -21,7 +21,7 @@ def predict():
 
     res = req
 
-    res = res['position'] = 1
+    res["position"] = 1
     res = make_response(jsonify(res), 200)
     return res
 
