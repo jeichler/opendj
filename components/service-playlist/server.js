@@ -250,8 +250,6 @@ async function addTrack(event, playlist, provider, trackID, user) {
                     url: TRACKAI_PROVIDER_URL,
                     body: { 'newTrack': track, 'currentList': playlist.nextTracks },
                     json: true
-                }, function(error, response, body) {
-                    log.log(body);
                 });
 
                 log.trace("response from model service", JSON.stringify(response));
