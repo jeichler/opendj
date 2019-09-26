@@ -16,7 +16,7 @@ Participants of an event can contribute to the playlist by adding tracks. Everyb
 The music is being played by a streaming provider, e.g. Spotify. OpenDJ is running in the internet and uses streaming provider APIs to execute the playlist on a local device (which might be connected to the PA system of a party location).  
 
 ## Try it out
-A prototype is up and running: [demo.opendj.io](http://demo.opendj.io)
+A prototype is up and running: [www.opendj.io/demo](https://www.opendj.io/demo)
 You can add tracks by using the blue "Add" button.
 In the demo, tracks are skipped every 20s (they are not actually being played). And if the playlist is empty, it is out-filled with some example tracks.  
 
