@@ -112,7 +112,8 @@ http://localhost:8081/api/service-playlist/v1/events/0/
 http://localhost:8081/api/service-playlist/v1/events/0/playlists/0
 
 
-http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
+http://dev.opendj.io/api/service-playlist/v1/events/demo/playlists/0
+
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/play
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/pause
 http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/next
