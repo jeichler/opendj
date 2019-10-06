@@ -46,10 +46,12 @@ export class LandingPage implements OnInit {
         }, {
           text: 'Go!',
           handler: (result) => {
+            let target = 'demo';
             if (result && result.eventID) {
-              console.debug('landing: going to event %s', result.eventID);
-              this.router.navigate(['ui/event/' + result.eventID]);
+              target = result.eventID;
             }
+            console.debug('landing: going to event %s', target);
+            this.router.navigate(['ui/event/' + target]);
           }
         }
       ]

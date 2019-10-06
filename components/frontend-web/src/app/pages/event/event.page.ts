@@ -206,8 +206,11 @@ export class EventPage implements OnDestroy, OnInit {
 
 
   join() {
-    console.debug('loginModal#join...');
+    console.debug('eventPage#join...');
     if (this.loginForm.valid) {
+      if (! this.loginForm.value.username) {
+        this.generateUsername();
+      }
       EventPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
     }
   }
@@ -242,7 +245,7 @@ export class EventPage implements OnDestroy, OnInit {
   ngOnInit() {
     console.debug('ngOnInit');
     this.loginForm = this.formBuilder.group({
-      username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      username: ['', Validators.nullValidator],
       password: ['', Validators.nullValidator]
     });
   }
