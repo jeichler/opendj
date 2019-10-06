@@ -30,12 +30,15 @@
                 <ion-icon name="trash" slot="start"></ion-icon>
                 Delete Event
             </ion-button>
+
+            <!-- Tooltip-Help is always on, no further help needed:
             <ion-button color="primary" (tap)='toggleHelp()' fill="solid" *ngIf="showHelp">
                 Help
             </ion-button>
             <ion-button color="primary" (tap)='toggleHelp()' fill="outline" *ngIf="!showHelp">
                 Help?
             </ion-button>
+-->
         </div>
     </ion-toolbar>
 </ion-header>
@@ -63,6 +66,17 @@
             <ion-list style="background: transparent !important;">
                 <ion-item-group>
                     <ion-item-divider mode="md">
+                        <ion-label>Instructions</ion-label>
+                    </ion-item-divider>
+                    <ion-item lines="none">
+                        <ion-label text-wrap>
+                            First, fill in the mandatory fields, the tooltips provide guidance. Second, press 'create event' button. Third, add your music provider, e.g. Spotify.
+                        </ion-label>
+                    </ion-item>
+                </ion-item-group>
+
+                <ion-item-group>
+                    <ion-item-divider mode="md">
                         <ion-label>Basics</ion-label>
                     </ion-item-divider>
 
@@ -88,7 +102,7 @@
 
                     <ion-item>
                         <ion-label>Link:</ion-label>
-                        <ion-input type="text" formControlName="url" text-right>
+                        <ion-input type="text" formControlName="url" text-right disabled="true">
                         </ion-input>
                         <ion-icon tooltip="The URL under which your event is accessible by your guests. 
                         You can't edit it, it is defined by the server once the event is created. 
@@ -164,11 +178,12 @@
 
                     <ion-item>
                         <ion-label>End:</ion-label>
-                        <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
+                        <ion-datetime disabled="true" displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
                         <ion-icon tooltip="When does the event end? Please note: all data of the event is delete 24 hours after the event ends." placement="left" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
+                    <!-- Duration is currently fixed to 24h: 
                     <ion-item>
                         <ion-label>Duration</ion-label>
                         <ion-input type="number" formControlName="maxDurationInMinutes" text-right>
@@ -177,6 +192,7 @@
                         <ion-icon tooltip="The duration of this event in minutes" placement="left" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+-->
 
                     <ion-item>
                         <ion-label text-wrap>Max tracks</ion-label>
@@ -199,13 +215,14 @@
                         <ion-label>Details</ion-label>
                     </ion-item-divider>
 
+                    <!-- Track AI advisor currently not used:                   
                     <ion-item>
                         <ion-label>Track AI</ion-label>
                         <ion-toggle color="primary" formControlName="enableTrackAI"></ion-toggle>
                         <ion-icon tooltip="Use Artificial Intelligence Algorithms to find a good fit for a new track." placement="left" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
-
+-->
                     <ion-item>
                         <ion-label>Duplicate tracks allowed</ion-label>
                         <ion-toggle color="primary" formControlName="allowDuplicateTracks"></ion-toggle>

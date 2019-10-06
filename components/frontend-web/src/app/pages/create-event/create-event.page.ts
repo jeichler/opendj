@@ -20,7 +20,7 @@ export class CreateEventPage implements OnInit {
   event = new MusicEvent();
   userState: UserSessionState;
   submitAttempt: boolean;
-  showHelp = false;
+  showHelp = true;
 
   constructor(
     public router: Router,
