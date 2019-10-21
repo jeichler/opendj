@@ -123,8 +123,6 @@
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                       - name: PORT
                         value: "{{ENV.SERVICE_WEB.PORT | default('8080')}}" 
-                      - name: EVENT_URL
-                        value: "{{ENV.COMMON.DNS_BASENAME}}| default('localhost:8080')"
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:
