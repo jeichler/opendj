@@ -480,6 +480,7 @@ async function skip(event, playlist) {
         if (progressPercentage >= event.progressPercentageRequiredForEffectivePlaylist) {
             log.debug("adding current track to effectivePlaylist")
             event.effectivePlaylist.push(playlist.currentTrack);
+            fireEventChangedEvent(event);
         } else {
             log.debug("Track was skipped at %s\%, which is below required %s\% for effective playlist, so NOT adding it",
                 progressPercentage, event.progressPercentageRequiredForEffectivePlaylist);
