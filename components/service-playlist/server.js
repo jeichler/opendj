@@ -53,8 +53,8 @@ const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localho
 const TRACKAI_PROVIDER_URL = process.env.TRACKAI_PROVIDER_URL || "http://model-service:8080/predict";
 
 // Defaults:
-const DEFAULT_TEST_EVENT_CREATE = (process.env.DEFAULT_TEST_EVENT_CREATE || 'true') == 'true';
-const DEFAULT_TEST_EVENT_ID = (process.env.DEFAULT_TEST_EVENT_ID || '0');
+const TEST_EVENT_CREATE = (process.env.TEST_EVENT_CREATE || 'true') == 'true';
+const TEST_EVENT_ID = (process.env.TEST_EVENT_ID || '0');
 const DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
 const DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
 const DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
@@ -63,6 +63,7 @@ const MOCKUP_AUTOSKIP = parseInt(process.env.MOCKUP_AUTOSKIP_SECONDS || '0');
 const MOCKUP_NO_ACTUAL_PLAYING = (process.env.MOCKUP_NO_ACTUAL_PLAYING || 'false') == 'true';
 const INTERNAL_POLL_INTERVAL = parseInt(process.env.INTERNAL_POLL_INTERVAL || '10000');
 const PAUSE_ON_PLAYERROR = (process.env.PAUSE_ON_PLAYERROR || 'true') == 'true';
+const EVENT_URL = process.env.EVENT_URL || "localhost:8080";
 
 const EVENT_PROTOTYPE = {
     eventID: "",
@@ -764,7 +765,7 @@ async function validateEvent(event, isCreate) {
     }
 
     // Adjust URL:
-    event.url = "www.opendj.io/" + event.eventID;
+    event.url = EVENT_URL + "/" + event.eventID;
 
     if (listOfValidationErrors.length > 0) {
         log.trace("Throwing validationErrors");
@@ -1188,14 +1189,14 @@ setImmediate(async function() {
         gridEvents = await connectToGrid("EVENTS");
         gridPlaylists = await connectToGrid("PLAYLISTS");
 
-        if (DEFAULT_TEST_EVENT_CREATE) {
-            let testEvent = await getEventForEventID(DEFAULT_TEST_EVENT_ID);
+        if (TEST_EVENT_CREATE) {
+            let testEvent = await getEventForEventID(TEST_EVENT_ID);
             if (testEvent) {
                 log.warn("Test event already present");
             } else {
                 log.trace("Creating test event....");
                 testEvent = createEmptyEvent();
-                testEvent.eventID = DEFAULT_TEST_EVENT_ID;
+                testEvent.eventID = TEST_EVENT_ID;
                 testEvent.name = "Demo Event";
                 testEvent.owner = "OpenDJ";
                 await fireEventChangedEvent(testEvent);

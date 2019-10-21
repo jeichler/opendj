@@ -20,6 +20,7 @@ specific:
 
       SERVICE_PLAYLIST:
             LOG_LEVEL: "debug"
+            TEST_EVENT_ID: "demo"
             DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
             MOCKUP_NO_ACTUAL_PLAYING: "true"
             MOCKUP_AUTOSKIP_SECONDS: "20"
