@@ -121,6 +121,8 @@
                         value: "{{ENV.SERVICE_HOUSEKEEPING.LOG_LEVEL | default('info')}}"
                       - name: EVENT_STORAGE
                         value: "{{ENV.SERVICE_HOUSEKEEPING.EVENT_STORAGE | default('/tmp')}}" 
+                      - name: CRONTAB
+                        value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('42 42 * * * *')}}" 
                       - name: DATAGRID_URL
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                     imagePullPolicy: IfNotPresent

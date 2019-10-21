@@ -11,9 +11,9 @@ const cron = require('node-cron');
 // ----------------------------------------------------------------------------------
 
 log.level = process.env.LOG_LEVEL || "trace";
-const ENV_DATAGRID_URL = process.env.ENV_DATAGRID_URL || "localhost:11222"
-const ENV_EVENT_STORAGE = process.env.ENV_EVENT_STORAGE || "./events/"
-
+const ENV_DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const ENV_EVENT_STORAGE = process.env.EVENT_STORAGE || "./events/"
+const ENV_CRONTAB = process.env.CRONTAB
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -184,7 +184,7 @@ async function checkEvents() {
 
 async function main() {
     try {
-        log.info("Connecting to datagrid...");
+        log.info("BEGIN HOUSEKEEPING");
         gridEvents = await connectToGrid("EVENTS");
         gridPlaylists = await connectToGrid("PLAYLISTS");
         gridProviderSpotify = await connectToGrid("PROVIDER_SPOTIFY_STATE");
@@ -192,11 +192,12 @@ async function main() {
 
         await checkEvents();
 
-        log.info("Disconnecting from datagrid...");
+        log.debug("Disconnecting from datagrid...");
         gridEvents.disconnect();
         gridPlaylists.disconnect();
         gridProviderSpotify.disconnect();
 
+        log.info("END HOUSEKEEPING");
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("main failed with err %s", err);
@@ -206,6 +207,10 @@ async function main() {
     }
 }
 
-setImmediate(main);
-
-// cron.schedule('* * * * *', main);
+if (ENV_CRONTAB) {
+    log.info("Using crontab %s", ENV_CRONTAB);
+    cron.schedule(ENV_CRONTAB, main);
+} else {
+    log.info("No crontab - executing once");
+    setImmediate(main);
+}
