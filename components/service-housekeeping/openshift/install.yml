@@ -122,24 +122,11 @@
                       - name: EVENT_STORAGE
                         value: "{{ENV.SERVICE_HOUSEKEEPING.EVENT_STORAGE | default('/tmp')}}" 
                       - name: CRONTAB
-                        value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('42 42 * * * *')}}" 
+                        value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('0,30 * * * * *')}}" 
                       - name: DATAGRID_URL
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                     imagePullPolicy: IfNotPresent
                     name: service-housekeeping
-                    ports:
-                      - containerPort: 8080
-                        protocol: TCP
-                    readinessProbe:
-                      failureThreshold: 3
-                      httpGet:
-                        path: /api/service-housekeeping/v1/ready
-                        port: 8080
-                        scheme: HTTP
-                      initialDelaySeconds: 1
-                      periodSeconds: 10
-                      successThreshold: 1
-                      timeoutSeconds: 1
                     resources:
                       limits:
                         cpu: 100m
