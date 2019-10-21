@@ -82,7 +82,7 @@ async function addCUDListenerForGrid(grid, listener) {
 
 async function connectToDatagrid() {
     log.info("Connecting to datagrid...");
-    gridEvents = await connectToGrid("EVENT");
+    gridEvents = await connectToGrid("EVENTS");
     gridPlaylists = await connectToGrid("PLAYLISTS");
 
 
