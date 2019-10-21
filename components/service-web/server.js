@@ -65,11 +65,10 @@ async function getFromGrid(grid, key) {
 }
 
 function handleGridError(grid, err) {
-    log.error("Grid error: %s", err);
-    log.error("grid=%s", JSON.stringify(grid));
+    log.fatal("!!! Grid error", err);
     readyState.datagridClient = false;
     readyState.lastError = err;
-    //TODO: Try to reconnect
+    process.exit(44);
 }
 
 async function addCUDListenerForGrid(grid, listener) {

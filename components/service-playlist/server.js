@@ -54,7 +54,7 @@ const TRACKAI_PROVIDER_URL = process.env.TRACKAI_PROVIDER_URL || "http://model-s
 
 // Defaults:
 const TEST_EVENT_CREATE = (process.env.TEST_EVENT_CREATE || 'true') == 'true';
-const TEST_EVENT_ID = (process.env.TEST_EVENT_ID || '0');
+const TEST_EVENT_ID = (process.env.TEST_EVENT_ID || 'demo');
 const DEFAULT_AUTOFILL_EMPTY_PLAYLIST = (process.env.DEFAULT_AUTOFILL_EMPTY_PLAYLIST || 'true') == 'true';
 const DEFAULT_IS_PLAYING = (process.env.DEFAULT_IS_PLAYING || 'true') == 'true';
 const DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST = parseInt(process.env.DEFAULT_PROGRESS_PERCENTAGE_REQUIRED_FOR_EFFECTIVE_PLAYLIST || '75');
@@ -1105,11 +1105,10 @@ function putIntoGridAsync(grid, key, value) {
 }
 
 function handleGridError(grid, err) {
-    log.error("Grid error: %s", err);
-    log.error("grid=%s", JSON.stringify(grid));
+    log.fatal("!!! Grid error !!!", err);
     readyState.datagridClient = false;
     readyState.lastError = err;
-    //TODO: Try to reconnect
+    process.exit(44);
 }
 
 async function fireEventChangedEvent(event) {

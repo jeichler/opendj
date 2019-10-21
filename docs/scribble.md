@@ -142,6 +142,9 @@ oc adm prune builds --confirm
 oc adm prune deployments --confirm
 oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --registry-url https://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/  --force-insecure=true
 
+# ETCD Health Check
+[root@ocp1master2 ~]# etcdctl3 --endpoints="https://172.16.10.11:2379,https://172.16.10.12:2379,https://172.16.10.13:2379" endpoint health
+
 
 # IONIC
 sudo npm install -g ionic --save

@@ -40,7 +40,7 @@ async function connectToCache(name) {
         let port = splitter[1];
         cache = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
         readyState.datagridClient = true;
-        log.info("connected to grid %s", name);
+        log.debug("connected to grid %s", name);
     } catch (err) {
         readyState.datagridClient = false;
         readyState.lastError = err;
@@ -48,6 +48,27 @@ async function connectToCache(name) {
     }
 
     return cache;
+}
+
+function disconnectFromCache(cache) {
+    if (cache) {
+        try {
+            cache.disconnect();
+        } catch (err) {
+            log.debug("disconnectFromCache - err ignored", err);
+        }
+    }
+
+}
+
+async function connectAllCaches() {
+    log.trace("begin connectAllCaches");
+    disconnectFromCache(cacheTracks);
+    disconnectFromCache(cacheState);
+    cacheTracks = await connectToCache("TRACKS");
+    cacheState = await connectToCache("PROVIDER_SPOTIFY_STATE");
+    log.info("CACHES CONNECTED");
+    log.trace("end connectAllCaches");
 }
 
 async function getFromCache(cache, key) {
@@ -92,7 +113,7 @@ function handleCacheError(cache, err) {
     log.error("cache=%s", JSON.stringify(cache));
     readyState.datagridClient = false;
     readyState.lastError = err;
-    //TODO: Try to reconnect
+    handleFatalError();
 }
 
 // --------------------------------------------------------------------------
@@ -366,7 +387,8 @@ async function refreshExpiredTokens() {
         readyState.refreshExpiredTokens = true;
     } catch (err) {
         readyState.refreshExpiredTokens = false;
-        log.fatal("refreshExpiredTokens failed with err %s", err)
+        log.fatal("!!! refreshExpiredTokens failed with err %s", err)
+        handleFatalError();
     }
 
     log.trace("refreshExpiredTokens end");
@@ -837,6 +859,11 @@ if (COMPRESS_RESULT == 'true') {
 
 app.use(cors());
 
+
+function handleFatalError() {
+    process.exit(44);
+}
+
 function handleError(err, response) {
     log.error('Error: ' + err);
     if (err.code && err.msg) {
@@ -1026,9 +1053,8 @@ app.use("/api/provider-spotify/v1", router);
 setImmediate(async function() {
     try {
         await loadSimplifiedGenresFromFile();
-        cacheTracks = await connectToCache("TRACKS");
-        cacheState = await connectToCache("PROVIDER_SPOTIFY_STATE");
 
+        await connectAllCaches();
 
         log.info("Initial token refresh");
         await refreshExpiredTokens();
