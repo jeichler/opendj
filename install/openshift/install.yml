@@ -34,4 +34,5 @@
 - import_playbook: ../../components/provider-spotify/openshift/install.yml
 - import_playbook: ../../components/service-playlist/openshift/install.yml
 - import_playbook: ../../components/service-web/openshift/install.yml
+- import_playbook: ../../components/service-housekeeping/openshift/install.yml
 - import_playbook: ../../components/frontend-web/openshift/install.yml
