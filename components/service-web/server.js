@@ -39,7 +39,7 @@ async function connectToGrid(name) {
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        grid = await datagrid.client([{ host: host, port: port }], { gridName: name, mediaType: 'application/json' });
+        grid = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
         readyState.datagridClient = true;
         log.debug("connectToGrid grid=%s client=%s", name, grid);
         log.info("connected to grid %s", name);
