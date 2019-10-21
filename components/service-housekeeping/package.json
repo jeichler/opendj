@@ -1,0 +1,17 @@
+{
+    "name": "service-housekeeping",
+    "version": "1.0.0",
+    "scripts": {
+        "start": " node ."
+    },
+    "main": "./housekeeper.js",
+    "files": [
+        "package.json",
+        "housekeeper.js"
+    ],
+    "dependencies": {
+        "infinispan": "^0.6.0",
+        "node-cron": "^2.0.3",
+        "log4js": "^4.5.1"
+    }
+}

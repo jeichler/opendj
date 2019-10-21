@@ -30,13 +30,12 @@ common:
     LIMIT_MEMORY: "512Mi"
     STORAGE_SIZE: "1Gi"
 
-
-
   PROVIDER_SPOTIFY:
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
 
+    
   FRONTEND_WEB:
 # Do not specific host - use relative hostname to allow switch between http/https:  
     WEBSOCKET_HOST: ""
