@@ -135,7 +135,7 @@ async function checkEvent(event) {
             log.trace("event = ", JSON.stringify(event));
         }
 
-        await fixEventEnd(event);
+        //        await fixEventEnd(event);
         await retrievePlaylists(event);
         await exportEvent(event);
         if (Date.now() > Date.parse(event.eventEndsAt)) {
