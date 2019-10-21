@@ -1,4 +1,3 @@
-
 .event-form-wrapper {
     text-align: center;
     max-width: 50vw;
@@ -6,20 +5,28 @@
 }
 
 @media only screen and (max-width: 600px) {
-.event-form-wrapper {
-    max-width: 100vw;
-}
+    .event-form-wrapper {
+        max-width: 100vw;
+    }
 }
 
-
-.item, .list, .item-content, .item-complex {
+.item,
+.list,
+.item-content,
+.item-complex {
     --ion-background-color: transparent !important;
 }
 
 .item-label {
-    color: #aaa;
+    color: #fff;
 }
 
-ion-item{ --border-color: #333; }
+ion-item {
+    --border-color: #333;
+}
 
-ion-item-divider {font-size: 20px; color: #3880ff; margin-top: 20px;}
+ion-item-divider {
+    font-size: 20px;
+    color: #3880ff;
+    margin-top: 20px;
+}

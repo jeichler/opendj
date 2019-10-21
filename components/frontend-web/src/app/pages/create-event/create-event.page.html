@@ -102,7 +102,7 @@
 
                     <ion-item>
                         <ion-label>Link:</ion-label>
-                        <ion-input type="text" formControlName="url" text-right disabled="true">
+                        <ion-input type="text" formControlName="url" text-right>
                         </ion-input>
                         <ion-icon tooltip="The URL under which your event is accessible by your guests. 
                         You can't edit it, it is defined by the server once the event is created. 
@@ -178,7 +178,7 @@
 
                     <ion-item>
                         <ion-label>End:</ion-label>
-                        <ion-datetime disabled="true" displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
+                        <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
                         <ion-icon tooltip="When does the event end? Please note: all data of the event is delete 24 hours after the event ends." placement="left" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>

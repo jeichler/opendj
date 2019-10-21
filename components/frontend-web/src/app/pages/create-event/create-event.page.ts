@@ -176,9 +176,9 @@ export class CreateEventPage implements OnInit {
     console.debug('ngOnInit');
     this.eventForm = this.formBuilder.group({
       // TODO: add this async validator ->  EventIdValidator
-      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-z0-9]*'), Validators.required]), null],
+      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-zA-Z0-9]*'), Validators.required]), null],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
-      url: [''],
+      url: [{value: '', disabled: true}],
       maxUsers: [0, Validators.min(1)],
       owner: ['', Validators.required],
       passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
@@ -188,7 +188,7 @@ export class CreateEventPage implements OnInit {
       maxDurationInMinutes: [0, Validators.min(10)],
       maxTracksInPlaylist: [0, Validators.min(2)],
       eventStartsAt: [new Date().toISOString(), Validators.required],
-      eventEndsAt: [new Date().toISOString(), Validators.required],
+      eventEndsAt: [{value: '', disabled: true}, Validators.nullValidator],
       allowDuplicateTracks: [false],
       progressPercentageRequiredForEffectivePlaylist: [false],
       beginPlaybackAtEventStart: [false],
@@ -201,7 +201,6 @@ export class CreateEventPage implements OnInit {
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false]
     });
-
   }
 
 }
