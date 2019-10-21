@@ -173,8 +173,18 @@
                         path: /api/provider-spotify/v1/ready
                         port: 8080
                         scheme: HTTP
-                      initialDelaySeconds: 1
-                      periodSeconds: 10
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      successThreshold: 1
+                      timeoutSeconds: 1
+                    livenessProbe:
+                      failureThreshold: 3
+                      httpGet:
+                        path: /api/provider-spotify/v1/health
+                        port: 8080
+                        scheme: HTTP
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
                       successThreshold: 1
                       timeoutSeconds: 1
                     resources:
