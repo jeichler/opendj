@@ -19,7 +19,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: service-web
             name: service-web
@@ -36,7 +35,6 @@
           kind: BuildConfig
           apiVersion: build.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: service-web
             name: service-web
@@ -160,7 +158,6 @@
           kind: Service
           apiVersion: v1
           metadata:
-            annotations:
             labels:
               app: service-web
             name: service-web

@@ -32,7 +32,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web-s2i-builder
@@ -61,7 +60,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web-runtime-base
@@ -90,7 +88,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web-artifact
@@ -110,7 +107,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web
@@ -128,7 +124,6 @@
           kind: BuildConfig
           apiVersion: build.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web-s2i
@@ -183,7 +178,6 @@
           kind: BuildConfig
           apiVersion: build.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web-runtime
@@ -417,7 +411,6 @@
           kind: Service
           apiVersion: v1
           metadata:
-            annotations:
             labels:
               app: frontend-web
             name: frontend-web

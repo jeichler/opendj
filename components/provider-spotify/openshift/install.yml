@@ -34,7 +34,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: provider-spotify
             name: provider-spotify
@@ -51,7 +50,6 @@
           kind: BuildConfig
           apiVersion: build.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: provider-spotify
             name: provider-spotify
@@ -209,7 +207,6 @@
           kind: Service
           apiVersion: v1
           metadata:
-            annotations:
             labels:
               app: provider-spotify
             name: provider-spotify

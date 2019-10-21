@@ -27,7 +27,6 @@
           kind: ImageStream
           apiVersion: image.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: service-playlist
             name: service-playlist
@@ -43,7 +42,6 @@
           kind: BuildConfig
           apiVersion: build.openshift.io/v1
           metadata:
-            annotations:
             labels:
               app: service-playlist
             name: service-playlist
@@ -179,7 +177,6 @@
           kind: Service
           apiVersion: v1
           metadata:
-            annotations:
             labels:
               app: service-playlist
             name: service-playlist
