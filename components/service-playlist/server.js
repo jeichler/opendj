@@ -73,7 +73,7 @@ const EVENT_PROTOTYPE = {
     passwordCurator: "opendj",
     passwordUser: "",
     maxUsers: 100,
-    maxDurationInMinutes: 3600,
+    maxDurationInMinutes: 2880, //48h
     maxTracksInPlaylist: 100,
     eventStartsAt: "",
     eventEndsAt: "",
@@ -114,10 +114,10 @@ function createEmptyEvent() {
     log.trace("begin createEmptyEvent");
     let event = JSON.parse(JSON.stringify(EVENT_PROTOTYPE));
     let now = new Date();
-
+    let end = new Date();
+    end.setTime(now.getTime() + event.maxDurationInMinutes * 60 * 1000);
     event.eventStartsAt = now.toISOString();
-    event.eventEndsAt = now.toISOString();
-    //    event.eventEndsAt = new Date(now.value + event.maxDurationInMinutes * 60 * 1000).toISOString();
+    event.eventEndsAt = end.toISOString();
 
     log.trace("end createEmptyEvent");
     return event;
@@ -763,6 +763,7 @@ async function validateEvent(event, isCreate) {
     log.trace("begin validateEvent isCreate=%s", isCreate);
     let listOfValidationErrors = new Array();
 
+    event.eventID = event.eventID.toLowerCase();
     if (isCreate) {
         // check if ID is existing:
         let otherEvent = await getEventForEventID(event.eventID);
@@ -1061,7 +1062,7 @@ async function connectToGrid(name) {
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        grid = await datagrid.client([{ host: host, port: port }], { gridName: name, mediaType: 'application/json' });
+        grid = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
         readyState.datagridClient = true;
         log.info("connected to grid %s", name);
     } catch (err) {
@@ -1136,43 +1137,49 @@ async function cleverCheckEvents() {
     // The approach:
     // under the key "-1", we store a timestamp on when the last check was run.
     // if it is smaller then poll period, we are good
-    // if it is greater then poll period, we try to update it (with verion)
+    // if it is greater then poll period, we try to update it (with version)
     // if the update success, we did win and perform the check
 
-    let entry = await gridEvents.getWithMetadata("-1");
-    let now = new Date();
-    if (entry) {
-        log.trace("Last check was performed %s - now is %s", entry.value, now.toISOString());
-        let lastCheck = new Date(entry.value);
-        let delta = now.valueOf() - lastCheck.valueOf();
+    try {
+        let entry = await gridEvents.getWithMetadata("-1");
+        log.trace("entry = ", JSON.stringify(entry));
+        let now = new Date();
+        if (entry) {
+            log.trace("Last check was performed %s - now is %s", entry.value, now.toISOString());
+            let lastCheck = new Date(entry.value);
+            let delta = now.valueOf() - lastCheck.valueOf();
 
-        if (delta < INTERNAL_POLL_INTERVAL) {
-            log.trace("Last check was performed %s ago which is below internal poll interval of %s msec - nothing to do", delta, INTERNAL_POLL_INTERVAL);
-        } else {
-            log.trace("Last check is %s msec ago and above %s msec - try to enter crit sec with opt lock...", delta, INTERNAL_POLL_INTERVAL);
-            let replaceOK = await gridEvents.replaceWithVersion("-1", now.toISOString(), entry.version);
-            if (replaceOK) {
-                log.info("cleverCheckEvents - do the check");
-                let start = Date.now();
-                await checkEvents();
-                let stop = Date.now();
-                let duration = stop - start;
-                if (duration > INTERNAL_POLL_INTERVAL) {
-                    log.fatal("!!!! checkEvents took %s msec which is longer then poll internval of %s", duration, INTERNAL_POLL_INTERVAL);
-                    process.exit(43);
-                } else {
-                    log.info("checkEvents took %s msec", duration);
-                }
-
+            if (delta < INTERNAL_POLL_INTERVAL) {
+                log.trace("Last check was performed %s ago which is below internal poll interval of %s msec - nothing to do", delta, INTERNAL_POLL_INTERVAL);
             } else {
-                log.trace("replace did not work - somebody else was faster, we can ignore this");
-            }
-        }
+                log.trace("Last check is %s msec ago and above %s msec - try to enter crit sec with opt lock=>%s<", delta, INTERNAL_POLL_INTERVAL, JSON.stringify(entry.version));
+                let replaceOK = await gridEvents.replaceWithVersion("-1", now.toISOString(), entry.version);
+                if (replaceOK) {
+                    log.info("cleverCheckEvents - do the check");
+                    let start = Date.now();
+                    await checkEvents();
+                    let stop = Date.now();
+                    let duration = stop - start;
+                    if (duration > INTERNAL_POLL_INTERVAL) {
+                        throw "checkEvents took %s msec which is longer then poll interval of %s", duration, INTERNAL_POLL_INTERVAL;
+                    } else {
+                        log.info("checkEvents took %s msec", duration);
+                    }
 
-    } else {
-        log.info("lastCheck Timestmap not present - creating it");
-        await gridEvents.putIfAbsent("-1", now.toISOString());
+                } else {
+                    log.trace("replace did not work - somebody else was faster, we can ignore this");
+                }
+            }
+
+        } else {
+            log.info("lastCheck Timestmap not present - creating it");
+            await gridEvents.putIfAbsent("-1", now.toISOString());
+        }
+    } catch (err) {
+        log.fatal("!!! cleverCheckEvents failed", err);
+        process.exit(43);
     }
+
 
     log.trace("end cleverCheckEvents");
 }
@@ -1187,7 +1194,7 @@ async function cleverCheckEvents() {
 setImmediate(async function() {
     try {
         log.info("Connecting to datagrid...");
-        gridEvents = await connectToGrid("EVENT");
+        gridEvents = await connectToGrid("EVENTS");
         gridPlaylists = await connectToGrid("PLAYLISTS");
 
         if (DEFAULT_TEST_EVENT_CREATE) {
