@@ -91,8 +91,34 @@ async function connectToDatagrid() {
 
     log.debug("Connecting to datagrid...DONE");
     readyState.datagridClient = true;
-
 }
+
+async function checkGridConnection() {
+    log.trace("begin checkGridConnection");
+    let result = false;
+    for (let i = 0; i < 3; i++) {
+
+        try {
+            await gridEvents.get("-1");
+            readyState.datagridClient = true;
+            readyState.lastError = "";
+            result = true;
+        } catch (err) {
+            readyState.datagridClient = false;
+            readyState.lastError = err;
+            log.error("checkGridConnection failed - try to reconnect", err);
+            try {
+                await connectToDatagrid();
+            } catch (reconnectError) {
+                log.debug("checkGridConnection: re-connect error ignored", reconnectError);
+            }
+        }
+    }
+
+    log.trace("end checkGridConnection result=", result);
+    return result;
+}
+
 
 async function onPlaylistModified(key, entryVersion, listenerID) {
     log.trace("begin onPlaylistModified key=%s", key);
@@ -308,17 +334,23 @@ io.of("/event/0")
 // -----------------------------------------------------------------------
 
 
-router.get('/ready', function(req, res) {
-    log.trace("ready begin");
+async function readyAndHealthCheck(req, res) {
+    log.trace("begin readyAndHealthCheck");
     // Default: not ready:
-    var status = 500;
+    let status = 500;
+    let gridOkay = await checkGridConnection();
     if (readyState.datagridClient &&
-        readyState.refreshExpiredTokens) {
+        readyState.websocket &&
+        gridOkay) {
         status = 200;
     }
 
     res.status(status).send(JSON.stringify(readyState));
-});
+    log.trace("end readyAndHealthCheck status=", status);
+}
+
+router.get('/ready', readyAndHealthCheck);
+router.get('/health', readyAndHealthCheck);
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
