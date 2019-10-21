@@ -737,20 +737,11 @@ async function deleteEvent(eventID) {
     if (event) {
         log.debug("deleteEvent %s - found in grid", eventID);
 
-        // TODO: Do we want to stop the current track, if playing?
-
-        if (event.playlists && event.playlists.length > 0) {
-            log.debug("Removing playlist for event %s", eventID);
-            for (let playlistID of event.playlists) {
-                log.debug("Remove playlist %s from grid", playlistID);
-                await removeFromGrid(gridPlaylists, event.eventID + ":" + playlistID);
-            };
-        } else {
-            log.trace("no playlists to delete");
-        }
-        log.debug("Remove event %s from grid", event.eventID);
-        await removeFromGrid(gridEvents, event.eventID);
-        log.info("EVENT DELETED %s", eventID);
+        // We delete the event by setting the end date to now.
+        // This will cause the housekeeper to perform the actual delete:
+        event.eventEndsAt = new Date().toISOString();
+        fireEventChangedEvent(event);
+        log.info("EVENT MARKED FOR DELETION %s", eventID);
     } else {
         log.warn("deleteEvent ignored because event with id %s not found", eventID);
     }
