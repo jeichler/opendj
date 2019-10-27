@@ -18,7 +18,7 @@ export class WebsocketService {
         // Use /event/<EventID> as socket.io Namespace, which must be added to host parameter:
         const hostStr = this.confService.websocketHost + '/event/' + eventID;
         const pathStr = this.confService.websocketPath;
-        console.debug('connect to ws host=%s, path=%s', hostStr, pathStr);
+        console.debug('create ws host=%s, path=%s', hostStr, pathStr);
 
         this.socket = io(hostStr, {
             reconnectionAttempts: Infinity,
@@ -36,6 +36,9 @@ export class WebsocketService {
 //            console.debug('connected! - request refreshPlaylist');
 //            this.refreshPlaylist();
         });
+
+        console.debug('init(): connect');
+        this.connect();
     }
 
     observePlaylist() {

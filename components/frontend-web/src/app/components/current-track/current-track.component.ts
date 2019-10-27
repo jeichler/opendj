@@ -14,6 +14,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() isCurator: boolean;
   @Input() isPlaying: boolean;
   @Input() set trackInput(value: any) {
+    console.debug('trackInput()');
     if (this.intervalHandle) {
       console.debug('clear interval');
       clearInterval(this.intervalHandle);
@@ -104,7 +105,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.debug(this.track);
+    console.debug('current-track-componentn-ngOnInit', this.track);
   }
 
   ngOnDestroy() {

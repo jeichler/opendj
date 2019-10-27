@@ -45,6 +45,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   playTrack() {
+    console.debug('playTrack');
     this.feService.playTrack(this.currentEvent).subscribe((data) => {
       // console.log(data);
     },
@@ -54,6 +55,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   deleteTrack(track, index) {
+    console.debug('deleteTrack');
     this.feService.deleteTrack(this.currentEvent, track.id, index).subscribe(
       res => {
         // console.log(res);
@@ -64,10 +66,16 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   refresh(event) {
-    this.websocketService.refreshPlaylist();
-    setTimeout(() => {
-      event.detail.complete();
-    }, 1000);
+    console.debug('refresh');
+    this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
+      newList => {
+        console.debug('refresh(): received new Playlist');
+        this.currentPlaylist = newList;
+        this.computeETAForTracks();
+        event.detail.complete();
+      },
+      err => console.error('refresh(): getCurrentPlaylistFailed', err)
+    );
   }
 
   date2hhmm(d) {
@@ -75,17 +83,24 @@ export class PlaylistPage implements OnInit, OnDestroy {
     return d.substring(0, 5);
   }
 
-  computeETAForTracks(playlist) {
-    console.debug('computeETAForTracks');
+  computeETAForTracks() {
+    console.debug(this.newMethod());
+    const playlist = this.currentPlaylist;
     let ts = Date.now();
     if (playlist.currentTrack) {
         ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
     }
-    // tslint:disable-next-line:prefer-for-of
-    for (let i = 0; i < playlist.nextTracks.length; i++) {
-        playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
-        ts += playlist.nextTracks[i].duration_ms;
+    if (playlist.nextTracks) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let i = 0; i < playlist.nextTracks.length; i++) {
+          playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
+          ts += playlist.nextTracks[i].duration_ms;
+      }
     }
+  }
+
+  private newMethod(): any {
+    return 'computeETAForTracks';
   }
 
   onRenderItems(event) {
@@ -197,17 +212,38 @@ export class PlaylistPage implements OnInit, OnDestroy {
     return index + ', ' + element.id;
   }
 
+  refreshPlaylist() {
+    if (this.currentEvent) {
+      console.debug('getCurrentPlaylist() from server');
+      this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
+        newList => {
+          console.debug('ionViewDidEnter(): received new Playlist');
+          this.currentPlaylist = newList;
+          this.computeETAForTracks();
+        },
+        err => console.error('ionViewDidEnter(): getCurrentPlaylistFailed', err)
+      );
+    } else {
+      console.warn('refreshEvent() without currentEvent?!');
+    }
+  }
+
+
   async ionViewDidEnter() {
     console.debug('Playlist page enter');
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
+        console.debug('ionViewDidEnter() - not connect - init websocket');
         this.websocketService.init(this.currentEvent.eventID);
-        this.websocketService.refreshPlaylist();
       }
     }, 100);
 
+    console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
     this.isCurator = this.userState.isCurator;
+
+    console.debug('getCurrentPlaylist()');
+    this.refreshPlaylist();
   }
 
   ionViewDidLeave() {
@@ -229,18 +265,14 @@ export class PlaylistPage implements OnInit, OnDestroy {
         this.router.navigate([`ui/login`]);
       }
 
-
-
       // Connect websocket - no need to request current playlist, it will be sent
       // as part of the welcome package upon successful connect (see service-web#onConnect())
     this.websocketService.init(this.currentEvent.eventID);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
-      console.debug('playlist-page - received playlist update');
+      console.debug('playlist-page - received playlist update via websocket');
       this.currentPlaylist = data as Playlist;
-      if (this.currentPlaylist.hasOwnProperty('nextTracks')) {
-        this.computeETAForTracks(this.currentPlaylist);
-      }
+      this.computeETAForTracks();
       console.debug(`playlist subscription: `, this.currentPlaylist);
     });
     this.subscriptions.push(sub);
@@ -259,7 +291,9 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
-    }, 3000);
+    }, 2500);
+
+  //  this.refreshPlaylist();
   }
 
   ngOnDestroy() {

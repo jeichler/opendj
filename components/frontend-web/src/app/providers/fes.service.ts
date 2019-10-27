@@ -49,6 +49,18 @@ export class FEService {
         return throwError(errorMessage);
       }
 
+      getCurrentPlaylist(event: MusicEvent): Observable<any> {
+        if (!event || !event.eventID) {
+            this.handleError('getCurrentPlaylist(): no event?!');
+        }
+        return this.http.get(this.PLAYLIST_PROVIDER_API
+                                + '/events/' + event.eventID + '/playlists/' + event.activePlaylist)
+            .pipe(
+                retry(1),
+                catchError(this.handleError)
+          );
+    }
+
     searchTracks(event: MusicEvent, queryString: string): Observable<Track[]> {
         // console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2) {
