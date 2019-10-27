@@ -29,6 +29,13 @@ export class WebsocketService {
             timeout: 20000,
             path: pathStr
         });
+
+        this.socket.on('connect', (socket) => {
+            console.debug('connected!');
+// No need to request refresh - will be sent by server as welcome package:            
+//            console.debug('connected! - request refreshPlaylist');
+//            this.refreshPlaylist();
+        });
     }
 
     observePlaylist() {

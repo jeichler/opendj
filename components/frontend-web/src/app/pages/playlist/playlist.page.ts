@@ -219,11 +219,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
     this.userState  = await this.userDataService.getUser();
     const eventID = this.userState.currentEventID;
 
-    console.debug('Get Event %s from server', eventID);
 
+    // Check that event does exists by requesting it from the server:
+    console.debug('Get Event %s from server', eventID);
     this.currentEvent = await this.feService.readEvent(eventID).toPromise();
-//    this.currentEvent = new MusicEvent;
-//    this.currentEvent.eventID= "0";
     console.debug('Event from Server: %s', JSON.stringify(this.currentEvent));
     if (!this.currentEvent) {
         console.error('coud not load event from server - something is wrong - redirect to logout');
@@ -231,8 +230,10 @@ export class PlaylistPage implements OnInit, OnDestroy {
       }
 
 
+
+      // Connect websocket - no need to request current playlist, it will be sent
+      // as part of the welcome package upon successful connect (see service-web#onConnect())
     this.websocketService.init(this.currentEvent.eventID);
-//    this.websocketService.refreshPlaylist();
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update');
@@ -255,7 +256,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.push(sub);
-
 
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();

@@ -206,6 +206,7 @@
           metadata:
             annotations:
               kubernetes.io/tls-acme: "true"
+              haproxy.router.openshift.io/balance: roundrobin
             labels:
               app: service-web
             name: service-web
@@ -233,6 +234,8 @@
           kind: Route
           apiVersion: route.openshift.io/v1
           metadata:
+            annotations:
+              haproxy.router.openshift.io/balance: roundrobin
             labels:
               app: service-web
             name: service-web
