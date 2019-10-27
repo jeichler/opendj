@@ -320,6 +320,9 @@ router.get('/auth_callback', async function(req, res) {
                 updateEventTokensFromSpotifyBody(eventState, data.body);
                 fireEventStateChange(eventState);
 
+                // Make sure we have the new tokens at the API set:
+                spotifyApi = getSpotifyApiForEvent(eventState);
+
                 // Which Page to continue with after succesfull spotify login?
 
                 // To the event login page:
