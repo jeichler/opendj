@@ -1199,6 +1199,7 @@ setImmediate(async function() {
                 testEvent.eventID = TEST_EVENT_ID;
                 testEvent.name = "Demo Event";
                 testEvent.owner = "OpenDJ";
+                testEvent.url = EVENT_URL + "/" + testEvent.eventID;
                 await fireEventChangedEvent(testEvent);
 
                 log.trace("Creating test playlist....");
