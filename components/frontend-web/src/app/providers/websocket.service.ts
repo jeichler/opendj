@@ -32,7 +32,7 @@ export class WebsocketService {
 
         this.socket.on('connect', (socket) => {
             console.debug('connected!');
-// No need to request refresh - will be sent by server as welcome package:            
+// No need to request refresh - will be sent by server as welcome package:
 //            console.debug('connected! - request refreshPlaylist');
 //            this.refreshPlaylist();
         });

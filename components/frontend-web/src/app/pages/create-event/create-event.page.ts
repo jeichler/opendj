@@ -44,6 +44,13 @@ export class CreateEventPage implements OnInit {
 
   private mapEventToForm(f: FormGroup, e: MusicEvent) {
     f.patchValue(e);
+
+    // ID is only editable upon create:
+    if (this.event && this.event.eventID) {
+      f.get('eventID').disable();
+    } else {
+      f.get('eventID').enable();
+    }
   }
 
   public async toggleHelp() {
@@ -176,7 +183,7 @@ export class CreateEventPage implements OnInit {
     console.debug('ngOnInit');
     this.eventForm = this.formBuilder.group({
       // TODO: add this async validator ->  EventIdValidator
-      eventID: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-zA-Z0-9]*'), Validators.required]), null],
+      eventID: [{value: '', disabled: false}, Validators.compose([Validators.minLength(3), Validators.maxLength(12), Validators.pattern('[a-zA-Z0-9]*'), Validators.required]), null],
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: [{value: '', disabled: true}],
       maxUsers: [0, Validators.min(1)],
