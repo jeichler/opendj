@@ -186,10 +186,10 @@
                 <distributed-cache name="default"/>
                 <distributed-cache name="TRACKS"  configuration="OPENDJ_CACHE_CONFIG"/>
                 <distributed-cache name="PLAYLISTS" configuration="OPENDJ_CACHE_CONFIG"/>
-                <distributed-cache name="EVENTS" configuration="OPENDJ_CACHE_CONFIG"/>
-                <distributed-cache name="PROVIDER_SPOTIFY_STATE" configuration="OPENDJ_CACHE_CONFIG">
+                <distributed-cache name="EVENTS" configuration="OPENDJ_CACHE_CONFIG">
                     <transaction stop-timeout="1000" mode="NON_DURABLE_XA" locking="PESSIMISTIC"/>
                 </distributed-cache>
+                <distributed-cache name="PROVIDER_SPOTIFY_STATE" configuration="OPENDJ_CACHE_CONFIG"/>
             </cache-container>
 
         </subsystem>
