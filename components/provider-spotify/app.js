@@ -316,10 +316,20 @@ router.get('/auth_callback', async function(req, res) {
 
                 log.debug("authorization code granted for eventID=%s!", eventID);
 
-                // Set tokens on the Event Object to use it in later spotify API calls:
-                let continueWith = "/" + eventID;
+                // Set tokens on the Event Object to use it in later spotify API calls:                
                 updateEventTokensFromSpotifyBody(eventState, data.body);
                 fireEventStateChange(eventState);
+
+                // Which Page to continue with after succesfull spotify login?
+
+                // To the event login page:
+                // let continueWith = "/" + eventID;
+
+                // To the create/edit event page:
+                // let continueWith = "/ui/create-event";
+
+                // To the curator page:
+                let continueWith = "/ui/playlist-curator";
 
                 // Let's try to start bohemian rhapsody:
                 autoSelectDevice(spotifyApi, eventState)
