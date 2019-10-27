@@ -21,6 +21,14 @@ export class CreateEventPage implements OnInit {
   userState: UserSessionState;
   submitAttempt: boolean;
   showHelp = true;
+  tooltipOptions = {
+    placement: 'left',
+    hideDelayTouchscreen: 2500,
+    hideDelayAfterClick: 2500,
+    trigger: 'click',
+    'max-width': 300,
+    'show-delay': 0
+  };
 
   constructor(
     public router: Router,
