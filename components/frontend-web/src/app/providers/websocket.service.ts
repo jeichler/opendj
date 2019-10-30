@@ -26,7 +26,7 @@ export class WebsocketService {
             reconnectionDelay: 1000,
             reconnectionDelayMax: 5000,
             randomizationFactor: 0.5,
-            timeout: 20000,
+            timeout: this.confService.SERVER_TIMEOUT,
             path: pathStr
         });
 
