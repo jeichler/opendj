@@ -1,4 +1,3 @@
-
 .event-form-wrapper {
     text-align: center;
     max-width: 50vw;
@@ -6,23 +5,31 @@
 }
 
 @media only screen and (max-width: 600px) {
-.event-form-wrapper {
-    max-width: 100vw;
-}
+    .event-form-wrapper {
+        max-width: 100vw;
+    }
 }
 
-
-.item, .list, .item-content, .item-complex {
+.item,
+.list,
+.item-content,
+.item-complex {
     --ion-background-color: transparent !important;
+    --background-focused: transparent;
 }
 
 .item-label {
     color: #fff;
 }
 
+ion-badge {
+    margin-right: 10px;
+}
 
-ion-badge { margin-right: 10px;}
-ion-card-title { color: #fff;}
+ion-card-title {
+    color: #fff;
+}
+
 ion-input {
     color: white;
 }
