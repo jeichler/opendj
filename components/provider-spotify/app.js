@@ -387,12 +387,12 @@ function refreshAccessToken(event) {
     }
 
     if (expTs < now) {
-        log.info("refreshAccessToken: access token for eventID=%s is about to expire in %s sec - initiating refresh... ", event.eventID, (expTsOrig - now) / 1000);
+        log.debug("refreshAccessToken: access token for eventID=%s is about to expire in %s sec - initiating refresh... ", event.eventID, (expTsOrig - now) / 1000);
 
         let api = getSpotifyApiForEvent(event);
         api.refreshAccessToken().then(
             function(data) {
-                log.info("access token for^ eventID=%s is expired - initiating refresh...SUCCESS", event.eventID);
+                log.info("access token for eventID=%s is expired - initiating refresh...SUCCESS", event.eventID);
                 updateEventTokensFromSpotifyBody(event, data.body);
                 fireEventStateChange(event);
             },
