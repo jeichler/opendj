@@ -165,22 +165,27 @@ export class CreateEventPage implements OnInit {
 
   public async refreshState() {
     console.debug('refreshState');
-    this.userState = await this.userDataService.getUser();
-    // if the user is logged in as user or curator, he should not have access to this page -> redirect to playlist
-    if (this.userState.isLoggedIn && !this.userState.isEventOwner) {
-      this.router.navigateByUrl('ui/playlist-user');
-      return;
+    try {
+      this.userState = await this.userDataService.getUser();
+      // if the user is logged in as user or curator, he should not have access to this page -> redirect to playlist
+      if (this.userState.isLoggedIn && !this.userState.isEventOwner) {
+        this.router.navigateByUrl('ui/playlist-user');
+        return;
+      }
+      // if user is not logged in -> load new default event.
+      if (!this.userState.isLoggedIn) {
+        this.event = await this.feService.readEvent(null).toPromise();
+      }
+      // if the user is the owner, load the event data
+      if (this.userState.isLoggedIn && this.userState.isEventOwner) {
+        this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
+      }
+      this.mapEventToForm(this.eventForm, this.event);
+    } catch (err) {
+      console.error('refreshState failed', err);
+      this.router.navigateByUrl('ui/landing');
     }
-    // if user is not logged in -> load new default event.
-    if (!this.userState.isLoggedIn) {
-      this.event = await this.feService.readEvent(null).toPromise();
-    }
-    // if the user is the owner, load the event data
-    if (this.userState.isLoggedIn && this.userState.isEventOwner) {
-      this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
-    }
-    this.mapEventToForm(this.eventForm, this.event);
-  }
+}
 
   async ionViewDidEnter() {
     console.debug('ionViewDidEnter');

@@ -227,19 +227,31 @@ export class EventPage implements OnDestroy, OnInit {
   }
 
   async init() {
-    console.debug('init');
+    console.debug('begin init');
     this.userState = await this.userDataService.getUser();
     const eventID = this.route.snapshot.paramMap.get('eventId');
-    this.event = await this.feService.readEvent(eventID).toPromise();
-    console.debug(this.event);
+    try {
+      this.event = await this.feService.readEvent(eventID).toPromise();
+      console.debug('init event=', this.event);
 
-    // redirect to landing page if event doesn't exist
-    if (this.event === null) {
-      console.debug('Event not found -> redirect to landing page');
-      this.presentToast('SORRY! Event could not be found. Now redirecting to Landing page.');
+      // redirect to landing page if event doesn't exist
+      if (this.event === null) {
+        console.debug('Event not found -> redirect to landing page');
+        this.presentToast('SORRY! Event could not be found. Now redirecting to Landing page.');
+        this.clearNavSubscription();
+        this.router.navigateByUrl('ui/landing');
+      }
+
+    } catch (err) {
+      console.error('init failed - nav2landing', err);
       this.clearNavSubscription();
       this.router.navigateByUrl('ui/landing');
     }
+    console.debug('end init');
+  }
+
+  ionViewDidEnter() {
+    console.debug('ionViewDidEnter');
   }
 
   ngOnInit() {
