@@ -145,6 +145,10 @@ oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --r
 # ETCD Health Check
 [root@ocp1master2 ~]# etcdctl3 --endpoints="https://172.16.10.11:2379,https://172.16.10.12:2379,https://172.16.10.13:2379" endpoint health
 
+https://docs.openshift.com/container-platform/3.11/day_two_guide/docker_tasks.html
+
+
+
 
 # IONIC
 sudo npm install -g ionic --save

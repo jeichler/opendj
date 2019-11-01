@@ -5,6 +5,7 @@ blues
 boy band
 breakbeat
 circuit
+classical
 comic
 contemporary
 country
@@ -68,6 +69,7 @@ schlager
 singer-songwriter
 ska
 soul
+standard
 step
 storm
 swing

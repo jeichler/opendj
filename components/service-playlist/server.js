@@ -548,7 +548,7 @@ function isTrackPlaying(event, playlist) {
                 } else {
                     log.trace("   currentPos is within duration");
                     if (event.demoAutoskip > 0 && currentPos >= event.demoAutoskip * 1000 - 10) {
-                        log.warn("AutoSkipping");
+                        log.debug("AutoSkipping");
                         result = false;
                     } else {
                         result = true;
