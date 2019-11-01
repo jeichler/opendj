@@ -60,6 +60,9 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   countdown() {
     const duration = this.track.duration_ms;
     this.progress  = (Date.now() - Date.parse(this.track.started_at));
+    if (this.progress < 0) {
+      this.progress = 0;
+    }
 
     let timeLeft = duration - this.progress;
     if (timeLeft < 0) {
