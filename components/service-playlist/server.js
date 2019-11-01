@@ -476,7 +476,7 @@ async function skip(event, playlist) {
 
     if (playlist.isPlaying && playlist.currentTrack) {
         log.trace("skipping current track");
-        var progressPercentage = Math.round((playlist.currentTrack.progress_ms / playlist.currentTrack.duration_ms) * 100);
+        let progressPercentage = Math.round((playlist.currentTrack.progress_ms / playlist.currentTrack.duration_ms) * 100);
         if (progressPercentage >= event.progressPercentageRequiredForEffectivePlaylist) {
             log.debug("adding current track to effectivePlaylist")
             event.effectivePlaylist.push(playlist.currentTrack);
@@ -486,6 +486,8 @@ async function skip(event, playlist) {
                 progressPercentage, event.progressPercentageRequiredForEffectivePlaylist);
         }
     }
+
+    let lastTrack = playlist.currentTrack;
 
     playlist.currentTrack = playlist.nextTracks.shift();
     if (playlist.currentTrack) {
@@ -502,26 +504,28 @@ async function skip(event, playlist) {
         log.trace("Check for autofill");
         let stateChanged = await autofillPlaylistIfNecessary(event, playlist);
         if (stateChanged && playlist.isPlaying) {
+            log.trace("stateChanged and isPlaying")
             if (playlist.isPlaying) {
                 log.trace("playlist auto filled - pressing play again");
                 await play(event, playlist);
             } else {
                 log.trace("playlist auto filled but not playing");
             }
-        } else {
+        } else if (lastTrack) {
             log.trace("This is really the end - stop the music");
             try {
                 if (event.demoNoActualPlaying) {
                     log.debug("demo active - pause request at end of playlist is NOT actually being executed");
                 } else {
-                    log.debug("calling provider %s to pause", playlist.currentTrack.provider);
-                    let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/" + playlist.currentTrack.provider + "/pause");
-                    log.debug("pause provider %s result=%s", playlist.currentTrack.provider, result);
-
+                    log.debug("calling provider %s to pause", lastTrack.provider);
+                    let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/" + lastTrack.provider + "/pause");
+                    log.debug("pause provider %s result=%s", lastTrack.provider, result);
                 }
             } catch (err) {
                 log.warn("call to spotify pause at end of playlist failed - ignoring err=" + err);
             };
+        } else {
+            log.trace("nothing to do here");
         }
     }
     log.trace("skip end");
