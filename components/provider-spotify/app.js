@@ -1021,7 +1021,7 @@ async function readyAndHealthCheck(req, res) {
     let status = 500;
     let gridOkay = false;
     try {
-        await checkGridConnection();
+        gridOkay = await checkGridConnection();
     } catch (err) {
         readyState.lastError = 'CheckGridConnection: ' + err;
     }
