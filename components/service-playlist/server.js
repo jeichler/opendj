@@ -1034,6 +1034,28 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function
 });
 
 
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// ------------------------------ routes: heath stuff -----------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+function readyAndHealthCheck(req, res) {
+    log.trace("begin readyAndHealthCheck");
+    let status = 500;
+
+    if (readyState.datagridClient) {
+        status = 200;
+    }
+
+    res.status(status).send(JSON.stringify(readyState));
+    log.trace("end readyAndHealthCheck status=", status);
+}
+
+router.get('/ready', readyAndHealthCheck);
+router.get('/health', readyAndHealthCheck);
+
+
+
 app.use("/api/service-playlist/v1", router);
 
 
@@ -1140,6 +1162,7 @@ async function cleverCheckEvents() {
             log.trace("Last check was performed %s - now is %s", entry.value, now.toISOString());
             let lastCheck = new Date(entry.value);
             let delta = now.valueOf() - lastCheck.valueOf();
+            readyState.lastGlobalEventCheck = lastCheck.toISOString();
 
             if (delta < INTERNAL_POLL_INTERVAL) {
                 log.trace("Last check was performed %s ago which is below internal poll interval of %s msec - nothing to do", delta, INTERNAL_POLL_INTERVAL);

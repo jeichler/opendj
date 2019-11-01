@@ -1019,7 +1019,13 @@ async function readyAndHealthCheck(req, res) {
     log.trace("begin readyAndHealthCheck");
     // Default: not ready:
     let status = 500;
-    let gridOkay = await checkGridConnection();
+    let gridOkay = false;
+    try {
+        await checkGridConnection();
+    } catch (err) {
+        readyState.lastError = 'CheckGridConnection: ' + err;
+    }
+
     if (readyState.datagridClient &&
         readyState.refreshExpiredTokens &&
         gridOkay) {

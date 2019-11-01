@@ -149,6 +149,26 @@
                     ports:
                       - containerPort: 8081
                         protocol: TCP
+                    readinessProbe:
+                      failureThreshold: 3
+                      httpGet:
+                        path: /api/service-playlist/v1/ready
+                        port: 8080
+                        scheme: HTTP
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      successThreshold: 1
+                      timeoutSeconds: 1
+                    livenessProbe:
+                      failureThreshold: 3
+                      httpGet:
+                        path: /api/service-playlist/v1/health
+                        port: 8080
+                        scheme: HTTP
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      successThreshold: 1
+                      timeoutSeconds: 1
                     resources:
                       limits:
                         memory: 128Mi
