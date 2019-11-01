@@ -497,7 +497,7 @@ async function skip(event, playlist) {
             await play(event, playlist);
         }
     } else {
-        log.info("SKIP: reached end of playlist");
+        log.debug("SKIP: reached end of playlist");
         playlist.currentTrack = null;
         clearTimerForEvent(event.eventID);
 
