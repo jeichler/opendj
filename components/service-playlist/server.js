@@ -193,7 +193,7 @@ async function getTrackDetailsForTrackID(eventID, trackID) {
 async function createAutofillPlayList(eventID) {
     log.trace("createAutofillPlayList begin eventID=%s", eventID);
     var result = [];
-    log.info("AUTOFILL event=%s", eventID);
+    log.debug("AUTOFILL event=%s", eventID);
 
     for (let trackID of emergencyTrackIDs) {
         let track = await getTrackDetailsForTrackID(eventID, trackID);
@@ -419,7 +419,7 @@ async function play(event, playlist) {
     // Fire and Forget  Call Spotify-Provider to play at currentTrack.progress_ms
     // TODO: Make this truly async, i.e. sent a message, and provider fires a "PLAY_STARTED" event when action succeded
     if (event.demoNoActualPlaying) {
-        log.info("Demo No Actual Playing is active for event %s - play request is NOT actually being executed", event.eventID);
+        log.debug("Demo No Actual Playing is active for event %s - play request is NOT actually being executed", event.eventID);
     } else {
         log.debug("Play it, Sam. Play %s", playlist.currentTrack.id);
         try {
@@ -455,7 +455,7 @@ async function pause(event, playlist, err) {
 
 
     if (event.demoNoActualPlaying) {
-        log.info("Demo No Actual Playing is active for event %s - pause request is NOT actually being executed", event.eventID);
+        log.debug("Demo No Actual Playing is active for event %s - pause request is NOT actually being executed", event.eventID);
     } else if (err) {
         log.debug("pause called due to error - do NOT call spotify");
     } else {
@@ -472,7 +472,7 @@ async function pause(event, playlist, err) {
 
 async function skip(event, playlist) {
     log.trace("skip begin");
-    log.info("SKIP event=%s, playlist=%s", event.eventID, playlist.playlistID);
+    log.debug("SKIP event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
     if (playlist.isPlaying && playlist.currentTrack) {
         log.trace("skipping current track");
@@ -577,7 +577,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
     if (playlist.nextTracks.length == 0) {
         log.trace("playlist is empty");
         if (event.demoAutoFillEmptyPlaylist) {
-            log.info("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
+            log.debug("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
             playlist.nextTracks = await createAutofillPlayList(event.eventID);
             stateChanged = true;
             log.debug("AutoFilling Playlist %s of event %s....DONE", playlist.playlistID, event.eventID);
@@ -1057,7 +1057,7 @@ async function connectToGrid(name) {
         let port = splitter[1];
         grid = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
         readyState.datagridClient = true;
-        log.info("connected to grid %s", name);
+        log.info("CONNECTED to grid %s", name);
     } catch (err) {
         readyState.datagridClient = false;
         readyState.lastError = err;
@@ -1147,7 +1147,7 @@ async function cleverCheckEvents() {
                 log.trace("Last check is %s msec ago and above %s msec - try to enter crit sec with opt lock=>%s<", delta, INTERNAL_POLL_INTERVAL, JSON.stringify(entry.version));
                 let replaceOK = await gridEvents.replaceWithVersion("-1", now.toISOString(), entry.version);
                 if (replaceOK) {
-                    log.info("cleverCheckEvents - do the check");
+                    log.debug("cleverCheckEvents - do the check");
                     let start = Date.now();
                     await checkEvents();
                     let stop = Date.now();
@@ -1155,7 +1155,7 @@ async function cleverCheckEvents() {
                     if (duration > INTERNAL_POLL_INTERVAL) {
                         throw "checkEvents took %s msec which is longer then poll interval of %s", duration, INTERNAL_POLL_INTERVAL;
                     } else {
-                        log.info("checkEvents took %s msec", duration);
+                        log.debug("checkEvents took %s msec", duration);
                     }
 
                 } else {
@@ -1164,7 +1164,7 @@ async function cleverCheckEvents() {
             }
 
         } else {
-            log.info("lastCheck Timestmap not present - creating it");
+            log.debug("lastCheck Timestmap not present - creating it");
             await gridEvents.putIfAbsent("-1", now.toISOString());
         }
     } catch (err) {
@@ -1185,16 +1185,16 @@ async function cleverCheckEvents() {
 
 setImmediate(async function() {
     try {
-        log.info("Connecting to datagrid...");
+        log.debug("Connecting to datagrid...");
         gridEvents = await connectToGrid("EVENTS");
         gridPlaylists = await connectToGrid("PLAYLISTS");
 
         if (TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(TEST_EVENT_ID);
             if (testEvent) {
-                log.warn("Test event already present");
+                log.debug("Test event already present");
             } else {
-                log.trace("Creating test event....");
+                log.debug("Creating test event....");
                 testEvent = createEmptyEvent();
                 testEvent.eventID = TEST_EVENT_ID;
                 testEvent.name = "Demo Event";
