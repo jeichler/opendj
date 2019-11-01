@@ -1,12 +1,13 @@
 <ion-header no-border>
     <ion-toolbar color="dark">
         <ion-buttons slot="end">
-            <ion-button color='primary' *ngIf="!slides.isBeginning()" (tap)="skip()">Skip</ion-button>
+            <ion-button color='primary' (tap)="skip()">Skip</ion-button>
         </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen color="dark">
+
     <ion-slides #slides pager="true">
         <ion-slide>
             <img src="assets/img/Logo_OpenDJ_128.png" class="slide-image" />
@@ -47,7 +48,7 @@
                 The music is being played by a streaming provider, e.g. Spotify. As Event Owner, you need to provide your streaming provider credentials. OpenDJ is running in the internet and uses your streaming provider APIs to execute the playlist on a local device
                 of the event owner.
             </p>
-            <img src="assets/img/spotify/Spotify_Logo_RGB_Green.png" class="slide-image" style="max-width: 300px;" />
+            <img src="assets/img/spotify/Spotify_Logo_RGB_Green.png" class="slide-image" style="max-width: 300px;"/>
         </ion-slide>
 
         <ion-slide>

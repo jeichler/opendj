@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, MenuController, IonSlides } from '@ionic/angular';
 import { createUrlResolverWithoutPackagePrefix } from '@angular/compiler';
-import { alertController } from '@ionic/core';
 
 @Component({
   selector: 'landing',
@@ -51,29 +50,18 @@ export class LandingPage implements OnInit {
             if (result && result.eventID) {
               target = result.eventID;
             }
-            console.debug('before dismiss', target);
-            popup.dismiss().then(() => {
-              console.debug('landing: going to event %s', target);
-              this.router.navigate(['ui/event/' + target]);
-
-            });
-            return false;
+            console.debug('landing: going to event %s', target);
+            this.router.navigate(['ui/event/' + target]);
           }
         }
       ]
     });
- 
-    console.debug('joinExistingEvent: before present()');
-    popup.present();
 
-    console.debug('joinExistingEvent: after present()');
+    await popup.present();
   }
-  ionViewDidEnter() {
-    console.debug('landing pagge ionViewDidEnter');
-  }
+
 
   ngOnInit() {
-    console.debug('landing pagge ngOnInit');
   }
 
 }
