@@ -16,7 +16,7 @@ export class ConfigService {
     websocketPath;
     SPOTIFY_PROVIDER_API;
     PLAYLIST_PROVIDER_API;
-    SERVER_TIMEOUT;
+    SERVER_TIMEOUT = 1000;
 
     constructor(public http: HttpClient) {}
 
