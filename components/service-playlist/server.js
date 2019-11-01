@@ -511,8 +511,8 @@ async function skip(event, playlist) {
         } else {
             log.trace("This is really the end - stop the music");
             try {
-                if (MOCKUP_NO_ACTUAL_PLAYING) {
-                    log.error("ATTENTION: MOCKUP_NO_ACTUAL_PLAYING is active - pause request at end of playlist is NOT actually being executed");
+                if (event.demoNoActualPlaying) {
+                    log.debug("demo active - pause request at end of playlist is NOT actually being executed");
                 } else {
                     log.debug("calling provider %s to pause", playlist.currentTrack.provider);
                     let result = await request(SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/" + playlist.currentTrack.provider + "/pause");
