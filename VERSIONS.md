@@ -6,7 +6,9 @@ In this repo:
 
 Version | Date       | Description
 ------- | ---------- | ------------
-V0.3.5  | 07.07.2019 | End of Sprint 04 - MVP
+V0.4.1  | 02.10.2019 | Lots of minor fixes for Multi-Event 
+V0.4.0  | 25.10.2019 | Initial Deployment of 04 - Multi-Event to PRD www.opendj.io
+V0.3.5  | 07.07.2019 | End of Sprint 03 - MVP
 V0.3.4  | 02.07.2019 | Tuesday evening before Sales Event
 V0.3.3  | 01.07.2019 | Monday evening before Sales Event
 V0.3.2  | 30.06.2019 | Sunday evening before Sales Event
