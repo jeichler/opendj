@@ -147,13 +147,18 @@ oc adm prune images --keep-tag-revisions=3 --keep-younger-than=60m --confirm --r
 
 https://docs.openshift.com/container-platform/3.11/day_two_guide/docker_tasks.html
 
-
-
-
 # IONIC
 sudo npm install -g ionic --save
 ionic info
 ionic generate page pages/event
 ionic serve
+
+# oc label to tst:
+oc tag provider-spotify:latest provider-spotify:test
+oc tag service-playlist:latest service-playlist:test
+oc tag service-web:latest service-web:test
+oc tag service-housekeeping:latest service-housekeeping:test
+oc tag frontend-web-artifact:latest frontend-web-artifact:test
+oc tag frontend-web:latest frontend-web:test
 
 
