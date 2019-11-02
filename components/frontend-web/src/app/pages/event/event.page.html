@@ -25,11 +25,11 @@
         <!-- 
         <ion-card *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)" style="background-color: #111; padding: 10px;">
             <p style="color: #fff; font-size: 18px;">You are logged in as Event owner.</p>
-            <ion-button (tap)="editEvent()">
+            <ion-button (click)="editEvent()" tappable>
                 <ion-icon name="build" slot="start"></ion-icon>
                 Edit
             </ion-button>
-            <ion-button color="danger" (tap)="deleteAlertConfirm()">
+            <ion-button color="danger" (click)="deleteAlertConfirm()" tappable>
                 <ion-icon name="trash" slot="start"></ion-icon>
                 Delete
             </ion-button>
@@ -80,7 +80,7 @@
                             <ion-input style="background-color: #222428; border-radius: 10px" formControlName="username" type="text" clearInput="true" placeholder="Username">
                             </ion-input>
                             <ion-note slot="end">
-                                <ion-button (tap)="generateUsername()" shape="round" color="primary" size="small" fill="outline">
+                                <ion-button (click)="generateUsername()" tappable shape="round" color="primary" size="small" fill="outline">
                                     <ion-icon name="color-wand"></ion-icon>
                                 </ion-button>
                             </ion-note>
@@ -97,7 +97,7 @@
                     </ion-list>
 
                     <div style="text-align: center;">
-                        <ion-button type="submit" shape="round" color="primary" (tap)="join()" style="width: 75%">
+                        <ion-button type="submit" shape="round" color="primary" (click)="join()" tappable style="width: 75%">
                             Join Event
                         </ion-button>
                     </div>

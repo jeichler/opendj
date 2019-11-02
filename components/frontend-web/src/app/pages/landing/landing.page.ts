@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, MenuController, IonSlides } from '@ionic/angular';
-import { createUrlResolverWithoutPackagePrefix } from '@angular/compiler';
 
 @Component({
   selector: 'landing',
@@ -14,7 +13,7 @@ export class LandingPage implements OnInit {
 
   constructor(
     private router: Router,
-    public alertController: AlertController,
+    private alertController: AlertController,
   ) { }
 
   createOwnEvent() {
@@ -45,6 +44,7 @@ export class LandingPage implements OnInit {
           cssClass: 'secondary',
         }, {
           text: 'Go!',
+
           handler: (result) => {
             let target = 'demo';
             if (result && result.eventID) {
@@ -57,7 +57,11 @@ export class LandingPage implements OnInit {
       ]
     });
 
-    await popup.present();
+
+    console.debug('before  present');
+    popup.present();
+    console.debug('end joinExistingEvent');
+
   }
 
 

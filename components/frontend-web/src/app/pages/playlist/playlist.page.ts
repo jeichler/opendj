@@ -347,7 +347,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
       <a *ngIf="item.previewViaApp" href="{{item.previewViaApp}}" target="_blank">
         <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
-      <ion-button float-right (tap)="dismiss(item)">Add</ion-button>
+      <ion-button float-right (click)="dismiss(item)" tappable>Add</ion-button>
 
       </ion-item>
 

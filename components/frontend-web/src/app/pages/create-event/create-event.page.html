@@ -10,7 +10,7 @@
                 Event</span>
         </ion-title>
         <ion-buttons slot="end">
-            <ion-button color="success" (tap)='refreshState()'>
+            <ion-button color="success" (click)='refreshState()' tappable>
                 <ion-icon name="refresh"></ion-icon>
             </ion-button>
         </ion-buttons>
@@ -18,24 +18,24 @@
 
     <ion-toolbar color="dark">
         <div style='text-align: center;'>
-            <ion-button (tap)="create(eventForm)" *ngIf="!userState?.isLoggedIn">
+            <ion-button (click)="create(eventForm)" tappable *ngIf="!userState?.isLoggedIn">
                 <ion-icon name="create" slot="start"></ion-icon>
                 Create Event
             </ion-button>
-            <ion-button (tap)="update(eventForm)" *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
+            <ion-button (click)="update(eventForm)" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
                 <ion-icon name="save" slot="start"></ion-icon>
                 Update Event
             </ion-button>
-            <ion-button color="danger" (tap)="deleteAlertConfirm()" *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
+            <ion-button color="danger" (click)="deleteAlertConfirm()" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
                 <ion-icon name="trash" slot="start"></ion-icon>
                 Delete Event
             </ion-button>
 
             <!-- Tooltip-Help is always on, no further help needed:
-            <ion-button color="primary" (tap)='toggleHelp()' fill="solid" *ngIf="showHelp">
+            <ion-button color="primary" (click)='toggleHelp()' tappable fill="solid" *ngIf="showHelp">
                 Help
             </ion-button>
-            <ion-button color="primary" (tap)='toggleHelp()' fill="outline" *ngIf="!showHelp">
+            <ion-button color="primary" (click)='toggleHelp()' tappable fill="outline" *ngIf="!showHelp">
                 Help?
             </ion-button>
 -->

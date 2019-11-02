@@ -1,52 +1,52 @@
 <ion-header>
-  <ion-toolbar color="opendj">
-    <ion-buttons slot="start">
-      <ion-button (click)="dismiss(null)">
-        <ion-icon slot="icon-only" name="close"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title>
-      <span *ngIf="context === 'user'">User Login</span>
-      <span *ngIf="context === 'owner'">Owner Login</span>
-      <span *ngIf="context === 'curator'">Curator Login</span>
-    </ion-title>
-  </ion-toolbar>
+    <ion-toolbar color="opendj">
+        <ion-buttons slot="start">
+            <ion-button (click)="dismiss(null)">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>
+            <span *ngIf="context === 'user'">User Login</span>
+            <span *ngIf="context === 'owner'">Owner Login</span>
+            <span *ngIf="context === 'curator'">Curator Login</span>
+        </ion-title>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content color="dark">
 
-  <form [formGroup]="loginForm">
+    <form [formGroup]="loginForm">
 
-    <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
+        <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
 
-    <ion-item style="--ion-background-color: transparent !important; color: white;">
-          <ion-input formControlName="username" type="text" clearInput="true" placeholder="Username">
-          </ion-input>
-          <ion-note slot="end" *ngIf="context !== 'owner'">
-              <ion-button (tap)="generateUsername()" shape="round" color="primary" size="small">
-                  <ion-icon name="color-wand"></ion-icon>
-              </ion-button>
-          </ion-note>
-    </ion-item>
-    <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
-        <p style="color: red;">Minimum length for username is 3.</p>
-    </ion-item>
+            <ion-item style="--ion-background-color: transparent !important; color: white;">
+                <ion-input formControlName="username" type="text" clearInput="true" placeholder="Username">
+                </ion-input>
+                <ion-note slot="end" *ngIf="context !== 'owner'">
+                    <ion-button (click)="generateUsername()" tappable shape="round" color="primary" size="small">
+                        <ion-icon name="color-wand"></ion-icon>
+                    </ion-button>
+                </ion-note>
+            </ion-item>
+            <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
+                <p style="color: red;">Minimum length for username is 3.</p>
+            </ion-item>
 
-    <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" style="--ion-background-color: transparent !important; color: white;">
-        <ion-input formControlName="password" type="password" clearInput="true" placeholder="Password">
-        </ion-input>
-    </ion-item>
+            <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" style="--ion-background-color: transparent !important; color: white;">
+                <ion-input formControlName="password" type="password" clearInput="true" placeholder="Password">
+                </ion-input>
+            </ion-item>
 
-    </ion-list>
+        </ion-list>
 
-    <div style="text-align: center;">
-        <ion-button type="submit" shape="round" color="primary" fill="outline" (tap)="join()">
-        <span *ngIf="context === 'user'">Join as User</span>
-        <span *ngIf="context === 'owner'">Login as Owner</span>
-        <span *ngIf="context === 'curator'">Join as Curator</span>
-        </ion-button>
-    </div>
+        <div style="text-align: center;">
+            <ion-button type="submit" shape="round" color="primary" fill="outline" (click)="join()" tappable>
+                <span *ngIf="context === 'user'">Join as User</span>
+                <span *ngIf="context === 'owner'">Login as Owner</span>
+                <span *ngIf="context === 'curator'">Join as Curator</span>
+            </ion-button>
+        </div>
 
-  </form>
+    </form>
 
 </ion-content>

@@ -43,8 +43,8 @@
                     <ion-label>{{item.name}}
                         <br />
                         <span *ngIf="isCurator && showOptions">
-              <ion-button (tap)="moveTop(item, i)" size="small">Top</ion-button>
-              <ion-button color="danger" (tap)="deleteTrack(item, i)" size="small">Delete</ion-button>
+              <ion-button (click)="moveTop(item, i)" tappable size="small">Top</ion-button>
+              <ion-button color="danger" (click)="deleteTrack(item, i)" tappable size="small">Delete</ion-button>
               <br/>
             </span>
                         <span style="font-size: 14px; color: #999;">

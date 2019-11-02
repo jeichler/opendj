@@ -1,7 +1,7 @@
 <ion-header no-border>
     <ion-toolbar color="dark">
         <ion-buttons slot="end">
-            <ion-button color='primary' (tap)="skip()">Skip</ion-button>
+            <ion-button color='primary' (click)="skip()" tappable>Skip</ion-button>
         </ion-buttons>
     </ion-toolbar>
 </ion-header>
@@ -19,10 +19,10 @@
                 Have you ever been at an event and disliked the music being played?<br/> The idea of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event.
             </p>
             <p> Swipe to learn more, or</p>
-            <ion-button fill="clear" (tap)="createOwnEvent()">Create your own Event
+            <ion-button fill="clear" (click)="createOwnEvent()" tappable>Create your own Event
                 <ion-icon slot="end" name="arrow-forward"></ion-icon>
             </ion-button>
-            <ion-button fill="clear" (tap)="joinExistingEvent()">Join an existing Event
+            <ion-button fill="clear" (click)="joinExistingEvent()" tappable>Join an existing Event
                 <ion-icon slot="end" name="arrow-forward"></ion-icon>
             </ion-button>
         </ion-slide>
@@ -48,15 +48,15 @@
                 The music is being played by a streaming provider, e.g. Spotify. As Event Owner, you need to provide your streaming provider credentials. OpenDJ is running in the internet and uses your streaming provider APIs to execute the playlist on a local device
                 of the event owner.
             </p>
-            <img src="assets/img/spotify/Spotify_Logo_RGB_Green.png" class="slide-image" style="max-width: 300px;"/>
+            <img src="assets/img/spotify/Spotify_Logo_RGB_Green.png" class="slide-image" style="max-width: 300px;" />
         </ion-slide>
 
         <ion-slide>
             <h2 class="slide-title">Ready to start?</h2>
-            <ion-button fill="clear" (tap)="createOwnEvent()">Create your own Event
+            <ion-button fill="clear" (click)="createOwnEvent() " tappable>Create your own Event
                 <ion-icon slot="end" name="arrow-forward"></ion-icon>
             </ion-button>
-            <ion-button fill="clear" (tap)="joinExistingEvent()">Join an existing Event
+            <ion-button fill="clear" (click)="joinExistingEvent()" tappable>Join an existing Event
                 <ion-icon slot="end" name="arrow-forward"></ion-icon>
             </ion-button>
             <p></p>
