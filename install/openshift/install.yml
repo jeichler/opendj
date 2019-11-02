@@ -15,7 +15,7 @@
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
     - name: Create OpenShift Project
-      tags: prj,ocp
+      tags: prj
       k8s:
         state: present
         wait: true
@@ -27,6 +27,25 @@
             annotations:
               openshift.io/description: "OpenDJ stage {{ STAGE }}"
               openshift.io/display-name: ""
+    - name: Grant access to developer group
+      tags: prj
+      k8s:
+        state: present
+        definition:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata:
+            creationTimestamp: null
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+            name: admin-0
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: admin
+          subjects:
+          - apiGroup: rbac.authorization.k8s.io
+            kind: Group
+            name: opendj-developer
 
 
 #- import_playbook: ../../components/backend-eventstore/openshift/install.yml
