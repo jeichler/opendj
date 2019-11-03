@@ -153,7 +153,8 @@ ionic info
 ionic generate page pages/event
 ionic serve
 
-# oc label to tst:
+# oc label from dev to tst:
+oc project dfroehli-opendj-dev
 oc tag provider-spotify:latest provider-spotify:test
 oc tag service-playlist:latest service-playlist:test
 oc tag service-web:latest service-web:test
