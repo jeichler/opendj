@@ -32,6 +32,7 @@ export class LandingPage implements OnInit {
       message: 'Please enter the ID of the event.<br>Look around, it should be advertised at the event location.<br>Ask your host!',
       inputs: [
         {
+          id: 'eventID',
           name: 'eventID',
           type: 'text',
           placeholder: 'demo'
@@ -44,6 +45,9 @@ export class LandingPage implements OnInit {
           cssClass: 'secondary',
         }, {
           text: 'Go!',
+// DAN: I think this is a bug that a button cant have and ID like an input:
+//          id: 'Go',
+          cssClass: 'idForSelenium_Go',
 
           handler: (result) => {
             let target = 'demo';

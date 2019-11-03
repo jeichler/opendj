@@ -325,7 +325,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
     <ion-title>Add song to playlist</ion-title>
   </ion-toolbar>
   <ion-toolbar color="dark">
-    <ion-searchbar  [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for songs..." #myInput>
+    <ion-searchbar id="search" [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for songs..." #myInput>
     </ion-searchbar>
   </ion-toolbar>
 </ion-header>
@@ -347,7 +347,7 @@ export class PlaylistPage implements OnInit, OnDestroy {
       <a *ngIf="item.previewViaApp" href="{{item.previewViaApp}}" target="_blank">
         <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
-      <ion-button float-right (click)="dismiss(item)" tappable>Add</ion-button>
+      <ion-button id="add-result-{{item.id}}" float-right (click)="dismiss(item)" tappable>Add</ion-button>
 
       </ion-item>
 

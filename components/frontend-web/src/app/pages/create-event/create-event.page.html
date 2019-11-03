@@ -1,7 +1,7 @@
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
-            <ion-menu-button color="light"></ion-menu-button>
+            <ion-menu-button id="create-event-menu-button" color="light"></ion-menu-button>
         </ion-buttons>
 
         <ion-title color="light">
@@ -10,7 +10,7 @@
                 Event</span>
         </ion-title>
         <ion-buttons slot="end">
-            <ion-button color="success" (click)='refreshState()' tappable>
+            <ion-button id="refresh" color="success" (click)='refreshState()' tappable>
                 <ion-icon name="refresh"></ion-icon>
             </ion-button>
         </ion-buttons>
@@ -18,15 +18,15 @@
 
     <ion-toolbar color="dark">
         <div style='text-align: center;'>
-            <ion-button (click)="create(eventForm)" tappable *ngIf="!userState?.isLoggedIn">
+            <ion-button id="create" (click)="create(eventForm)" tappable *ngIf="!userState?.isLoggedIn">
                 <ion-icon name="create" slot="start"></ion-icon>
                 Create Event
             </ion-button>
-            <ion-button (click)="update(eventForm)" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
+            <ion-button id="update" (click)="update(eventForm)" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
                 <ion-icon name="save" slot="start"></ion-icon>
                 Update Event
             </ion-button>
-            <ion-button color="danger" (click)="deleteAlertConfirm()" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
+            <ion-button id="delete" color="danger" (click)="deleteAlertConfirm()" tappable *ngIf="(event?.eventID == userState?.currentEventID) && (userState?.isEventOwner)">
                 <ion-icon name="trash" slot="start"></ion-icon>
                 Delete Event
             </ion-button>
@@ -82,7 +82,7 @@
 
                     <ion-item>
                         <ion-label>ID:</ion-label>
-                        <ion-input type="text" formControlName="eventID" text-right>
+                        <ion-input name="eventID" type="text" formControlName="eventID" text-right>
                         </ion-input>
                         <ion-icon tooltip="The short name or identifier of your event. 
                             It will be used by your guests to find and join your event, 
@@ -93,8 +93,8 @@
                     </ion-item>
 
                     <ion-item>
-                        <ion-label>Name:</ion-label>
-                        <ion-input type="text" formControlName="name" text-right></ion-input>
+                        <ion-label>Description:</ion-label>
+                        <ion-input name="name" type="text" formControlName="name" text-right></ion-input>
                         <ion-icon tooltip="A description of your event the guests will see on the login page or the playlist. 
                             Use something short, but precise. Examples: 'Summer-Party', 'Bachelor Party'" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
@@ -102,7 +102,7 @@
 
                     <ion-item>
                         <ion-label>Link:</ion-label>
-                        <ion-input type="text" formControlName="url" text-right>
+                        <ion-input name="url" type="text" formControlName="url" text-right>
                         </ion-input>
                         <ion-icon tooltip="The URL under which your event is accessible by your guests. 
                         You can't edit it, it is defined by the server once the event is created. 
@@ -118,7 +118,7 @@
 
                     <ion-item *ngIf="!userState?.isLoggedIn">
                         <ion-label>Owner Username:</ion-label>
-                        <ion-input type="text" formControlName="owner" text-right></ion-input>
+                        <ion-input name="owner" type="text" formControlName="owner" text-right></ion-input>
                         <ion-icon tooltip="Your Username as Event owner.
                          Your guests will see this name as the event organizer on the event login page. 
                          Keep note of it, you need it to come back and change the event settings here. " [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -127,20 +127,20 @@
 
                     <ion-item>
                         <ion-label>Owner Password:</ion-label>
-                        <ion-input type="text" formControlName="passwordOwner" text-right></ion-input>
+                        <ion-input name="passwordOwner" type="text" formControlName="passwordOwner" text-right></ion-input>
                         <ion-icon tooltip="Choose your owner password to login later" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
                     <ion-item>
                         <ion-label>Curator Password:</ion-label>
-                        <ion-input type="text" formControlName="passwordCurator" text-right></ion-input>
+                        <ion-input name="passwordCurator" type="text" formControlName="passwordCurator" text-right></ion-input>
                         <ion-icon tooltip="Define a password for curators (the people who can change the playlist) of the event. 
                         Not required if all users are curators (see below)." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
                     <ion-item>
                         <ion-label>Password for Users:</ion-label>
-                        <ion-input type="text" formControlName="passwordUser" text-right></ion-input>
+                        <ion-input name="passwordUser" type="text" formControlName="passwordUser" text-right></ion-input>
                         <ion-icon tooltip="Define a password for regular users to join this event. 
                         You can leave it blank, but then everybody who knows or can guess the ID can join your event. 
                         We assume that only people physically present at your event know the ID, so leaving it blank is quite okay. 
@@ -151,7 +151,7 @@
                     <ion-item>
                         <ion-label>MusicProvider</ion-label>
                         <ion-note slot="end">
-                            <ion-button [disabled]="!userState?.isLoggedIn" color="primary" size="small" href="/api/provider-spotify/v1/events/{{event.eventID}}/providers/spotify/login">
+                            <ion-button id="addSpotify" [disabled]="!userState?.isLoggedIn" color="primary" size="small" href="/api/provider-spotify/v1/events/{{event.eventID}}/providers/spotify/login">
                                 Add Spotify
                             </ion-button>
                         </ion-note>
@@ -171,14 +171,14 @@
 
                     <ion-item>
                         <ion-label>Start:</ion-label>
-                        <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
+                        <ion-datetime id="eventStartsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
                         <ion-icon tooltip="The date and time when this event starts" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
                     <ion-item>
                         <ion-label>End:</ion-label>
-                        <ion-datetime displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
+                        <ion-datetime id="eventEndsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
                         <ion-icon tooltip="When does the event end? Please note: all data of the event is delete 24 hours after the event ends." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
@@ -186,7 +186,7 @@
                     <!-- Duration is currently fixed to 24h: 
                     <ion-item>
                         <ion-label>Duration</ion-label>
-                        <ion-input type="number" formControlName="maxDurationInMinutes" text-right>
+                        <ion-input name="maxDurationInMinutes" type="number" formControlName="maxDurationInMinutes" text-right>
                         </ion-input>
                         <ion-label>min</ion-label>
                         <ion-icon tooltip="The duration of this event in minutes" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -196,7 +196,7 @@
 
                     <ion-item>
                         <ion-label text-wrap>Max tracks</ion-label>
-                        <ion-input type="number" formControlName="maxTracksInPlaylist" text-right>
+                        <ion-input name="maxTracksInPlaylist" type="number" formControlName="maxTracksInPlaylist" text-right>
                         </ion-input>
                         <ion-icon tooltip="The maximum number of tracks in a playlist of this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
@@ -204,7 +204,7 @@
 
                     <ion-item>
                         <ion-label text-wrap>Max users</ion-label>
-                        <ion-input type="number" formControlName="maxUsers" text-right></ion-input>
+                        <ion-input name="maxUsers" type="number" formControlName="maxUsers" text-right></ion-input>
                         <ion-icon tooltip="The maximum number of users who can join this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
@@ -218,14 +218,14 @@
                     <!-- Track AI advisor currently not used:                   
                     <ion-item>
                         <ion-label>Track AI</ion-label>
-                        <ion-toggle color="primary" formControlName="enableTrackAI"></ion-toggle>
+                        <ion-toggle id="enableTrackAI" color="primary" formControlName="enableTrackAI"></ion-toggle>
                         <ion-icon tooltip="Use Artificial Intelligence Algorithms to find a good fit for a new track." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 -->
                     <ion-item>
                         <ion-label>Duplicate tracks allowed</ion-label>
-                        <ion-toggle color="primary" formControlName="allowDuplicateTracks"></ion-toggle>
+                        <ion-toggle id="allowDuplicateTracks" color="primary" formControlName="allowDuplicateTracks"></ion-toggle>
                         <ion-icon tooltip="Can the same track be played multiple times during this event? 
                         If you turn this off and 'Bohemian Rhapsody' has already been played at 22:42, 
                         a user who want's to add it again will get an error message. 
@@ -236,7 +236,7 @@
 
                     <ion-item>
                         <ion-label>All users are curators</ion-label>
-                        <ion-toggle color="primary" formControlName="everybodyIsCurator"></ion-toggle>
+                        <ion-toggle id="everybodyIsCurator" color="primary" formControlName="everybodyIsCurator"></ion-toggle>
                         <ion-icon tooltip="Do you want all guests be able to change the playlist order, 
                         delete tracks? Recommended to turn on for small events with 5-20 guests. 
                         For bigger parties, leave it on and set a curator password to keep in control who can change your playlist." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -245,7 +245,7 @@
 
                     <ion-item>
                         <ion-label>Begin playback at event start</ion-label>
-                        <ion-toggle color="primary" formControlName="beginPlaybackAtEventStart"></ion-toggle>
+                        <ion-toggle id="beginPlaybackAtEventStart" color="primary" formControlName="beginPlaybackAtEventStart"></ion-toggle>
                         <ion-icon tooltip="Users can contribute to the playlist before the event officially starts. 
                         If you enable this feature, OpenDJ will start the music at the specified start time. 
                         If you disable it, you manually need to press play in the curator view. 
@@ -255,7 +255,7 @@
 
                     <ion-item>
                         <ion-label>Pause on play error</ion-label>
-                        <ion-toggle color="primary" formControlName="pauseOnPlayError"></ion-toggle>
+                        <ion-toggle id="pauseOnPlayError" color="primary" formControlName="pauseOnPlayError"></ion-toggle>
                         <ion-icon tooltip="If the playing of a track fails for whatever reasons (e.g. your device hast lost internet connection), 
                         what shall we do? If you turn this on, we pause the list and you need to manually press play again, 
                         after the problem is fixed. If you turn it off, we try to play the next song. This might fix the problem, 
@@ -265,7 +265,7 @@
 
                     <ion-item>
                         <ion-label>Like tracks</ion-label>
-                        <ion-toggle color="primary" formControlName="enableTrackLiking"></ion-toggle>
+                        <ion-toggle id="enableTrackLiking" color="primary" formControlName="enableTrackLiking"></ion-toggle>
                         <ion-icon tooltip="If you turn this on, users will see a like button they can press for each track in the playlist, 
                         and other users can see the number of likes. Could be useful for curators to help ordering the list and fun for the users. 
                         Could be also distracting the people from your event. Use at your own risk ;-)" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -274,14 +274,14 @@
 
                     <ion-item>
                         <ion-label>Dislike tracks</ion-label>
-                        <ion-toggle color="primary" formControlName="enableTrackHating"></ion-toggle>
+                        <ion-toggle id="enableTrackHating" color="primary" formControlName="enableTrackHating"></ion-toggle>
                         <ion-icon tooltip="Same as the 'Like Tracks' feature above, but for negative emotions a user might associate with the track." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
                     <ion-item>
                         <ion-label>Track progress required</ion-label>
-                        <ion-input type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" text-right></ion-input>
+                        <ion-input name="progressPercentageRequiredForEffectivePlaylist" type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" text-right></ion-input>
                         <ion-label>%</ion-label>
                         <ion-icon tooltip="We keep track of which music has been actually played at your event. 
                         But what counts as 'actually beeing played'? If a track as been skipped after 5 seconds, 
@@ -299,7 +299,7 @@
 
                     <ion-item>
                         <ion-label text-wrap>Auto Skip after</ion-label>
-                        <ion-input type="number" formControlName="demoAutoskip" text-right></ion-input>
+                        <ion-input name="demoAutoskip" type="number" formControlName="demoAutoskip" text-right></ion-input>
                         <ion-label>s</ion-label>
                         <ion-icon tooltip="After how many seconds shall a track be skipped automatically? 
                         Set to 0 for real events. Set to e.g. 20 seconds to show how a playlist progresses over the event." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -308,7 +308,7 @@
 
                     <ion-item>
                         <ion-label text-wrap>No actual playing of tracks</ion-label>
-                        <ion-toggle color="primary" formControlName="demoNoActualPlaying"></ion-toggle>
+                        <ion-toggle id="demoNoActualPlaying" color="primary" formControlName="demoNoActualPlaying"></ion-toggle>
                         <ion-icon tooltip="If you enable this, tracks will not being played. 
                         It looks like they are being played, but the loud  speaker remains silent." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
@@ -316,7 +316,7 @@
 
                     <ion-item>
                         <ion-label text-wrap>Fill Empty Playlist</ion-label>
-                        <ion-toggle color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
+                        <ion-toggle id="demoAutoFillEmptyPlaylist" color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
                         <ion-icon tooltip="If you enable this, OpenDJ will add some tracks when the playlist is empty." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>

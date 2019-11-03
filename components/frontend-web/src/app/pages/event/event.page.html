@@ -1,7 +1,7 @@
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
-            <ion-menu-button color="light"></ion-menu-button>
+            <ion-menu-button id="event-menu-button" color="light"></ion-menu-button>
         </ion-buttons>
 
         <ion-title color="light">
@@ -9,7 +9,7 @@
         </ion-title>
 
         <ion-buttons slot="end" margin-right>
-            <ion-button color="light" (click)="presentMoreOptions($event)">
+            <ion-button id="event-more-options" color="light" (click)="presentMoreOptions($event)">
                 <ion-icon slot="icon-only" name="more"></ion-icon>
             </ion-button>
         </ion-buttons>
@@ -77,10 +77,10 @@
                     <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
 
                         <ion-item style="--ion-background-color: transparent !important; color: white;">
-                            <ion-input style="background-color: #222428; border-radius: 10px" formControlName="username" type="text" clearInput="true" placeholder="Username">
+                            <ion-input style="background-color: #222428; border-radius: 10px" id="username" formControlName="username" type="text" clearInput="true" placeholder="Username">
                             </ion-input>
                             <ion-note slot="end">
-                                <ion-button (click)="generateUsername()" tappable shape="round" color="primary" size="small" fill="outline">
+                                <ion-button id="generateUsername" (click)="generateUsername()" tappable shape="round" color="primary" size="small" fill="outline">
                                     <ion-icon name="color-wand"></ion-icon>
                                 </ion-button>
                             </ion-note>
@@ -90,14 +90,14 @@
                         </ion-item>
 
                         <ion-item *ngIf="event.passwordUser !==''" style="--ion-background-color: transparent !important; color: white;">
-                            <ion-input style="background-color: #222428; border-radius: 10px" formControlName="password" type="password" clearInput="true" placeholder="Password">
+                            <ion-input id="password" style="background-color: #222428; border-radius: 10px" formControlName="password" type="password" clearInput="true" placeholder="Password">
                             </ion-input>
                         </ion-item>
 
                     </ion-list>
 
                     <div style="text-align: center;">
-                        <ion-button type="submit" shape="round" color="primary" (click)="join()" tappable style="width: 75%">
+                        <ion-button id="join" type="submit" shape="round" color="primary" (click)="join()" tappable style="width: 75%">
                             Join Event
                         </ion-button>
                     </div>
