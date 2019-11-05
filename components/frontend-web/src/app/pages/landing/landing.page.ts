@@ -10,6 +10,7 @@ import { AlertController, MenuController, IonSlides } from '@ionic/angular';
 export class LandingPage implements OnInit {
 
   @ViewChild('slides') slides: IonSlides;
+  showSkip = false;
 
   constructor(
     private router: Router,
@@ -68,6 +69,17 @@ export class LandingPage implements OnInit {
 
   }
 
+  hanndleSlideChange() {
+    // console.log('Slide change');
+    this.slides.getActiveIndex().then((value) => {
+      // console.log(value);
+      if (value !== 0) {
+        this.showSkip = true;
+      } else {
+        this.showSkip = false;
+      }
+    });
+  }
 
   ngOnInit() {
   }

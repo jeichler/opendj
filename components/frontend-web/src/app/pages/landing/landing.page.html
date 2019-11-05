@@ -1,14 +1,14 @@
 <ion-header no-border>
     <ion-toolbar color="dark">
         <ion-buttons slot="end">
-            <ion-button color='primary' (click)="skip()" tappable>Skip</ion-button>
+            <ion-button color='primary' (click)="skip()" tappable *ngIf="showSkip">Skip</ion-button>
         </ion-buttons>
     </ion-toolbar>
 </ion-header>
 
 <ion-content fullscreen color="dark">
 
-    <ion-slides #slides pager="true">
+    <ion-slides #slides pager="true" (ionSlideDidChange)="hanndleSlideChange()">
         <ion-slide>
             <img src="assets/img/Logo_OpenDJ_128.png" class="slide-image" />
             <h2 class="slide-title">
