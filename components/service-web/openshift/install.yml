@@ -49,7 +49,7 @@
             postCommit: {}
             resources:
               limits:
-                  memory: 256Mi
+                  memory: 512Mi
             runPolicy: Serial
             source:
               contextDir: components/service-web

@@ -163,3 +163,5 @@ oc tag frontend-web-artifact:latest frontend-web-artifact:test
 oc tag frontend-web:latest frontend-web:test
 
 
+NPM_MIRROR=https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org
+
