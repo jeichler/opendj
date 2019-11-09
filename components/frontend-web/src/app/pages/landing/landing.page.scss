@@ -2,33 +2,34 @@ ion-toolbar {
     // TODO test transparent and fullscreen
     --background: transparent;
     --border-color: transparent;
-  }
-  
-  .swiper-slide {
+}
+
+.swiper-slide {
     display: block;
-  }
-  
-  .slide-title {
-    margin-top: 0.8rem;
-  }
-  
-  .slide-image {
+}
+
+.slide-title {
+    //    margin-top: 0.8rem;
+    margin-top: 0;
+}
+
+.slide-image {
     max-height: 40%;
     max-width: 60%;
-    margin: 36px 0;
-  }
-  
-  b {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+b {
     font-weight: 500;
-  }
-  
-  p {
+}
+
+p {
     padding: 0 40px;
     font-size: 14px;
     line-height: 1.5;
     color: #ffffff;
-  
     b {
-      color: #000000;
+        color: #000000;
     }
-  }
+}
