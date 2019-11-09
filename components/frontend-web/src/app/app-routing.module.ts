@@ -11,8 +11,9 @@ const routes: Routes = [
   { path: 'ui/playlist-user', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/playlist-curator', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/playlist-event', loadChildren: './pages/playlist/playlist.module#PlaylistPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
+  { path: 'ui/legal', loadChildren: './pages/legal/legal.module#LegalPageModule', runGuardsAndResolvers: 'always' },
   { path: ':eventID', redirectTo: 'ui/event/:eventID', pathMatch: 'full' },
-  { path: '**', redirectTo: 'ui/landing' }
+  { path: '**', redirectTo: 'ui/landing' },
 ];
 
 @NgModule({
