@@ -2,10 +2,10 @@
   "id": "636a0859-a60c-4e32-914a-0a2fbbc9a9bd",
   "version": "2.0",
   "name": "openDJSelenium",
-  "url": "http://dev.opendj.io/",
+  "url": "http://localhost:8100/",
   "tests": [{
     "id": "f2f02cbe-238e-4333-b468-158f5b840a2b",
-    "name": "user-login-addTrack",
+    "name": "20-add-track-as-user",
     "commands": [{
       "id": "8b9da004-e0cf-4b4a-8b4a-1b5be3db662f",
       "comment": "",
@@ -95,7 +95,7 @@
       "id": "a780fec9-28fe-467b-91ca-3111e008a5f8",
       "comment": "",
       "command": "pause",
-      "target": "100",
+      "target": "1000",
       "targets": [],
       "value": ""
     }, {
@@ -267,7 +267,7 @@
     }]
   }, {
     "id": "825f7cc2-19e9-47e5-b816-fdc98d5e8820",
-    "name": "owner-create-delete-event",
+    "name": "10-create-event",
     "commands": [{
       "id": "8e029619-bb2b-4cb9-981f-4070879b6a0c",
       "comment": "",
@@ -279,9 +279,16 @@
       "id": "bf6b3dae-22d0-4a00-a06e-fcb456bffa9d",
       "comment": "",
       "command": "setWindowSize",
-      "target": "1311x1238",
+      "target": "800x1280",
       "targets": [],
       "value": ""
+    }, {
+      "id": "92132569-faad-4dce-a0b9-94e989ea826a",
+      "comment": "",
+      "command": "waitForElementVisible",
+      "target": "id=joinExistingEvent",
+      "targets": [],
+      "value": "3000"
     }, {
       "id": "a381e04a-ea72-4b45-9653-3b0939efdb94",
       "comment": "",
@@ -296,53 +303,283 @@
       ],
       "value": ""
     }, {
-      "id": "4594df01-4812-402c-a05f-d3f0fd535baa",
+      "id": "dba6f4e7-a1dc-474b-9019-6b66e5ae0f64",
+      "comment": "",
+      "command": "waitForElementEditable",
+      "target": "xpath=//input[@name='eventID']",
+      "targets": [],
+      "value": "3000"
+    }, {
+      "id": "b0395290-5da9-4b95-9bbc-045efcff3980",
       "comment": "",
       "command": "click",
-      "target": "name=ion-input-0",
+      "target": "xpath=//input[@name='eventID']",
       "targets": [
-        ["name=ion-input-0", "name"],
-        ["css=#eventID > .native-input", "css:finder"],
-        ["xpath=//input[@name='ion-input-0']", "xpath:attributes"],
-        ["xpath=//ion-input[@id='eventID']/input", "xpath:idRelative"],
+        ["css=.has-focus > .native-input", "css:finder"],
+        ["xpath=//input[@name='eventID']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-content/div/form/ion-list/ion-item-group[2]/ion-item/ion-input/input", "xpath:idRelative"],
         ["xpath=//input", "xpath:position"]
       ],
       "value": ""
     }, {
-      "id": "7222f3e8-70c9-40e4-9e2b-baa6a231e9f3",
+      "id": "5c4d0d7f-10c9-4dd9-a7a0-bbd529bbb9e1",
       "comment": "",
       "command": "type",
-      "target": "name=ion-input-0",
+      "target": "xpath=//input[@name='eventID']",
       "targets": [
         ["css=.ng-touched > .native-input", "css:finder"],
         ["xpath=//input[@name='eventID']", "xpath:attributes"],
         ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-content/div/form/ion-list/ion-item-group[2]/ion-item/ion-input/input", "xpath:idRelative"],
         ["xpath=//input", "xpath:position"]
       ],
-      "value": "name"
+      "value": "selenium"
+    }, {
+      "id": "7222f3e8-70c9-40e4-9e2b-baa6a231e9f3",
+      "comment": "",
+      "command": "type",
+      "target": "xpath=//input[@name='name']",
+      "targets": [
+        ["css=.has-focus > .native-input", "css:finder"],
+        ["xpath=//input[@name='name']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-content/div/form/ion-list/ion-item-group[2]/ion-item[2]/ion-input/input", "xpath:idRelative"],
+        ["xpath=//ion-item[2]/ion-input/input", "xpath:position"]
+      ],
+      "value": "Used by selenium test automation"
+    }, {
+      "id": "6e6e9dd8-ab9c-4fc1-b08c-731cfd91abdf",
+      "comment": "",
+      "command": "type",
+      "target": "xpath=//input[@name='owner']",
+      "targets": [
+        ["css=.ng-invalid > .native-input", "css:finder"],
+        ["xpath=//input[@name='owner']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-content/div/form/ion-list/ion-item-group[3]/ion-item/ion-input/input", "xpath:idRelative"],
+        ["xpath=//ion-item-group[3]/ion-item/ion-input/input", "xpath:position"]
+      ],
+      "value": "selenium"
+    }, {
+      "id": "acd8ab1a-b155-463f-a67f-9fbc1f92ab5b",
+      "comment": "",
+      "command": "click",
+      "target": "id=create",
+      "targets": [
+        ["id=create", "id"],
+        ["css=#create", "css:finder"],
+        ["xpath=//ion-button[@id='create']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-header/ion-toolbar[2]/div/ion-button", "xpath:idRelative"],
+        ["xpath=//div/ion-button", "xpath:position"]
+      ],
+      "value": ""
+    }]
+  }, {
+    "id": "6a7005de-7060-4dbc-8e40-282dcc7dc70b",
+    "name": "30-delete-event",
+    "commands": [{
+      "id": "372b31d9-69c3-4350-aa69-2122fa9aa102",
+      "comment": "",
+      "command": "open",
+      "target": "http://localhost:8100/ui/landing",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "a5752403-32a9-4aac-9876-d8945c50e6c7",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "800x1280",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "6fd2b975-600c-4be9-a324-42ea31425afc",
+      "comment": "",
+      "command": "click",
+      "target": "id=joinExistingEvent",
+      "targets": [
+        ["id=joinExistingEvent", "id"],
+        ["css=#joinExistingEvent", "css:finder"],
+        ["xpath=//ion-button[@id='joinExistingEvent']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/landing/ion-content/ion-slides/div/ion-slide/ion-button[2]", "xpath:idRelative"],
+        ["xpath=//ion-button[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8a916f49-a8cc-4c92-915c-2154bf47423e",
+      "comment": "",
+      "command": "click",
+      "target": "id=eventID",
+      "targets": [
+        ["id=eventID", "id"],
+        ["css=#eventID", "css:finder"],
+        ["xpath=//input[@id='eventID']", "xpath:attributes"],
+        ["xpath=//ion-alert[@id='ion-overlay-1']/div/div[3]/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "a63e0b5b-4195-40de-b649-543040642ebb",
+      "comment": "",
+      "command": "type",
+      "target": "id=eventID",
+      "targets": [
+        ["id=eventID", "id"],
+        ["css=#eventID", "css:finder"],
+        ["xpath=//input[@id='eventID']", "xpath:attributes"],
+        ["xpath=//ion-alert[@id='ion-overlay-1']/div/div[3]/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "selenium"
+    }, {
+      "id": "b9726036-d5ab-41af-adf9-5bea828d3076",
+      "comment": "",
+      "command": "click",
+      "target": "css=.idForSelenium_Go",
+      "targets": [
+        ["css=.idForSelenium_Go", "css:finder"],
+        ["xpath=(//button[@type='button'])[2]", "xpath:attributes"],
+        ["xpath=//ion-alert[@id='ion-overlay-1']/div/div[4]/button[2]", "xpath:idRelative"],
+        ["xpath=//button[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "d99aa8d9-a5e5-47b9-b5a4-a0d0a64f287b",
+      "comment": "",
+      "command": "click",
+      "target": "id=event-more-options",
+      "targets": [
+        ["id=event-more-options", "id"],
+        ["css=#event-more-options", "css:finder"],
+        ["xpath=//ion-button[@id='event-more-options']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/event/ion-header/ion-toolbar/ion-buttons[2]/ion-button", "xpath:idRelative"],
+        ["xpath=//ion-buttons[2]/ion-button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "2ac2bad8-9030-4701-b29b-7fc3fbc50a04",
+      "comment": "",
+      "command": "click",
+      "target": "css=#more-opentions-gotoEventOwnerLogin > .sc-ion-label-md-h",
+      "targets": [
+        ["css=#more-opentions-gotoEventOwnerLogin > .sc-ion-label-md-h", "css:finder"],
+        ["xpath=//ion-item[@id='more-opentions-gotoEventOwnerLogin']/ion-label", "xpath:idRelative"],
+        ["xpath=//ion-item[2]/ion-label", "xpath:position"],
+        ["xpath=//ion-label[contains(.,'Login as Event Owner')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "e8b2e70e-fdae-4111-8783-b29ddca7cfad",
+      "comment": "",
+      "command": "click",
+      "target": "xpath=//input[@name='login-modal-username']",
+      "targets": [
+        ["name=ion-input-1", "name"],
+        ["css=#login-modal-username > .native-input", "css:finder"],
+        ["xpath=//input[@name='ion-input-1']", "xpath:attributes"],
+        ["xpath=//ion-input[@id='login-modal-username']/input", "xpath:idRelative"],
+        ["xpath=//ion-content/form/ion-list/ion-item/ion-input/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "97187972-93a4-4539-909e-55f927ba80b7",
+      "comment": "",
+      "command": "type",
+      "target": "xpath=//input[@name='login-modal-username']",
+      "targets": [
+        ["css=.has-focus > .native-input", "css:finder"],
+        ["xpath=//input[@name='login-modal-username']", "xpath:attributes"],
+        ["xpath=//ion-modal[@id='ion-overlay-3']/div/app-login-modal/ion-content/form/ion-list/ion-item/ion-input/input", "xpath:idRelative"],
+        ["xpath=//ion-content/form/ion-list/ion-item/ion-input/input", "xpath:position"]
+      ],
+      "value": "selenium"
+    }, {
+      "id": "c35630ac-e80a-4d7b-96db-7db8523a698a",
+      "comment": "",
+      "command": "type",
+      "target": "xpath=//input[@name='login-modal-password']",
+      "targets": [
+        ["css=.has-focus > .native-input", "css:finder"],
+        ["xpath=//input[@name='login-modal-password']", "xpath:attributes"],
+        ["xpath=//ion-modal[@id='ion-overlay-3']/div/app-login-modal/ion-content/form/ion-list/ion-item[2]/ion-input/input", "xpath:idRelative"],
+        ["xpath=//ion-list/ion-item[2]/ion-input/input", "xpath:position"]
+      ],
+      "value": "owner"
+    }, {
+      "id": "54854f06-8bc1-49e8-acfc-4496320a2b0c",
+      "comment": "",
+      "command": "click",
+      "target": "id=login-modal-login",
+      "targets": [
+        ["id=login-modal-login", "id"],
+        ["css=#login-modal-login", "css:finder"],
+        ["xpath=//ion-button[@id='login-modal-login']", "xpath:attributes"],
+        ["xpath=//ion-modal[@id='ion-overlay-3']/div/app-login-modal/ion-content/form/div/ion-button", "xpath:idRelative"],
+        ["xpath=//ion-content/form/div/ion-button", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "75018444-f854-427a-bffc-314cad964858",
+      "comment": "",
+      "command": "waitForElementVisible",
+      "target": "id=delete",
+      "targets": [
+        ["id=delete", "id"],
+        ["css=#delete", "css:finder"],
+        ["xpath=//ion-button[@id='delete']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-header/ion-toolbar[2]/div/ion-button[2]", "xpath:idRelative"],
+        ["xpath=//div/ion-button[2]", "xpath:position"]
+      ],
+      "value": "3000"
+    }, {
+      "id": "8d0f3263-6cd6-481a-ad3c-a47c8e8f96ea",
+      "comment": "",
+      "command": "click",
+      "target": "id=delete",
+      "targets": [
+        ["id=delete", "id"],
+        ["css=#delete", "css:finder"],
+        ["xpath=//ion-button[@id='delete']", "xpath:attributes"],
+        ["xpath=//ion-app[@id='app-main']/ion-router-outlet/app-create-event/ion-header/ion-toolbar[2]/div/ion-button[2]", "xpath:idRelative"],
+        ["xpath=//div/ion-button[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "d7b24ac0-3de1-4411-830e-087d773e7130",
+      "comment": "",
+      "command": "waitForElementVisible",
+      "target": "css=.seleniumOkay",
+      "targets": [
+        ["css=.seleniumOkay", "css:finder"],
+        ["xpath=(//button[@type='button'])[2]", "xpath:attributes"],
+        ["xpath=//ion-alert[@id='ion-overlay-1']/div/div[3]/button[2]", "xpath:idRelative"],
+        ["xpath=//button[2]", "xpath:position"]
+      ],
+      "value": "3000"
+    }, {
+      "id": "df8b9038-fbb2-41b2-98c7-97985cf95507",
+      "comment": "",
+      "command": "click",
+      "target": "css=.seleniumOkay",
+      "targets": [
+        ["css=.seleniumOkay", "css:finder"],
+        ["xpath=(//button[@type='button'])[2]", "xpath:attributes"],
+        ["xpath=//ion-alert[@id='ion-overlay-1']/div/div[3]/button[2]", "xpath:idRelative"],
+        ["xpath=//button[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "bc0721fa-aea7-4723-8c2f-254cbbf5a919",
+      "comment": "The actual deleteion in the backend takes up to 30s, thus we need to wait",
+      "command": "pause",
+      "target": "3000",
+      "targets": [],
+      "value": ""
     }]
   }],
   "suites": [{
     "id": "bd924902-60e0-4552-b944-ef9ae0a35c7d",
-    "name": "userTests",
+    "name": "smoke-test",
     "persistSession": false,
     "parallel": false,
     "timeout": 40,
-    "tests": ["f2f02cbe-238e-4333-b468-158f5b840a2b"]
-  }, {
-    "id": "2b7be048-25e2-4131-87ed-9090db65992a",
-    "name": "curatorTests",
-    "persistSession": false,
-    "parallel": false,
-    "timeout": 300,
-    "tests": []
-  }, {
-    "id": "7a1376bd-253c-4076-a700-4e585e573b0b",
-    "name": "ownerTests",
-    "persistSession": false,
-    "parallel": false,
-    "timeout": 300,
-    "tests": ["825f7cc2-19e9-47e5-b816-fdc98d5e8820"]
+    "tests": ["825f7cc2-19e9-47e5-b816-fdc98d5e8820", "f2f02cbe-238e-4333-b468-158f5b840a2b"]
   }],
   "urls": ["http://localhost:8100/", "https://dev.opendj.io/", "http://dev.opendj.io/", "http://tst.opendj.io/"],
   "plugins": []

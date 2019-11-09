@@ -131,12 +131,13 @@ export class CreateEventPage implements OnInit {
         {
           text: 'Cancel',
           role: 'cancel',
-          cssClass: 'secondary',
+          cssClass: 'secondary seleniumCancel',
           handler: (data) => {
 
           }
         }, {
           text: 'Okay',
+          cssClass: 'seleniumOkay',
           handler: () => {
             this.deleteEvent();
           }
