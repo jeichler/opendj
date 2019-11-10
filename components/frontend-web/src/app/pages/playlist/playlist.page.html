@@ -34,7 +34,7 @@
 
             <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
 
-                <ion-item color="dark">
+                <ion-item id="item-{{item.id}}" color="dark">
                     <ion-thumbnail slot="start" (press)="toggleOptions()">
                         <a href="{{item.image_url_ref}}" target="_blank">
                             <img src="{{item.image_url}}">
@@ -43,8 +43,8 @@
                     <ion-label>{{item.name}}
                         <br />
                         <span *ngIf="isCurator && showOptions">
-              <ion-button (click)="moveTop(item, i)" tappable size="small">Top</ion-button>
-              <ion-button color="danger" (click)="deleteTrack(item, i)" tappable size="small">Delete</ion-button>
+              <ion-button id="moveTop-{{item.id}}" (click)="moveTop(item, i)" tappable size="small">Top</ion-button>
+              <ion-button id="delete-{{item.id}}" (click)="deleteTrack(item, i)" tappable size="small" color="danger">Delete</ion-button>
               <br/>
             </span>
                         <span style="font-size: 14px; color: #999;">
@@ -75,9 +75,9 @@
 
 
                 </ion-item>
-                <ion-item-options side="end" *ngIf="isCurator">
+                <ion-item-options id="item-options-{{item.id}}" side="end" *ngIf="isCurator">
                     <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
-                    <ion-item-option (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
+                    <ion-item-option id="action-delete-{{item.id}}" (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
                 </ion-item-options>
 
             </ion-item-sliding>
