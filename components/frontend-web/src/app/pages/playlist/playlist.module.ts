@@ -6,12 +6,14 @@ import { RouterModule } from '@angular/router';
 import { PlaylistPage, PlaylistAddModalComponent } from './playlist.page';
 import { CurrentTrackComponent } from 'src/app/components/current-track/current-track.component';
 import { SharedModule } from 'src/app/components/shared.module';
+import { TooltipModule } from 'ng2-tooltip-directive';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    TooltipModule,
     SharedModule,
     RouterModule.forChild([
       {

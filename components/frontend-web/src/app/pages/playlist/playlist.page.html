@@ -9,9 +9,7 @@
         </ion-title>
 
         <ion-buttons slot="end">
-            <ion-button color="light" *ngIf="isConnected">
-                <ion-icon name="wifi"></ion-icon>
-            </ion-button>
+            <ion-icon style="margin:10px; font-size:20px" *ngIf="isConnected" color="light" name="wifi" tooltip="You are connected to the server and receive updates to the playlist automatically" [options]="tooltipOptions"></ion-icon>
         </ion-buttons>
 
     </ion-toolbar>
@@ -53,9 +51,9 @@
                         <a *ngIf="isCurator" href="{{item.previewViaApp}}" target="_blank">
                             <ion-img *ngIf="isCurator" float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-left:10px"></ion-img>
                         </a>
-                        <ion-img *ngIf="!isCurator" float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px"></ion-img>
+                        <ion-img *ngIf="!isCurator" float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px" tooltip="Track is provided by Spotify" [options]="tooltipOptions"></ion-img>
 
-                        <ion-badge color="medium" float-right>
+                        <ion-badge color="medium" float-right tooltip="User who contributed this track" [options]="tooltipOptions">
                             {{item.added_by}}
                         </ion-badge>
 
@@ -63,7 +61,7 @@
                             <span style="font-size: 14px; color: #999;">
               {{item.genre}}</span>
                         </ion-label>
-                        <ion-label *ngIf="isCurator">
+                        <ion-label *ngIf="isCurator" tooltip="BPM: Beats per Minute<br>D: Danceability<br>E: Energy<br>H: Hapiness" [options]="tooltipOptions">
                             <span style="font-size: 14px; color: #999;">
               {{item.bpm}} bpm D:{{item.danceability}} E:{{item.energy}} H:{{item.happiness}}</span>
                         </ion-label>

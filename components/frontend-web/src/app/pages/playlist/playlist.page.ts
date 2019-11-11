@@ -28,6 +28,14 @@ export class PlaylistPage implements OnInit, OnDestroy {
   showOptions = false;
   isConnected = false;
   intervalHandle = null;
+  tooltipOptions = {
+    placement: 'left',
+    hideDelayTouchscreen: 2500,
+    hideDelayAfterClick: 2500,
+    trigger: 'click',
+    'max-width': 300,
+    'show-delay': 0
+  };
 
   constructor(
     public modalController: ModalController,
