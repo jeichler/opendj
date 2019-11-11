@@ -51,6 +51,7 @@ export class CreateEventPage implements OnInit {
   }
 
   private mapEventToForm(f: FormGroup, e: MusicEvent) {
+    console.debug('begin mapEventToForm');
     f.patchValue(e);
 
     // ID is only editable upon create:
@@ -176,6 +177,11 @@ export class CreateEventPage implements OnInit {
       // if user is not logged in -> load new default event.
       if (!this.userState.isLoggedIn) {
         this.event = await this.feService.readEvent(null).toPromise();
+
+        // Highlight mandatory fields  by triggering form validation:
+        this.eventForm.get('eventID').markAsTouched();
+        this.eventForm.get('name').markAsTouched();
+        this.eventForm.get('owner').markAsTouched();
       }
       // if the user is the owner, load the event data
       if (this.userState.isLoggedIn && this.userState.isEventOwner) {
@@ -191,6 +197,7 @@ export class CreateEventPage implements OnInit {
   async ionViewDidEnter() {
     console.debug('ionViewDidEnter');
     await this.refreshState();
+
   }
 
   async ngOnInit() {
