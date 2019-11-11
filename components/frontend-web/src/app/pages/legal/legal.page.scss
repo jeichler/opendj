@@ -1,0 +1,22 @@
+.item,
+.list,
+.item-content,
+.item-complex {
+    --ion-background-color: transparent !important;
+    --background-focused: transparent;
+    --color-focused: white;
+}
+
+.item-label {
+    color: #fff;
+}
+
+ion-item {
+    --border-color: #333;
+}
+
+ion-item-divider {
+    font-size: 20px;
+    color: #3880ff;
+    margin-top: 20px;
+}
