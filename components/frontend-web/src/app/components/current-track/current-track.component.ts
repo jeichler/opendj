@@ -63,6 +63,11 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     if (this.progress < 0) {
       this.progress = 0;
     }
+    // Fix issue#156: when track has ended but no new track is
+    // received from server, stop counting:
+    if (this.progress > duration) {
+      this.progress = duration;
+    }
 
     let timeLeft = duration - this.progress;
     if (timeLeft < 0) {
@@ -79,7 +84,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     const m = Math.floor(timeLeft / 1000 / 60) % 60;
     const sStr = s < 10 ? '0' + s : '' + s;
     const mStr = m < 10 ? '0' + m : '' + m;
-    this.currentTime = mStr + ':' + sStr;
+    this.currentTime = '- ' + mStr + ':' + sStr;
 
     const mP = Math.floor(this.progress / 1000 / 60);
     let sP = this.progress / 1000 % 60;
