@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 
-import { PlaylistPage } from './playlist.page';
+import { PlaylistPage } from './playlist-user.page';
 
 describe('ListPage', () => {
   let component: PlaylistPage;

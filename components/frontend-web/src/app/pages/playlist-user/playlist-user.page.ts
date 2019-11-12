@@ -1,10 +1,10 @@
-import { ConfigService } from './../../providers/config.service';
-import { UserDataService } from './../../providers/user-data.service';
+import { ConfigService } from '../../providers/config.service';
+import { UserDataService } from '../../providers/user-data.service';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
-import { FEService } from './../../providers/fes.service';
+import { FEService } from '../../providers/fes.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
@@ -14,18 +14,16 @@ import { UserSessionState } from 'src/app/models/usersessionstate';
 
 @Component({
   selector: 'app-playlist',
-  templateUrl: 'playlist.page.html',
-  styleUrls: ['playlist.page.scss']
+  templateUrl: 'playlist-user.page.html',
+  styleUrls: ['playlist-user.page.scss']
 })
-export class PlaylistPage implements OnInit, OnDestroy {
+export class PlaylistUserPage implements OnInit, OnDestroy {
   public selectedItem: any;
 
   currentEvent: MusicEvent = null;
   currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
   userState: UserSessionState;
-  isCurator = false;
-  showOptions = false;
   isConnected = false;
   intervalHandle = null;
   tooltipOptions = {
@@ -62,17 +60,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
     });
   }
 
-  deleteTrack(track, index) {
-    console.debug('deleteTrack');
-    this.feService.deleteTrack(this.currentEvent, track.id, index).subscribe(
-      res => {
-        // console.log(res);
-        this.presentToast('You have deleted the track.');
-      },
-      err => console.error(err)
-    );
-  }
-
   refresh(event) {
     console.debug('refresh');
     this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
@@ -92,7 +79,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
   }
 
   computeETAForTracks() {
-    console.debug(this.newMethod());
     const playlist = this.currentPlaylist;
     let ts = Date.now();
     if (playlist.currentTrack) {
@@ -104,43 +90,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
           playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
           ts += playlist.nextTracks[i].duration_ms;
       }
-    }
-  }
-
-  private newMethod(): any {
-    return 'computeETAForTracks';
-  }
-
-  onRenderItems(event) {
-    // console.log(`Moving item from ${event.detail.from} to ${event.detail.to}`);
-    const draggedItem = this.currentPlaylist.nextTracks.splice(event.detail.from, 1)[0];
-    this.currentPlaylist.nextTracks.splice(event.detail.to, 0, draggedItem);
-    this.feService.reorderTrack(this.currentEvent, draggedItem.id, event.detail.from, event.detail.to).subscribe(
-      data => {
-        this.presentToast('Track successfully reordered in playlist.');
-      },
-      err => console.log(err)
-    );
-    event.detail.complete();
-  }
-
-  toggleOptions() {
-    if (this.showOptions) {
-      this.showOptions = false;
-    } else {
-      this.showOptions = true;
-    }
-  }
-
-  moveTop(item, index, slidingItem) {
-    if (this.isCurator) {
-      this.feService.reorderTrack(this.currentEvent, item.id, index, 0).subscribe(
-        data => {
-          this.presentToast('Track moved to top.');
-          // slidingItem.close();
-        },
-        err => console.error(err)
-      );
     }
   }
 
@@ -172,46 +121,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
       duration: 2000
     });
     toast.present();
-  }
-
-  async presentActionSheet(data, index) {
-    const actionSheet = await this.actionSheetController.create({
-      header: data.title,
-      buttons: [
-        {
-          text: 'Play (preview mode)',
-          icon: 'arrow-dropright-circle',
-          handler: () => {
-            console.log('Play clicked');
-          }
-        },
-        {
-          text: 'Delete',
-          role: 'destructive',
-          icon: 'trash',
-          handler: () => {
-            console.debug('Delete clicked');
-            this.feService.deleteTrack(this.currentEvent, data.id, index).subscribe(
-              res => {
-                console.debug(res);
-                this.presentToast('You have deleted the track.');
-              },
-              err => console.log(err)
-            );
-          }
-        }, {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel',
-          handler: () => {
-            console.debug('Cancel clicked');
-          }
-        }]
-    });
-    if (this.isCurator) {
-      await actionSheet.present();
-    }
-
   }
 
   trackElement(index: number, element: any) {
@@ -248,7 +157,6 @@ export class PlaylistPage implements OnInit, OnDestroy {
 
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
-    this.isCurator = this.userState.isCurator;
 
     console.debug('getCurrentPlaylist()');
     this.refreshPlaylist();

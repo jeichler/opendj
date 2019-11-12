@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="io.ionic.starter" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="io.opendj.app" version="0.4.2" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>OpenDJ</name>
-    <description>Open the Playlist</description>
-    <author email="info@opendj.io" href="http://ionicframework.com/">Ionic Framework Team</author>
+    <description>Opens the playlist of your music event to your guests</description>
+    <author email="contact@opendj.io" href="https://www.opendj.io">OpenDJ Team</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />

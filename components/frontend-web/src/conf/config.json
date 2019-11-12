@@ -6,5 +6,5 @@
     "websocketPath": "/api/service-web/socket",
     "SPOTIFY_PROVIDER_API": "http://dev.opendj.io/api/provider-spotify/v1",
     "PLAYLIST_PROVIDER_API": "http://dev.opendj.io/api/service-playlist/v1",
-    "SERVER_TIMEOUT": 1000
+    "SERVER_TIMEOUT": 20000
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { PlaylistPage, PlaylistAddModalComponent } from './playlist.page';
+import { PlaylistCuratorPage, PlaylistAddModalComponent } from './playlist-curator.page';
 import { CurrentTrackComponent } from 'src/app/components/current-track/current-track.component';
 import { SharedModule } from 'src/app/components/shared.module';
 import { TooltipModule } from 'ng2-tooltip-directive';
@@ -18,12 +18,12 @@ import { TooltipModule } from 'ng2-tooltip-directive';
     RouterModule.forChild([
       {
         path: '',
-        component: PlaylistPage
+        component: PlaylistCuratorPage
       }
     ])
   ],
   declarations: [
-    PlaylistPage,
+    PlaylistCuratorPage,
     PlaylistAddModalComponent
   ],
   entryComponents: [
@@ -31,4 +31,4 @@ import { TooltipModule } from 'ng2-tooltip-directive';
     CurrentTrackComponent
   ]
 })
-export class PlaylistPageModule { }
+export class PlaylistCuratorPageModule { }

@@ -1,0 +1,62 @@
+<!-- <div class="context"> -->
+<ion-header no-border color="dark">
+    <ion-toolbar color="dark">
+        <ion-buttons slot="start">
+            <ion-menu-button id="playlist-menu-button" color="light"></ion-menu-button>
+        </ion-buttons>
+        <ion-title color="light">
+            {{currentEvent?.name}} - {{currentPlaylist?.nextTracks?.length}} Tracks
+        </ion-title>
+
+        <ion-buttons slot="end">
+            <ion-icon style="margin:10px; font-size:20px" *ngIf="isConnected" color="light" name="wifi" tooltip="You are connected to the server and receive updates to the playlist automatically" [options]="tooltipOptions"></ion-icon>
+        </ion-buttons>
+
+    </ion-toolbar>
+    <ion-toolbar color="dark">
+        <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
+    </ion-toolbar>
+
+</ion-header>
+
+<ion-content color="dark">
+
+    <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
+
+        <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
+
+            <ion-item id="item-{{item.id}}" color="dark">
+                <ion-thumbnail slot="start">
+                    <a href="{{item.image_url_ref}}" target="_blank">
+                        <img src="{{item.image_url}}">
+                    </a>
+                </ion-thumbnail>
+                <ion-label>{{item.name}}
+                    <br />
+                    <span style="font-size: 14px; color: #999;">
+                            {{item.artist}} {{item.year}} eta {{item.eta}}
+                        </span>
+                    <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px" tooltip="Track is provided by Spotify" [options]="tooltipOptions"></ion-img>
+
+                    <ion-badge color="medium" float-right tooltip="User who contributed this track" [options]="tooltipOptions">
+                        {{item.added_by}}
+                    </ion-badge>
+                </ion-label>
+
+            </ion-item>
+
+        </ion-item-sliding>
+    </ion-list>
+
+    <!-- Add Track Button: -->
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed" margin>
+        <ion-fab-button id="playlist-addTrack-button" (click)="presentModal()">
+            <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+    </ion-fab>
+
+</ion-content>
