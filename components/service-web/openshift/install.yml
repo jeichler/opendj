@@ -10,6 +10,11 @@
     - name: "Combine env facts"
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.SERVICE_WEB.DEPLOY
+
     - name: Create ImageStream
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:

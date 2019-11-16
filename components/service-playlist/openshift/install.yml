@@ -11,7 +11,11 @@
       tags: always
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
-  
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.SERVICE_PLAYLIST.DEPLOY
+
     - name: Create kafka topic
       when: ENV.BACKEND_EVENTSTORE.KAFKA.USE
       command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.data.event --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 

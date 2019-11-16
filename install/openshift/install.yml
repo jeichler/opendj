@@ -66,7 +66,7 @@
             name: "system:serviceaccounts:{{ENV.COMMON.NAMESPACE|mandatory}}"
           userNames: null
 
-#- import_playbook: ../../components/backend-eventstore/openshift/install.yml
+- import_playbook: ../../components/backend-eventstore/openshift/install.yml
 - import_playbook: ../../components/backend-datagrid/openshift/install.yml
 - import_playbook: ../../components/provider-spotify/openshift/install.yml
 - import_playbook: ../../components/service-playlist/openshift/install.yml

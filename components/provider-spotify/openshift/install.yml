@@ -11,6 +11,11 @@
       tags: always
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.PROVIDER_SPOTIFY.DEPLOY
+
     - name: Create Spotify secret
       shell: |
         oc create secret generic spotify-api-credentials  --from-literal=CLIENT_ID={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID | mandatory}} --from-literal=CLIENT_SECRET={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET | mandatory}} --namespace {{ENV.COMMON.NAMESPACE}}

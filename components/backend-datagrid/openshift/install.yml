@@ -1,5 +1,5 @@
 ---
-- name: Install backend-eventstore
+- name: Install backend-datagrid
   gather_facts: false
   hosts: localhost
   vars_files:
@@ -13,6 +13,9 @@
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
 #https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.3.x/openshift/datagrid-service/user-config
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.BACKEND_DATAGRID.DEPLOY
 
     - name: undeploy Datagrid 
       when: ENV.BACKEND_DATAGRID.UNDEPLOY
