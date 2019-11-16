@@ -12,7 +12,6 @@ import { MusicEvent } from '../models/music-event';
     providedIn: 'root'
 })
 export class FEService {
-
     private SPOTIFY_PROVIDER_API;
     private PLAYLIST_PROVIDER_API;
     private SERVER_TIMEOUT;
@@ -159,6 +158,19 @@ export class FEService {
             retry(1),
             catchError(this.handleError)
           );
+    }
+
+    provideTrackFeedback(event: MusicEvent, trackID: string, oldFeedback: string, newFeedback: string) {
+        console.debug('begin provideTrackFeedback', trackID, oldFeedback, newFeedback);
+        return this.http.post(this.PLAYLIST_PROVIDER_API
+            + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
+            + '/tracksFeedback/' + encodeURIComponent(`spotify:${trackID}`)
+            + '/feedback', { old: oldFeedback, new: newFeedback })
+            .pipe(
+            timeout(this.SERVER_TIMEOUT),
+            retry(1),
+            catchError(this.handleError)
+            );
     }
 
     /* ------------------------------------------------------------------------ */

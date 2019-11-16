@@ -19,6 +19,8 @@ export class MusicEvent {
     everybodyIsCurator: boolean;
     pauseOnPlayError: boolean;
     enableTrackLiking: boolean;
+    emojiTrackLike: string;
+    emojiTrackHate: string;
     enableTrackHating: boolean;
     enableTrackAI: boolean;
     demoAutoskip: number;
@@ -28,4 +30,5 @@ export class MusicEvent {
     activePlaylist = 0;
     playlists: [0];
     effectivePlaylist: Array<Track>;
+
 }

@@ -24,4 +24,9 @@ export class Track {
     bpm: number;
     // tslint:disable-next-line:variable-name
     added_by: string;
+
+    // Client side only attributes:
+    eta: string;
+    numLikes = 0;
+    numHates = 0;
 }

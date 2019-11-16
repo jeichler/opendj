@@ -27,3 +27,60 @@ ion-header {}
 ion-fab-button {
     --background: rgb(64, 74, 187);
 }
+
+.track-grid {
+    --ion-grid-columns: 12;
+    //    --ion-grid-padding: 0px;
+    //    --ion-grid-column-padding: 0px;
+}
+
+.track-cover-pic {
+    margin: 0px;
+    //    border-radius: 10px;
+    width: 55px;
+    height: auto;
+}
+
+.track-header {
+    font-size: 16px;
+    color: #fff;
+}
+
+.track-details {
+    font-size: 14px;
+    color: #999;
+}
+
+.track-contributor {
+    font-size: 14px;
+    --color: #444;
+    --background: #999;
+}
+
+.track-provider-logo {
+    width: 21px;
+    height: 21px;
+    margin-top: 0px;
+    margin-bottom: 16px; //required to align with feedback emoticons
+}
+
+.track-feedback {
+    line-height: 8px;
+    text-align: center;
+}
+
+.track-feedback-icon {
+    margin-top: 2px;
+    font-size: 23px;
+}
+
+.track-feedback-counter-passive {
+    font-size: 14px;
+    color: #999;
+}
+
+.track-feedback-counter-active {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+}

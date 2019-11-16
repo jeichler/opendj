@@ -13,48 +13,64 @@
         </ion-buttons>
 
     </ion-toolbar>
+    <!--    
     <ion-toolbar color="dark">
         <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
     </ion-toolbar>
+-->
 
 </ion-header>
 
 <ion-content color="dark">
-
     <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
+    <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
 
-        <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
+    <ion-grid class="track-grid">
+        <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
+            <!-- Album Cover-->
+            <ion-col size="auto" class="align-self-center">
+                <a href="{{item.image_url_ref}}" target="_blank">
+                    <img class="track-cover-pic" src="{{item.image_url}}">
+                </a>
+            </ion-col>
 
-            <ion-item id="item-{{item.id}}" color="dark">
-                <ion-thumbnail slot="start">
-                    <a href="{{item.image_url_ref}}" target="_blank">
-                        <img src="{{item.image_url}}">
-                    </a>
-                </ion-thumbnail>
-                <ion-label>{{item.name}}
-                    <br />
-                    <span style="font-size: 14px; color: #999;">
-                            {{item.artist}} {{item.year}} eta {{item.eta}}
-                        </span>
-                    <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px" tooltip="Track is provided by Spotify" [options]="tooltipOptions"></ion-img>
+            <!-- Track Details-->
+            <ion-col size="" class="ion-align-self-center ion-text-nowrap">
+                <ion-label class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</ion-label><br>
+                <ion-label class="track-details ion-text-nowrap" tooltip="Artist, year and estimated time when this track will be played" [options]="tooltipOptions">{{item.artist}} {{item.year}} eta {{item.eta}}</ion-label><br>
+                <ion-label class="track-details ion-text-nowrap" tooltip="User who contributed this track " [options]="tooltipOptions">{{item.added_by}}</ion-label>
+                <!--  using a "badge" is too noisy:
+                <ion-badge class="track-contributor ion-text-nowrap" tooltip="User who contributed this track " [options]="tooltipOptions">{{item.added_by}}</ion-badge>
+                -->
+            </ion-col>
 
-                    <ion-badge color="medium" float-right tooltip="User who contributed this track" [options]="tooltipOptions">
-                        {{item.added_by}}
-                    </ion-badge>
-                </ion-label>
 
-            </ion-item>
+            <!-- Provider Logo -->
+            <ion-col size="auto" class="track-feedback ion-align-self-center">
+                <ion-img src="assets/img/spotify/Spotify_Icon_RGB_White_64.png " class="track-provider-logo " tooltip="Indicates the stream provider where this track is being played from" [options]="tooltipOptions ">
+                </ion-img>
+            </ion-col>
 
-        </ion-item-sliding>
-    </ion-list>
+            <!-- Like/Hate Buttons-->
+            <ion-col *ngIf="currentEvent.enableTrackLiking" (click)="trackLike(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-like-{{item.id}}">
+                <div class="track-feedback-icon">{{currentEvent.emojiTrackLike}}</div><br>
+                <div [class]="isTrackLiked(item) ?'track-feedback-counter-active' : 'track-feedback-counter-passive'">{{item.numLikes ? item.numLikes : 0}}</div>
+            </ion-col>
+            <ion-col *ngIf="currentEvent.enableTrackHating" (click)="trackHate(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-hate-{{item.id}}">
+                <div class="track-feedback-icon">{{currentEvent.emojiTrackHate}}</div><br>
+                <div [class]="isTrackHated(item) ?'track-feedback-counter-active' : 'track-feedback-counter-passive'">{{item.numHates ? item.numHates: 0}}</div>
+            </ion-col>
+
+        </ion-row>
+
+    </ion-grid>
 
     <!-- Add Track Button: -->
-    <ion-fab vertical="bottom" horizontal="end" slot="fixed" margin>
-        <ion-fab-button id="playlist-addTrack-button" (click)="presentModal()">
+    <ion-fab vertical="bottom " horizontal="center" slot="fixed" class="ion-margin">
+        <ion-fab-button id="playlist-addTrack-button" (click)="trackSearch()">
             <ion-icon name="add"></ion-icon>
         </ion-fab-button>
     </ion-fab>

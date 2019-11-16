@@ -35,6 +35,8 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     'show-delay': 0
   };
 
+  trackFeedback: Map<string, string> = new Map<string, string>();
+
   constructor(
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
@@ -50,15 +52,6 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     ) {
   }
 
-  playTrack() {
-    console.debug('playTrack');
-    this.feService.playTrack(this.currentEvent).subscribe((data) => {
-      // console.log(data);
-    },
-    (err) => {
-      console.error(err.msg);
-    });
-  }
 
   refresh(event) {
     console.debug('refresh');
@@ -73,7 +66,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     );
   }
 
-  date2hhmm(d) {
+  date2hhmm(d): string {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
   }
@@ -93,7 +86,106 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     }
   }
 
-  async presentModal() {
+  ensureFeedbackAttributes(track: Track) {
+    if (!track.numLikes) {
+      track.numLikes = 0;
+    }
+    if (!track.numHates) {
+      track.numHates = 0;
+    }
+  }
+
+  ensureTrackFeedbackEmojis() {
+    if (!this.currentEvent.emojiTrackLike) {
+      this.currentEvent.emojiTrackLike = '🥰';
+    }
+    if (!this.currentEvent.emojiTrackHate) {
+      this.currentEvent.emojiTrackHate = '🤮';
+    }
+  }
+
+
+
+  isTrackLiked(track: Track) {
+    return this.trackFeedback.get(track.id) === 'L';
+  }
+  isTrackHated(track: Track) {
+    return this.trackFeedback.get(track.id) === 'H';
+  }
+
+  trackLike(track) {
+    console.debug('begin trackLike()');
+    const oldFeedback = this.trackFeedback.get(track.id);
+    let newFeedback = 'L';
+
+    this.ensureFeedbackAttributes(track);
+
+    if (oldFeedback === 'H' && newFeedback === 'L') {
+      // User change her mind from hate to like, thus we need to reduce hate counter:
+      track.numHates--;
+    }
+
+    if (oldFeedback === 'L' && newFeedback === 'L') {
+      // User liked in the past and now clicked like again,
+      // meaning to remove the like:
+      track.numLikes--;
+      newFeedback = '';
+    } else {
+      track.numLikes++;
+    }
+
+    this.trackFeedbackSanityCheck(track);
+    this.trackFeedback.set(track.id, newFeedback);
+    this.updateUserStateWithTrackFeedback();
+    this.feService.provideTrackFeedback(this.currentEvent, track.id, oldFeedback, newFeedback);
+  }
+
+  trackHate(track: Track) {
+    console.debug('begin trackHate()');
+    let oldFeedback = this.trackFeedback.get(track.id);
+    let newFeedback = 'H';
+
+    this.ensureFeedbackAttributes(track);
+
+    if (!oldFeedback) {
+      oldFeedback = '';
+    }
+
+    if (oldFeedback === 'L' && newFeedback === 'H') {
+      // User change her mind from hate to like, thus we need to reduce hate counter:
+      track.numLikes--;
+    }
+
+    if (oldFeedback === 'H' && newFeedback === 'H') {
+      // User liked in the past and now clicked like again,
+      // meaning to remove the like:
+      track.numHates--;
+      newFeedback = '';
+    } else {
+      track.numHates++;
+    }
+    this.trackFeedbackSanityCheck(track);
+    this.trackFeedback.set(track.id, newFeedback);
+    this.updateUserStateWithTrackFeedback();
+    this.feService.provideTrackFeedback(this.currentEvent, track.id, oldFeedback, newFeedback);
+  }
+
+  trackFeedbackSanityCheck(track: Track) {
+    if (track.numLikes < 0) {
+      track.numLikes = 0;
+    }
+    if (track.numHates < 0) {
+      track.numHates = 0;
+    }
+
+  }
+
+  updateUserStateWithTrackFeedback() {
+    this.userState.trackFeedback = this.trackFeedback;
+    this.userDataService.updateUser(this.userState);
+  }
+
+  async trackSearch() {
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
       mode: 'md',
@@ -157,6 +249,9 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
+    if (this.userState.trackFeedback) {
+      this.trackFeedback = this.userState.trackFeedback;
+    }
 
     console.debug('getCurrentPlaylist()');
     this.refreshPlaylist();
@@ -179,10 +274,13 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     if (!this.currentEvent) {
         console.error('coud not load event from server - something is wrong - redirect to logout');
         this.router.navigate([`ui/login`]);
-      }
+        return;
+    }
 
-      // Connect websocket - no need to request current playlist, it will be sent
-      // as part of the welcome package upon successful connect (see service-web#onConnect())
+    this.ensureTrackFeedbackEmojis();
+
+    // Connect websocket - no need to request current playlist, it will be sent
+    // as part of the welcome package upon successful connect (see service-web#onConnect())
     this.websocketService.init(this.currentEvent.eventID);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
@@ -241,7 +339,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     <ion-title>Add song to playlist</ion-title>
   </ion-toolbar>
   <ion-toolbar color="dark">
-    <ion-searchbar id="search" [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for songs..." #myInput>
+    <ion-searchbar id="search" [(ngModel)]="queryText" (ionChange)="updateSearch()" placeholder="Search for tracks, albums or artist" #myInput>
     </ion-searchbar>
   </ion-toolbar>
 </ion-header>
