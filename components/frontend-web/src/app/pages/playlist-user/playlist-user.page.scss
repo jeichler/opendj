@@ -43,18 +43,22 @@ ion-fab-button {
 
 .track-header {
     font-size: 16px;
+    // This is needed to avoid that track voting colums
+    // are not visibile to the right, because of long header names.
+    // I cant find a way for angular to truncate the content correclty, this
+    // is the best workaround I have found:
+    width: 10px;
     color: #fff;
+    margin: 0px;
+    line-height: 0px;
 }
 
 .track-details {
     font-size: 14px;
+    width: 100px;
     color: #999;
-}
-
-.track-contributor {
-    font-size: 14px;
-    --color: #444;
-    --background: #999;
+    margin: 0px;
+    line-height: 0px;
 }
 
 .track-provider-logo {
@@ -67,6 +71,7 @@ ion-fab-button {
 .track-feedback {
     line-height: 8px;
     text-align: center;
+    background: #222428
 }
 
 .track-feedback-icon {

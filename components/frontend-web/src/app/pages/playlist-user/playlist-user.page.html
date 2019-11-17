@@ -38,13 +38,10 @@
             </ion-col>
 
             <!-- Track Details-->
-            <ion-col size="" class="ion-align-self-center ion-text-nowrap">
-                <ion-label class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</ion-label><br>
-                <ion-label class="track-details ion-text-nowrap" tooltip="Name of the Artist and year of publication" [options]="tooltipOptions">{{item.artist}} {{item.year}}</ion-label><br>
-                <ion-label class="track-details ion-text-nowrap" tooltip="User who contributed this track and estimated time when this track will be played" [options]="tooltipOptions">{{item.added_by}} - {{item.eta}}</ion-label>
-                <!--  using a "badge" is too noisy:
-                <ion-badge class="track-contributor ion-text-nowrap" tooltip="User who contributed this track " [options]="tooltipOptions">{{item.added_by}}</ion-badge>
-                -->
+            <ion-col class="ion-align-self-center ion-text-nowrap">
+                <div class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</div><br>
+                <div class="track-details ion-text-nowrap" tooltip="Name of the Artist and year of publication" [options]="tooltipOptions">{{item.artist}} {{item.year}}</div><br>
+                <div class="track-details ion-text-nowrap" tooltip="User who contributed this track and estimated time when this track will be played" [options]="tooltipOptions">{{item.added_by}} - {{item.eta}}</div>
             </ion-col>
 
 
