@@ -118,6 +118,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     console.debug('begin trackLike()');
     let oldFeedback = this.trackFeedback[track.id];
     let newFeedback = 'L';
+    let message = '';
 
     this.ensureFeedbackAttributes(track);
     if (!oldFeedback) {
@@ -134,20 +135,24 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       // meaning to remove the like:
       track.numLikes--;
       newFeedback = '';
+      message = 'Tack <b>liking</b> revoked';
     } else {
       track.numLikes++;
+      message = 'Tack <b>likening</b> registered';
     }
 
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] =  newFeedback;
     this.updateUserStateWithTrackFeedback();
     this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
-  }
+    this.presentToast(message);
+    }
 
   trackHate(track: Track) {
     console.debug('begin trackHate()');
     let oldFeedback = this.trackFeedback[track.id];
     let newFeedback = 'H';
+    let message = '';
 
     this.ensureFeedbackAttributes(track);
 
@@ -165,13 +170,16 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       // meaning to remove the like:
       track.numHates--;
       newFeedback = '';
+      message = 'Track <b>hating</b> revoked';
     } else {
       track.numHates++;
+      message = 'Track <b>hating</b> registered';
     }
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] = newFeedback;
     this.updateUserStateWithTrackFeedback();
     this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
+    this.presentToast(message);
   }
 
   trackFeedbackSanityCheck(track: Track) {
