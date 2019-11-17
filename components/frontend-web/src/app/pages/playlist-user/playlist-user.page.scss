@@ -61,7 +61,7 @@ ion-fab-button {
     width: 21px;
     height: 21px;
     margin-top: 0px;
-    margin-bottom: 16px; //required to align with feedback emoticons
+    margin-bottom: 24px; //required to align with feedback emoticons
 }
 
 .track-feedback {
@@ -77,10 +77,12 @@ ion-fab-button {
 .track-feedback-counter-passive {
     font-size: 14px;
     color: #999;
+    margin-top: 4px;
 }
 
 .track-feedback-counter-active {
     font-size: 14px;
     font-weight: bold;
     color: #fff;
+    margin-top: 4px;
 }
