@@ -20,7 +20,7 @@ export class EventPage implements OnDestroy, OnInit {
   userState: UserSessionState;
   navigationSubscription;
   loginForm: FormGroup;
-  submitAttempt: boolean;
+//  submitAttempt: boolean;
 
   static getSessionStateForContext(ctx: string, eventID: string, username: string): UserSessionState {
     const state = new UserSessionState();
@@ -257,7 +257,7 @@ export class EventPage implements OnDestroy, OnInit {
   ngOnInit() {
     console.debug('ngOnInit');
     this.loginForm = this.formBuilder.group({
-      username: ['', Validators.nullValidator],
+      username: ['', Validators.maxLength(20)],
       password: ['', Validators.nullValidator]
     });
   }
@@ -384,7 +384,7 @@ export class LoginModalComponent implements OnInit {
   ngOnInit() {
     console.debug('loginModal#ngOnInit');
     this.loginForm = this.formBuilder.group({
-      username: ['', Validators.compose([Validators.minLength(3), Validators.required])],
+      username: ['', Validators.compose([Validators.minLength(3), Validators.maxLength(20), Validators.required])],
       password: ['', Validators.nullValidator]
     });
   }

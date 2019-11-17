@@ -28,9 +28,6 @@
                     </ion-button>
                 </ion-note>
             </ion-item>
-            <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
-                <p style="color: red;">Minimum length for username is 3.</p>
-            </ion-item>
 
             <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" style="--ion-background-color: transparent !important; color: white;">
                 <ion-input name="login-modal-password" formControlName="password" type="password" clearInput="true" placeholder="Password">

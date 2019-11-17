@@ -210,7 +210,7 @@ export class CreateEventPage implements OnInit {
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: [{value: '', disabled: true}],
       maxUsers: [0, Validators.min(1)],
-      owner: ['', Validators.required],
+      owner: ['', Validators.compose([Validators.required, Validators.maxLength(20)])],
       passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       // ToDo: Only Required if everybodyIsCurator is false
       passwordCurator: ['', Validators.compose([Validators.minLength(3), Validators.required])],
