@@ -85,6 +85,8 @@ const EVENT_PROTOTYPE = {
     pauseOnPlayError: true,
     enableTrackLiking: true,
     enableTrackHating: true,
+    emojiTrackLike: '🥰',
+    emojiTrackHate: '🤮',
     demoAutoskip: MOCKUP_AUTOSKIP,
     demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
