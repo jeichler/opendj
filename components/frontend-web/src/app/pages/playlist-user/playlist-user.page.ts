@@ -35,7 +35,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     'show-delay': 0
   };
 
-  trackFeedback: Map<string, string> = new Map<string, string>();
+  trackFeedback = {};
 
   constructor(
     public modalController: ModalController,
@@ -107,18 +107,22 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
 
   isTrackLiked(track: Track) {
-    return this.trackFeedback.get(track.id) === 'L';
+    return this.trackFeedback[track.id] === 'L';
   }
+
   isTrackHated(track: Track) {
-    return this.trackFeedback.get(track.id) === 'H';
+    return this.trackFeedback[track.id] === 'H';
   }
 
   trackLike(track) {
     console.debug('begin trackLike()');
-    const oldFeedback = this.trackFeedback.get(track.id);
+    let oldFeedback = this.trackFeedback[track.id];
     let newFeedback = 'L';
 
     this.ensureFeedbackAttributes(track);
+    if (!oldFeedback) {
+      oldFeedback = '';
+    }
 
     if (oldFeedback === 'H' && newFeedback === 'L') {
       // User change her mind from hate to like, thus we need to reduce hate counter:
@@ -135,14 +139,14 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     }
 
     this.trackFeedbackSanityCheck(track);
-    this.trackFeedback.set(track.id, newFeedback);
+    this.trackFeedback[track.id] =  newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track.id, oldFeedback, newFeedback);
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
   }
 
   trackHate(track: Track) {
     console.debug('begin trackHate()');
-    let oldFeedback = this.trackFeedback.get(track.id);
+    let oldFeedback = this.trackFeedback[track.id];
     let newFeedback = 'H';
 
     this.ensureFeedbackAttributes(track);
@@ -152,7 +156,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     }
 
     if (oldFeedback === 'L' && newFeedback === 'H') {
-      // User change her mind from hate to like, thus we need to reduce hate counter:
+      // User change her mind from like to hate, thus we need to reduce hate counter:
       track.numLikes--;
     }
 
@@ -165,9 +169,9 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       track.numHates++;
     }
     this.trackFeedbackSanityCheck(track);
-    this.trackFeedback.set(track.id, newFeedback);
+    this.trackFeedback[track.id] = newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track.id, oldFeedback, newFeedback);
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
   }
 
   trackFeedbackSanityCheck(track: Track) {
@@ -226,7 +230,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       console.debug('getCurrentPlaylist() from server');
       this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
         newList => {
-          console.debug('ionViewDidEnter(): received new Playlist');
+          console.debug('refreshEvent(): received new Playlist');
           this.currentPlaylist = newList;
           this.computeETAForTracks();
         },
@@ -250,7 +254,11 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
     if (this.userState.trackFeedback) {
+      console.debug('Using trackFeedback from userState', this.userState);
       this.trackFeedback = this.userState.trackFeedback;
+    } else {
+      console.debug('Using fresh trackFeedback map');
+      this.trackFeedback = {};
     }
 
     console.debug('getCurrentPlaylist()');
@@ -272,7 +280,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.currentEvent = await this.feService.readEvent(eventID).toPromise();
     console.debug('Event from Server: %s', JSON.stringify(this.currentEvent));
     if (!this.currentEvent) {
-        console.error('coud not load event from server - something is wrong - redirect to logout');
+        console.error('could not load event from server - something is wrong - redirect to logout');
         this.router.navigate([`ui/login`]);
         return;
     }

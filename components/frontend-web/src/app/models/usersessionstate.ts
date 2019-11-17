@@ -4,6 +4,5 @@ export class UserSessionState {
     isEventOwner = false;
     isCurator = false;
     currentEventID = '';
-    trackFeedback: Map<string, string> = new Map();
-
+    trackFeedback = null;
 }

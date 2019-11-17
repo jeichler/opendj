@@ -69,7 +69,7 @@ export class FEService {
     searchTracks(event: MusicEvent, queryString: string): Observable<Track[]> {
         // console.log(`qs: ${queryString}`)
         if (queryString === null || queryString === undefined || queryString.length < 2) {
-            // This is not an actually error, but expectec behavior.
+            // This is not an actually error, but expected behavior.
             // throw new Error('Required parameter queryString was null or undefined or < 2 letters.');
             // If this criteria is not met, we return an empty result:
             return this.EMPTY_TRACK_RESULT;
@@ -163,12 +163,23 @@ export class FEService {
           );
     }
 
-    provideTrackFeedback(event: MusicEvent, trackID: string, oldFeedback: string, newFeedback: string) {
-        console.debug('begin provideTrackFeedback', trackID, oldFeedback, newFeedback);
-        return this.http.post(this.PLAYLIST_PROVIDER_API
-            + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
-            + '/tracksFeedback/' + encodeURIComponent(`spotify:${trackID}`)
-            + '/feedback', { old: oldFeedback, new: newFeedback })
+    provideTrackFeedback(event: MusicEvent, track: Track, oldFeedback: string, newFeedback: string): Observable<any> {
+        console.debug('begin provideTrackFeedback', track.id, oldFeedback, newFeedback);
+        if (!oldFeedback) {
+            oldFeedback = '';
+        }
+        if (!newFeedback) {
+            newFeedback = '';
+        }
+
+        const url = this.PLAYLIST_PROVIDER_API
+        + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
+        + '/tracks/' + encodeURIComponent(`${track.provider}:${track.id}`)
+        + '/feedback';
+        const body = { old: oldFeedback, new: newFeedback };
+
+        console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
+        return this.http.post(url, body)
             .pipe(
             timeout(this.SERVER_TIMEOUT),
             retry(1),

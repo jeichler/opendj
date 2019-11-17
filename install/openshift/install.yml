@@ -25,7 +25,7 @@
           metadata:
             name: "{{ENV.COMMON.NAMESPACE|mandatory}}"
             annotations:
-              openshift.io/description: "OpenDJ stage {{ STAGE }}"
+              openshift.io/description: "OpenDJ stage {{ STAGE }} built from {{ENV.COMMON.GIT.REF}} "
               openshift.io/display-name: ""
     - name: Grant access to developer group
       tags: prj
