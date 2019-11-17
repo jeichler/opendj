@@ -16,6 +16,7 @@ common:
     CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-{{STAGE}}"
 
   BACKEND_EVENTSTORE:
+    DEPLOY: false
     KAFKA:
       USE: false
       OPERATOR_AVAILABLE: true
@@ -23,7 +24,9 @@ common:
       NUM_BROKERS: 1
       NUM_ZOOKEPERS: 1
       NUM_PARTITIONS: 3
+      
   BACKEND_DATAGRID:
+    DEPLOY: true
     URL: "backend-datagrid:11222"
     UNDEPLOY: false
     NUM_REPLICAS: 2
@@ -31,22 +34,31 @@ common:
     STORAGE_SIZE: "1Gi"
 
   PROVIDER_SPOTIFY:
+    DEPLOY: true
     REPLICAS: 2
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
 
   SERVICE_PLAYLIST:
+    DEPLOY: true
     REPLICAS: 2
 
   SERVICE_WEB:
+    DEPLOY: true
     REPLICAS: 2
+
+  SERVICE_HOUSEKEEPING:
+    DEPLOY: true
 
     
   FRONTEND_WEB:
-# Do not specific host - use relative hostname to allow switch between http/https:  
+    DEPLOY: true
     REPLICAS: 2
+# Do not specific host - use relative hostname to allow switch between http/https:  
     WEBSOCKET_HOST: ""
+    API_HOST: ""
+    SERVER_TIMEOUT: "5000"
     INSECURE_EDGE_TERMINATION: "Allow"
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     USE_RUNTIME_IMAGE: true

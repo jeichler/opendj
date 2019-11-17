@@ -12,6 +12,11 @@
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.FRONTEND_WEB.DEPLOY
+
+
 # See https://github.com/tnozicka/openshift-acme/tree/master/deploy/letsencrypt-live/single-namespace
     - name: Deploy opensfhit-acme for lets encrypt certs
       when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool

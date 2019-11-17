@@ -27,3 +27,67 @@ ion-header {}
 ion-fab-button {
     --background: rgb(64, 74, 187);
 }
+
+.track-grid {
+    --ion-grid-columns: 12;
+    //    --ion-grid-padding: 0px;
+    //    --ion-grid-column-padding: 0px;
+}
+
+.track-cover-pic {
+    margin: 0px;
+    //    border-radius: 10px;
+    width: 55px;
+    height: auto;
+}
+
+.track-header {
+    font-size: 16px;
+    // This is needed to avoid that track voting colums
+    // are not visibile to the right, because of long header names.
+    // I cant find a way for angular to truncate the content correclty, this
+    // is the best workaround I have found:
+    width: 10px;
+    color: #fff;
+    margin: 0px;
+    line-height: 0px;
+}
+
+.track-details {
+    font-size: 14px;
+    width: 100px;
+    color: #999;
+    margin: 0px;
+    line-height: 0px;
+}
+
+.track-provider-logo {
+    width: 21px;
+    height: 21px;
+    margin-top: 0px;
+    margin-bottom: 22px; //required to align with feedback emoticons
+}
+
+.track-feedback {
+    line-height: 8px;
+    text-align: center;
+    background: #222428
+}
+
+.track-feedback-icon {
+    margin-top: 2px;
+    font-size: 23px;
+}
+
+.track-feedback-counter-passive {
+    font-size: 14px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.track-feedback-counter-active {
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    margin-top: 4px;
+}

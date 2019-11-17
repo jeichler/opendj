@@ -4,4 +4,5 @@ export class UserSessionState {
     isEventOwner = false;
     isCurator = false;
     currentEventID = '';
+    trackFeedback = null;
 }

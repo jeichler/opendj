@@ -10,6 +10,11 @@
     - name: "Combine env facts"
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
+
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.BACKEND_EVENTSTORE.DEPLOY
+
     - name: Deploy Kafka via Operator
       when: ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
       k8s:

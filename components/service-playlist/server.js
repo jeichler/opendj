@@ -30,7 +30,7 @@ app.use(express.json());
 
 function handleError(err, response) {
     log.error('Error: ' + err);
-    var error = {
+    let error = {
         "msg": err,
         "code": "PLYLST-42"
     };
@@ -85,6 +85,8 @@ const EVENT_PROTOTYPE = {
     pauseOnPlayError: true,
     enableTrackLiking: true,
     enableTrackHating: true,
+    emojiTrackLike: '🥰',
+    emojiTrackHate: '🤮',
     demoAutoskip: MOCKUP_AUTOSKIP,
     demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
@@ -143,19 +145,37 @@ function splitTrackIDIntoProviderAndTrack(id) {
     return [provider, trackID];
 }
 
-function findTrackInList(listOfTracks, provider, trackID) {
-    log.trace("begin findTrackInList");
-    var result = -1;
+function findTrackPositionInList(listOfTracks, provider, trackID) {
+    log.trace("begin findTrackPositionInList");
+    let result = -1;
     for (let i = 0; i < listOfTracks.length; i++) {
-        var track = listOfTracks[i];
-        if (track.id == trackID && track.provider == provider) {
+        let track = listOfTracks[i];
+        if (track.id === trackID && track.provider === provider) {
             result = i;
             break;
         }
     }
-    log.trace("end findTrackInList result=%i", result);
+    log.trace("end findTrackPositionInList result=%i", result);
     return result;
 }
+
+function findTrackInList(listOfTracks, provider, trackID) {
+    log.trace("begin findTrackInList %s:%s", provider, trackID);
+    let result = null;
+    let pos = -1;
+
+    for (let i = 0; i < listOfTracks.length; i++) {
+        let track = listOfTracks[i];
+        if (track.id === trackID && track.provider === provider) {
+            pos = i;
+            result = track;
+            break;
+        }
+    }
+    log.trace("end findTrackInList return track from position=%s", pos);
+    return result;
+}
+
 
 async function getActivePlaylistForEvent(event) {
     log.trace("begin getActivePlaylistForEvent");
@@ -165,11 +185,11 @@ async function getActivePlaylistForEvent(event) {
 }
 
 function getETADateForTrackInPlayList(playlist, pos) {
-    var ts = Date.now();
+    let ts = Date.now();
     if (playlist.currentTrack) {
         ts += (playlist.currentTrack.duration_ms - playlist.currentTrack.progress_ms);
     }
-    for (var i = 0; i < pos; i++) {
+    for (let i = 0; i < pos; i++) {
         ts += playlist.nextTracks[i].duration_ms;
     }
 
@@ -192,7 +212,7 @@ async function getTrackDetailsForTrackID(eventID, trackID) {
 
 async function createAutofillPlayList(eventID) {
     log.trace("createAutofillPlayList begin eventID=%s", eventID);
-    var result = [];
+    let result = [];
     log.debug("AUTOFILL event=%s", eventID);
 
     for (let trackID of emergencyTrackIDs) {
@@ -214,10 +234,10 @@ async function addTrack(event, playlist, provider, trackID, user) {
 
 
     log.trace("check next tracks for duplicate")
-    var pos = findTrackInList(playlist.nextTracks, provider, trackID);
+    let pos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
     if (pos >= 0) {
         log.debug("ADD rejected because in playlist at pos %s", pos);
-        var eta = getETADateForTrackInPlayList(playlist, pos);
+        let eta = getETADateForTrackInPlayList(playlist, pos);
         eta = eta.toTimeString().split(' ')[0];
         eta = eta.substring(0, 5);
 
@@ -226,7 +246,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
 
     if (!event.allowDuplicateTracks) {
         log.trace("duplicates not allowed, search for track in effective playlist");
-        pos = findTrackInList(event.effectivePlaylist, provider, trackID);
+        pos = findTrackPositionInList(event.effectivePlaylist, provider, trackID);
         if (pos >= 0) {
             log.debug("ADD rejected because not duplicated allowed and track is in effective playlist");
             throw { code: "PLYLST-120", msg: "Sorry, this event does not allow duplicate tracks, and this track has already been played at " + event.effectivePlaylist[pos].started_at };
@@ -294,18 +314,18 @@ async function addTrack(event, playlist, provider, trackID, user) {
 function moveTrack(eventID, playlist, provider, trackID, newPos) {
     log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s, newPos=%s", eventID, playlist.playlistID, provider, trackID, newPos);
 
-    var currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
+    let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
     if (currentPos < 0) {
         throw { code: "PLYLST-200", msg: "Track not found in playlist - maybe somebody else has deleted it meanwhile?" };
     }
 
     // Sanity check of new pos:
-    var len = playlist.nextTracks.length;
+    let len = playlist.nextTracks.length;
     if (newPos < 0) newPos = 0;
     if (newPos >= len) newPos = len - 1;
 
     // Remove at current pos:
-    var track = playlist.nextTracks.splice(currentPos, 1)[0];
+    let track = playlist.nextTracks.splice(currentPos, 1)[0];
 
     // Insert at new pos;
     playlist.nextTracks.splice(newPos, 0, track);
@@ -316,7 +336,7 @@ function moveTrack(eventID, playlist, provider, trackID, newPos) {
 function deleteTrack(eventID, playlist, provider, trackID) {
     log.trace("begin deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 
-    let currentPos = findTrackInList(playlist.nextTracks, provider, trackID);
+    let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
     if (currentPos < 0) {
         throw { code: "PLYLST-200", msg: "Track not found in playlist - maybe somebody else has deleted it meanwhile?" };
     }
@@ -328,9 +348,78 @@ function deleteTrack(eventID, playlist, provider, trackID) {
     log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 }
 
+function ensureFeedbackAttributes(track) {
+    if (!track.numLikes) {
+        track.numLikes = 0;
+    }
+    if (!track.numHates) {
+        track.numHates = 0;
+    }
+}
+
+function trackFeedbackSanityCheck(track) {
+    if (track.numLikes < 0) {
+        track.numLikes = 0;
+    }
+    if (track.numHates < 0) {
+        track.numHates = 0;
+    }
+}
+
+
+
+function provideTrackFeedback(eventID, playlist, provider, trackID, feedback) {
+    log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", eventID, playlist.playlistID, provider, trackID);
+
+    let track = findTrackInList(playlist.nextTracks, provider, trackID);
+    let stateChanged = false;
+
+    if (track) {
+        ensureFeedbackAttributes(track);
+        let oldFeedback = feedback.old ? feedback.old : '';
+        let newFeedback = feedback.new ? feedback.new : '';
+        log.debug("trackFeedback before: old=%s new=%s, likes=%s, hates=%s", oldFeedback, newFeedback, track.numLikes, track.numHates);
+
+        if (oldFeedback === 'H' && newFeedback === 'L') {
+            log.trace("User changed her mind from hate to like, thus we need to reduce hate counter.");
+            track.numHates--;
+        }
+        if (oldFeedback === 'L' && newFeedback === 'H') {
+            log.trace("User changed her mind from like to hate, thus we need to reduce hate counter");
+            track.numLikes--;
+        }
+
+        if (oldFeedback === 'L' && newFeedback === '') {
+            log.trace("User liked in the past and now clicked like again, meaning to remove the like");
+            track.numLikes--;
+        } else if (newFeedback === 'L') {
+            log.trace("User liked new");
+            track.numLikes++;
+
+        }
+        if (oldFeedback === 'H' && newFeedback === '') {
+            log.trace("User liked in the past and now clicked like again, meaning to remove the like");
+            track.numHates--;
+        } else if (newFeedback === 'H') {
+            log.trace("User hates new");
+            track.numHates++;
+        }
+
+        trackFeedbackSanityCheck(track);
+        stateChanged = true;
+        log.debug("trackFeedback after:  old=%s new=%s, likes=%s, hates=%s", oldFeedback, newFeedback, track.numLikes, track.numHates);
+
+    } else {
+        log.info("provideTrackFeedback IGNORED - track %s:%s not found in playlist - maybe it has been deleted meanwhile ", provider, trackID)
+    }
+
+    log.trace("end provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", eventID, playlist.playlistID, provider, trackID);
+    return stateChanged;
+}
+
 function updateCurrentTrackProgress(playlist) {
     if (playlist.isPlaying && playlist.currentTrack) {
-        var newPos = Date.now() - Date.parse(playlist.currentTrack.started_at);
+        let newPos = Date.now() - Date.parse(playlist.currentTrack.started_at);
         if (newPos < 0) {
             newPos = 0;
         } else if (newPos > playlist.currentTrack.duration_ms) {
@@ -401,7 +490,7 @@ async function play(event, playlist) {
         return;
     }
 
-    var now = Date.now();
+    let now = Date.now();
     if (playlist.currentTrack.progress_ms > 0) {
         log.debug("PLAY: actually it is a resume, adjusting started_at");
         now -= playlist.currentTrack.progress_ms;
@@ -532,14 +621,14 @@ async function skip(event, playlist) {
 }
 
 function isTrackPlaying(event, playlist) {
-    var result = false;
+    let result = false;
     log.trace("isTrackPlaying begin id=%s", playlist.playlistID);
 
     if (playlist.isPlaying) {
         if (playlist.currentTrack) {
             log.trace("   current track is present");
             updateCurrentTrackProgress(playlist);
-            var currentPos = playlist.currentTrack.progress_ms;
+            let currentPos = playlist.currentTrack.progress_ms;
 
             if (currentPos > 0) {
                 log.trace("   currentPos=%s s", currentPos / 1000);
@@ -912,8 +1001,8 @@ router.get('/events/:eventID/playlists/:listID/tracks', async function(req, res)
 router.get('/events/:eventID/playlists/:listID/play', async function(req, res) {
     log.trace("begin PLAY tracks eventId=%s, listId=%s", req.params.eventID, req.params.listID);
 
-    var event = await getEventForRequest(req);
-    var playlist = await getPlaylistForRequest(req);
+    let event = await getEventForRequest(req);
+    let playlist = await getPlaylistForRequest(req);
     play(event, playlist)
         .then(function() {
             firePlaylistChangedEvent(event.eventID, playlist);
@@ -927,8 +1016,8 @@ router.get('/events/:eventID/playlists/:listID/play', async function(req, res) {
 
 router.get('/events/:eventID/playlists/:listID/pause', async function(req, res) {
     log.trace("begin PAUSE playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = await getEventForRequest(req);
-    var playlist = await getPlaylistForRequest(req);
+    let event = await getEventForRequest(req);
+    let playlist = await getPlaylistForRequest(req);
     pause(event, playlist).then(function() {
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
@@ -941,8 +1030,8 @@ router.get('/events/:eventID/playlists/:listID/pause', async function(req, res) 
 
 router.get('/events/:eventID/playlists/:listID/next', async function(req, res) {
     log.trace("begin NEXT playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-    var event = await getEventForRequest(req);
-    var playlist = await getPlaylistForRequest(req);
+    let event = await getEventForRequest(req);
+    let playlist = await getPlaylistForRequest(req);
     skip(event, playlist).then(function() {
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
@@ -955,7 +1044,7 @@ router.get('/events/:eventID/playlists/:listID/next', async function(req, res) {
 router.get('/events/:eventID/playlists/:listID/push', async function(req, res) {
     try {
         log.trace("begin SKIP playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
-        var playlist = await getPlaylistForRequest(req);
+        let playlist = await getPlaylistForRequest(req);
         firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
     } catch (err) {
@@ -1036,6 +1125,30 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function
         res.status(406).send(JSON.stringify(error));
     }
 });
+
+// Provide Track Feedback:
+// Reorder // move Track:
+router.post('/events/:eventID/playlists/:listID/tracks/:track/feedback', async function(req, res) {
+    log.trace("begin provideTrackFeedback eventId=%s, listId=%s, track=%s", req.params.eventID, req.params.listID, req.params.track);
+    log.trace("body=%s", JSON.stringify(req.body));
+
+    try {
+        let playlist = await getPlaylistForRequest(req);
+        let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
+        let feedback = req.body;
+
+        let stateChanged = provideTrackFeedback(req.params.eventID, playlist, provider, trackID, feedback);
+        if (stateChanged)
+            firePlaylistChangedEvent(req.params.eventID, playlist);
+        res.status(200).send();
+    } catch (error) {
+        log.debug(error);
+        // Probably a track not found problem:
+        // 406: Not Acceptable
+        res.status(406).send(JSON.stringify(error));
+    }
+});
+
 
 
 // --------------------------------------------------------------------------------
@@ -1191,7 +1304,7 @@ async function cleverCheckEvents() {
             }
 
         } else {
-            log.debug("lastCheck Timestmap not present - creating it");
+            log.debug("lastCheck Timestnot present - creating it");
             await gridEvents.putIfAbsent("-1", now.toISOString());
         }
     } catch (err) {

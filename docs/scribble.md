@@ -77,7 +77,7 @@ http://demo.opendj.io/api/service-playlist/v1/events/0/
 
 
 # provider api:
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
+http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/login
 
 
 
@@ -135,6 +135,11 @@ curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCar
 curl -X DELETE http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:XXX3QTTAj8piyRBfhoPEfJC6y
 
 curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:3QTTAj8piyRBfhoPEfJC6y
+
+
+# Provide Track Feedback:
+curl -d '{"old":"", "new":"L"}' -H "Content-Type: application/json" -X POST  http://localhost:8082/api/service-playlist/v1/events/demo/playlists/0/tracks/spotify%3A6u7jPi22kF8CTQ3rb9DHE7/feedback
+
 
 
 # Cleanup:

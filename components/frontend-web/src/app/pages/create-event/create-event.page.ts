@@ -178,15 +178,17 @@ export class CreateEventPage implements OnInit {
       if (!this.userState.isLoggedIn) {
         this.event = await this.feService.readEvent(null).toPromise();
 
-        // Highlight mandatory fields  by triggering form validation:
+        // Highlight mandatory fields by triggering form validation:
         this.eventForm.get('eventID').markAsTouched();
         this.eventForm.get('name').markAsTouched();
         this.eventForm.get('owner').markAsTouched();
       }
+
       // if the user is the owner, load the event data
       if (this.userState.isLoggedIn && this.userState.isEventOwner) {
         this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
       }
+      this.ensureTrackFeedbackEmojis();
       this.mapEventToForm(this.eventForm, this.event);
     } catch (err) {
       console.error('refreshState failed', err);
@@ -208,7 +210,7 @@ export class CreateEventPage implements OnInit {
       name: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       url: [{value: '', disabled: true}],
       maxUsers: [0, Validators.min(1)],
-      owner: ['', Validators.required],
+      owner: ['', Validators.compose([Validators.required, Validators.maxLength(20)])],
       passwordOwner: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       // ToDo: Only Required if everybodyIsCurator is false
       passwordCurator: ['', Validators.compose([Validators.minLength(3), Validators.required])],
@@ -222,7 +224,9 @@ export class CreateEventPage implements OnInit {
       beginPlaybackAtEventStart: [false],
       everybodyIsCurator: [false],
       pauseOnPlayError: [false],
+      emojiTrackLike: ['🥰', Validators.compose([Validators.minLength(1), Validators.maxLength(2), Validators.required])],
       enableTrackLiking: [false],
+      emojiTrackHate: ['🤮', Validators.compose([Validators.minLength(1), Validators.maxLength(2), Validators.required])],
       enableTrackHating: [false],
       enableTrackAI: [false],
       demoAutoskip: [''],
@@ -230,5 +234,15 @@ export class CreateEventPage implements OnInit {
       demoAutoFillEmptyPlaylist: [false]
     });
   }
+
+  ensureTrackFeedbackEmojis() {
+    if (!this.event.emojiTrackLike) {
+      this.event.emojiTrackLike = '🥰';
+    }
+    if (!this.event.emojiTrackHate) {
+      this.event.emojiTrackHate = '🤮';
+    }
+  }
+
 
 }

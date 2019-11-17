@@ -86,7 +86,7 @@
                             </ion-note>
                         </ion-item>
                         <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
-                            <p style="color: red;">Minimum length for username is 3.</p>
+                            <p style="color: red;">Max length for username is 16.</p>
                         </ion-item>
 
                         <ion-item *ngIf="event.passwordUser !==''" style="--ion-background-color: transparent !important; color: white;">

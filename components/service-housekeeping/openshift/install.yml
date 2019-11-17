@@ -12,6 +12,10 @@
       set_fact:
         ENV: "{{ common | combine( specific, recursive=True) }}"
 
+    - name: Skip deployment if not needed
+      meta: end_play
+      when: not ENV.SERVICE_HOUSEKEEPING.DEPLOY
+
     - name: Create PVC for event export
       k8s:
         state: present

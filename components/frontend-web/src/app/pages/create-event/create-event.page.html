@@ -265,15 +265,17 @@
 
                     <ion-item>
                         <ion-label>Like tracks</ion-label>
+                        <ion-input name="emojiTrackLike" type="text" formControlName="emojiTrackLike" text-right></ion-input>
                         <ion-toggle id="enableTrackLiking" color="primary" formControlName="enableTrackLiking"></ion-toggle>
-                        <ion-icon tooltip="If you turn this on, users will see a like button they can press for each track in the playlist, 
-                        and other users can see the number of likes. Could be useful for curators to help ordering the list and fun for the users. 
-                        Could be also distracting the people from your event. Use at your own risk ;-)" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-icon tooltip="If you turn this on, users will see the shown 'like' emoji they can click for each track in the playlist. 
+                        Other users can see the number of likes. Could be useful for curators to get feedback of users to help ordering the list and fun for the users. 
+                        Could be also distracting the people from your event. Use at your own risk ;-). You can change the emoji by entering a different one." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
                     <ion-item>
                         <ion-label>Dislike tracks</ion-label>
+                        <ion-input name="emojiTrackHate" type="text" formControlName="emojiTrackHate" text-right></ion-input>
                         <ion-toggle id="enableTrackHating" color="primary" formControlName="enableTrackHating"></ion-toggle>
                         <ion-icon tooltip="Same as the 'Like Tracks' feature above, but for negative emotions a user might associate with the track." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
