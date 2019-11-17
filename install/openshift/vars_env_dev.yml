@@ -11,6 +11,10 @@
 # Step 5: change back dns entry to stormshift
 
 specific:
+      COMMON:
+            GIT:
+                  REF: "topic-trackVoting-88"
+
       BACKEND_EVENTSTORE:
             KAFKA:
                   NUM_BROKERS: 2
