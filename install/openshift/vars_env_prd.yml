@@ -1,6 +1,7 @@
-# Demo Env is running in employee openshift
-# Due to kafka constraints with certs, the namespace MUST
-# be dfroehli-opendj-dev
+# Prod Env is running in employee openshift
+# with ACME Certs
+# frontend used artifact image, because runtime image requires root
+# privileges where are not avail on employee openshift:
 specific:
   COMMON:
     NAMESPACE: "dfroehli-opendj-prd"

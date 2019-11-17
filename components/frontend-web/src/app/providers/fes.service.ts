@@ -22,6 +22,9 @@ export class FEService {
         this.SPOTIFY_PROVIDER_API = this.confService.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = this.confService.PLAYLIST_PROVIDER_API;
         this.SERVER_TIMEOUT = this.confService.SERVER_TIMEOUT;
+        console.info('FES SERVICE CFG:'
+        + '\nSPOTIFY_PROVIDER_API=' + this.SPOTIFY_PROVIDER_API
+        + '\nPLAYLIST_PROVIDER_API=' + this. PLAYLIST_PROVIDER_API);
     }
 
     handleError(error) {

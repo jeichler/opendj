@@ -1,0 +1,35 @@
+# UXD Env is running in employee openshift
+# but only frontend component is built (from a feature branch)
+# all other components are used from prd env.
+specific:
+  COMMON:
+    NAMESPACE: "dfroehli-opendj-uxd"
+    DNS_BASENAME: "uxd.opendj.io"
+    GIT:
+      REF: "topic-trackVoting-88"
+    CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-uxd"
+
+  BACKEND_EVENTSTORE:
+    DEPLOY: false
+
+  BACKEND_DATAGRID:
+    DEPLOY: false
+
+  PROVIDER_SPOTIFY:
+    DEPLOY: false
+
+  SERVICE_PLAYLIST:
+    DEPLOY: false
+
+  SERVICE_WEB:
+    DEPLOY: false
+
+  SERVICE_HOUSEKEEPING:
+    DEPLOY: false
+
+  FRONTEND_WEB:
+    WEBSOCKET_HOST: "http://www.opendj.io"
+    API_HOST: "http://www.opendj.io"
+    REPLICAS: 1
+    USE_ACME_CERTS: "false"
+    USE_RUNTIME_IMAGE: false

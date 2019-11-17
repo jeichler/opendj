@@ -53,10 +53,12 @@ common:
 
     
   FRONTEND_WEB:
-# Do not specific host - use relative hostname to allow switch between http/https:  
     DEPLOY: true
     REPLICAS: 2
+# Do not specific host - use relative hostname to allow switch between http/https:  
     WEBSOCKET_HOST: ""
+    API_HOST: ""
+    SERVER_TIMEOUT: "5000"
     INSECURE_EDGE_TERMINATION: "Allow"
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     USE_RUNTIME_IMAGE: true
