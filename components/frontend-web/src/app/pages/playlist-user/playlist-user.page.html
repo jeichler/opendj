@@ -13,7 +13,9 @@
         </ion-buttons>
 
     </ion-toolbar>
-    <!--    
+
+    <!--     Current Track not fixed on top, can be scrolled away for regular users
+    (in favor of more visible tracks)
     <ion-toolbar color="dark">
         <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
     </ion-toolbar>
@@ -66,7 +68,7 @@
     </ion-grid>
 
     <!-- Add Track Button: -->
-    <ion-fab vertical="bottom " horizontal="center" slot="fixed" class="ion-margin">
+    <ion-fab vertical="bottom " horizontal="center" slot="fixed">
         <ion-fab-button id="playlist-addTrack-button" (click)="trackSearch()">
             <ion-icon name="add"></ion-icon>
         </ion-fab-button>

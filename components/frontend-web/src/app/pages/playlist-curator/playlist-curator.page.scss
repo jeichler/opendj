@@ -27,3 +27,111 @@ ion-header {}
 ion-fab-button {
     --background: rgb(64, 74, 187);
 }
+
+.track-grid {
+    --ion-grid-columns: 12;
+    //    --ion-grid-padding: 0px;
+    //--ion-grid-column-padding: 0px;
+}
+
+.track-cover-pic {
+    margin: 0px;
+    border-radius: 5px;
+    width: 50px;
+    height: auto;
+}
+
+.track-header {
+    font-size: 16px;
+    // This is needed to avoid that next colums
+    // are not visibile to the right, because of long header names.
+    // I cant find a way for angular to truncate the content correclty, this
+    // is the best workaround I have found:
+    width: 10px;
+    color: #fff;
+    margin: 0px;
+    line-height: 0px;
+}
+
+.track-details {
+    font-size: 14px;
+    width: 10px;
+    color: #999;
+    margin: 0px;
+    line-height: 0px;
+}
+
+.workaroundTransparency {
+    background: #222428
+}
+
+.track-meta .track-feedback {
+    line-height: 8px;
+    color: #999;
+}
+
+.track-genre-col {
+    min-width: 90px;
+}
+
+.track-meta-col {
+    min-width: 90px;
+}
+
+.track-meta-bar {
+    min-height: 10px;
+    --background: #333;
+}
+
+.track-meta-bar-danceability {
+    //    --progress-background: rgb(240, 65, 65);
+    //   --progress-background: rgb(200, 25, 25);
+    --progress-background: rgb(200, 25, 200);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-energy {
+    //    --progress-background: #008800;
+    --progress-background: rgb(215, 166, 0);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-happiness {
+    //    --progress-background: rgb(255, 206, 0);
+    --progress-background: #006600;
+}
+
+.track-feedback-col {
+    min-width: 46px;
+}
+
+.track-action-col {
+    min-width: 90px;
+    line-height: 0px;
+    padding: 0px;
+}
+
+.track-action-button {
+    font-size: 11px;
+    padding-inline-start: 0px;
+}
+
+.track-action-select {
+    --size: 16px;
+    --background: #222428;
+    --border-color: #008800;
+    margin-top: 8px;
+    margin-left: 14px;
+}
+
+.track-provider-col {
+    //    background: #FF00FF;
+    min-height: 50px;
+}
+
+.track-provider-logo {
+    width: 26px;
+    height: 26px;
+    margin-top: 7px;
+    //margin-bottom: 10px; //required to align with re-order button
+}

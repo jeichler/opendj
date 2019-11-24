@@ -1,4 +1,9 @@
-<!-- <div class="context"> -->
+<!-- 
+    Playlist page for curators. As we need to add more functionality and infos,
+    we assume/optimize a larger device (tablet) for curators. But it should work on a smaller
+    device (mobile), maybe landscape mode is required to see all infos.
+    Max 3 rows of text/items per Track, to save on vertical space
+-->
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
@@ -13,6 +18,9 @@
         </ion-buttons>
 
     </ion-toolbar>
+
+    <!-- Current Track always visible on top, important for Curators
+    to see when the next track will start: -->
     <ion-toolbar color="dark">
         <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="true" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
     </ion-toolbar>
@@ -20,69 +28,113 @@
 </ion-header>
 
 <ion-content color="dark">
-
     <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
+    <!-- TODO: Get rid of this See issue#183-->
     <ion-button id="startPlaylist" *ngIf="currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
 
-    <ion-list no-padding *ngIf="currentPlaylist && currentPlaylist?.nextTracks">
+    <ion-grid class="track-grid">
         <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
 
-            <ion-item-sliding *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" #slidingItem>
 
-                <ion-item id="item-{{item.id}}" color="dark">
-                    <ion-thumbnail slot="start" (press)="toggleOptions()">
-                        <a href="{{item.image_url_ref}}" target="_blank">
-                            <img src="{{item.image_url}}">
-                        </a>
-                    </ion-thumbnail>
-                    <ion-label>{{item.name}}
-                        <br />
-                        <span *ngIf="showOptions">
-              <ion-button id="moveTop-{{item.id}}" (click)="moveTop(item, i)" tappable size="small">Top</ion-button>
-              <ion-button id="delete-{{item.id}}" (click)="deleteTrack(item, i)" tappable size="small" color="danger">Delete</ion-button>
-              <br/>
-            </span>
-                        <span style="font-size: 14px; color: #999;">
-                            {{item.artist}} {{item.year}} eta {{item.eta}}
-                        </span>
-                        <a href="{{item.previewViaApp}}" target="_blank">
-                            <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-left:10px"></ion-img>
-                        </a>
+            <!-- TODO: Test sepration lines between rows as visual guidance for wide displays (tablet in landscape mode)-->
+            <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
 
-                        <ion-badge color="medium" float-right tooltip="User who contributed this track" [options]="tooltipOptions">
-                            {{item.added_by}}
-                        </ion-badge>
+                <!-- Album Cover-->
+                <ion-col *ngIf="platform.width()>375" size="auto" class="ion-align-self-top">
+                    <a href="{{item.image_url_ref}}" target="_blank">
+                        <img class="track-cover-pic" src="{{item.image_url}}">
+                    </a>
+                </ion-col>
 
-                        <ion-label>
-                            <span style="font-size: 14px; color: #999;">
-              {{item.genre}}</span>
-                        </ion-label>
-                        <ion-label tooltip="BPM: Beats per Minute<br>D: Danceability<br>E: Energy<br>H: Hapiness" [options]="tooltipOptions">
-                            <span style="font-size: 14px; color: #999;">
-              {{item.bpm}} bpm D:{{item.danceability}} E:{{item.energy}} H:{{item.happiness}}</span>
-                        </ion-label>
-                    </ion-label>
-                    <ion-reorder slot="end">
+                <!-- Track Details: 3 rows: Name, Artist, Contributor/Duration/ETA -->
+                <ion-col class="ion-align-self-center ion-text-nowrap">
+                    <div class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</div><br>
+                    <div class="track-details ion-text-nowrap" tooltip="Name of the Artist and year of publication" [options]="tooltipOptions">{{item.artist}}</div><br>
+                    <div class="track-details ion-text-nowrap" tooltip="User who contributed this track and estimated time when this track will be played" [options]="tooltipOptions">{{item.durationStr}} eta {{item.eta}} - {{item.added_by}}</div>
+                </ion-col>
+
+
+                <!-- We drop columns when width is not enough. This is indicated with "..." -->
+                <ion-col *ngIf="platform.width()<636" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency" tooltip="Indicates that there is more info available, but not enough space to display. Tip: flip you phone!">
+                    <div class="track-meta">
+                        ...<br>...<br>...
+                    </div>
+                </ion-col>
+
+                <!-- Track Meta1: 3 rows: genre, year, bpm -->
+                <ion-col *ngIf="platform.width()>=500" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-genre-col">
+                    <div class="track-meta">
+                        {{item.genre}}<br>{{item.year}}
+                        <br>{{item.bpm}} bpm
+                    </div>
+                </ion-col>
+
+                <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->
+                <ion-col *ngIf="platform.width()>=636" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-meta-col">
+                    <ion-progress-bar value="{{item.danceability / 100.0}}" type="determinate" tooltip="danceability: {{item.danceability}}%" [options]="tooltipOptions" class="track-meta-bar track-meta-bar-danceability"></ion-progress-bar>
+                    <ion-progress-bar value="{{item.energy / 100.0}}" type="determinate" tooltip="energy: {{item.energy}}%" [options]="tooltipOptions" class="track-meta-bar track-meta-bar-energy"></ion-progress-bar>
+                    <ion-progress-bar value="{{item.happiness / 100.0}}" type="determinate" tooltip="happiness: {{item.happiness}}%" [options]="tooltipOptions" class="track-meta-bar track-meta-bar-happiness"></ion-progress-bar>
+                </ion-col>
+
+                <!-- Track Feedback: 0-2 rows: Like/Hate Counters. Num rows depends on what is enabled, If none, column is dropped -->
+                <ion-col *ngIf="platform.width()>=590 && (currentEvent.enableTrackLiking || currentEvent.enableTrackHating)" size="auto" class="ion-text-nowrap ion-align-self-center workaroundTransparency track-feedback-col">
+                    <div *ngIf="currentEvent.enableTrackLiking" class="track-meta">{{currentEvent.emojiTrackLike}} {{item.numLikes ? item.numLikes : 0}}<br/></div>
+
+                    <div *ngIf="currentEvent.enableTrackHating" class="track-meta">{{currentEvent.emojiTrackHate}} {{item.numHates ? item.numHates : 0}}<br/></div>
+
+                </ion-col>
+
+                <!-- Action Buttons (DEL, TOP, FIT, SEL), maybe as ICONS only to save space-->
+                <ion-col size="auto" class="track-action-col ion-align-self-center ion-text-nowrap workaroundTransparency">
+                    <!-- DEL -->
+                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="danger" (click)="deleteTrack(item, i)" tappable>
+                        <ion-icon slot="icon-only" name="trash"></ion-icon>
+                    </ion-button>
+
+                    <!-- TOP -->
+                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="primary" (click)="moveTop(item, i)" tappable>
+                        <ion-icon slot="icon-only" name="arrow-round-up"></ion-icon>
+                    </ion-button>
+
+                    <br/>
+
+                    <!-- FIT -->
+                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
+                        <ion-icon slot="icon-only" name="code-working"></ion-icon>
+                    </ion-button>
+
+                    <!-- SEL -->
+                    <ion-checkbox color="success" class="track-action-select" [checked]="isTrackSelected(item.id)" (click)="selectTrack(item, i)"></ion-checkbox>
+
+                </ion-col>
+
+                <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
+                <ion-col size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
+                    <a href="{{item.previewViaApp}}" target="_blank">
+                        <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from" [options]="tooltipOptions">
+                        </ion-img>
+                    </a>
+                </ion-col>
+
+                <!-- Last not least: the most important feature: the re-order button! -->
+                <ion-col size="auto" class="track-actions ion-align-self-center workaroundTransparency">
+                    <ion-reorder>
                         <ion-chip color="secondary">{{i +1}}</ion-chip>
                     </ion-reorder>
-                </ion-item>
-                <ion-item-options id="item-options-{{item.id}}" side="end">
-                    <!--<ion-item-option (click)="moveTop(item, i, slidingItem)" color="success">Top</ion-item-option>-->
-                    <ion-item-option id="action-delete-{{item.id}}" (click)="deleteTrack(item, i)" color="danger">Delete</ion-item-option>
-                </ion-item-options>
+                </ion-col>
 
-            </ion-item-sliding>
+            </ion-row>
         </ion-reorder-group>
-    </ion-list>
 
 
+    </ion-grid>
 
     <!-- Add button center for curators, to avoid clash with re-order know for last track
        issue#56 -->
-    <ion-fab vertical="bottom" horizontal="center" slot="fixed" margin>
+    <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button id="playlist-addTrack-button" (click)="presentModal()">
             <ion-icon name="add"></ion-icon>
         </ion-fab-button>

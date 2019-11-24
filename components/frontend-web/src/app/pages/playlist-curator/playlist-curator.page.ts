@@ -11,6 +11,7 @@ import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserSessionState } from 'src/app/models/usersessionstate';
+import { platform } from 'os';
 
 @Component({
   selector: 'app-playlist',
@@ -73,6 +74,16 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     );
   }
 
+  fitTrack(track, index) {
+    console.debug('fitTrack');
+    this.presentToast('Sorry, track fitting is not yet implemented');
+  }
+
+  selectTrack(track, index) {
+    console.debug('fitTrack');
+    this.presentToast('Sorry, track selection is not yet implemented');
+  }
+
   refresh(event) {
     console.debug('refresh');
     this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
@@ -84,6 +95,10 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       },
       err => console.error('refresh(): getCurrentPlaylistFailed', err)
     );
+  }
+
+  isTrackSelected(trackID) {
+    return 'false';
   }
 
   date2hhmm(d) {
@@ -100,8 +115,11 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     if (playlist.nextTracks) {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < playlist.nextTracks.length; i++) {
-          playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
-          ts += playlist.nextTracks[i].duration_ms;
+        let track = playlist.nextTracks[i];
+        track.eta = this.date2hhmm(new Date(ts));
+        ts += track.duration_ms;
+
+        track.durationStr = new Date(track.duration_ms).toISOString().slice(14, 19);
       }
     }
   }
