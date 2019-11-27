@@ -13,7 +13,7 @@
 specific:
       COMMON:
             GIT:
-                  REF: "topic-trackVoting-88"
+                  REF: "master"
 
       BACKEND_EVENTSTORE:
             KAFKA:
