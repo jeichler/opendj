@@ -36,7 +36,7 @@
     <ion-button id="startPlaylist" *ngIf="currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
 
     <ion-grid class="track-grid">
-        <ion-reorder-group (ionItemReorder)="onRenderItems($event)" disabled="false">
+        <ion-reorder-group (ionItemReorder)="handleTrackReorderEvent($event)" disabled="false">
 
 
             <!-- TODO: Test sepration lines between rows as visual guidance for wide displays (tablet in landscape mode)-->
@@ -122,7 +122,7 @@
                 <!-- Last not least: the most important feature: the re-order button! -->
                 <ion-col size="auto" class="track-actions ion-align-self-center workaroundTransparency">
                     <ion-reorder>
-                        <ion-chip color="secondary">{{i +1}}</ion-chip>
+                        <ion-chip color="secondary">{{i}}</ion-chip>
                     </ion-reorder>
                 </ion-col>
 

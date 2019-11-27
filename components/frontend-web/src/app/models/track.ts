@@ -15,6 +15,8 @@ export class Track {
     popularity: number;
     genre: string;
     genreSimple: string;
+    genreMapX: number;
+    genreMapY: number;
     danceability: number;
     energy: number;
     acousticness: number;
