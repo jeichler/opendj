@@ -19,8 +19,8 @@
 
         <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
 
-            <ion-item style="--ion-background-color: transparent !important; color: white;">
-                <ion-input name="login-modal-username" formControlName="username" type="text" clearInput="true" placeholder="Username">
+            <ion-item class="loginFormItem">
+                <ion-input name="login-modal-username" formControlName="username" type="text" clearInput="true" placeholder="Username" class="loginFormInputField">
                 </ion-input>
                 <ion-note slot="end" *ngIf="context !== 'owner'">
                     <ion-button id="login-modal-generateUsername" (click)="generateUsername()" tappable shape="round" color="primary" size="small">
@@ -29,8 +29,8 @@
                 </ion-note>
             </ion-item>
 
-            <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" style="--ion-background-color: transparent !important; color: white;">
-                <ion-input name="login-modal-password" formControlName="password" type="password" clearInput="true" placeholder="Password">
+            <ion-item *ngIf="context === 'owner' || context === 'curator' || (context ==='user' && currentEvent.passwordUser !=='')" class="loginFormItem">
+                <ion-input name="login-modal-password" formControlName="password" type="password" clearInput="true" placeholder="Password" class="loginFormInputField">
                 </ion-input>
             </ion-item>
 

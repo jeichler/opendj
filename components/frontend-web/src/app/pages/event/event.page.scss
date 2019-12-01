@@ -37,3 +37,14 @@ ion-input {
 .input-clear-icon {
     color: white;
 }
+
+.loginFormItem {
+    --ion-background-color: transparent !important;
+    --background-focused: transparent;
+    color: white;
+}
+
+.loginFormInputField {
+    background-color: #222428;
+    border-radius: 10px
+}

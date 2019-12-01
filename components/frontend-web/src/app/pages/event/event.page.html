@@ -76,8 +76,8 @@
                 <form [formGroup]="loginForm">
                     <ion-list lines="none" padding style="background: transparent !important; margin: 0 20px;">
 
-                        <ion-item style="--ion-background-color: transparent !important; color: white;">
-                            <ion-input style="background-color: #222428; border-radius: 10px" id="username" formControlName="username" type="text" clearInput="true" placeholder="Username">
+                        <ion-item class="loginFormItem">
+                            <ion-input id="username" formControlName="username" type="text" clearInput="true" placeholder="Username" class="loginFormInputField">
                             </ion-input>
                             <ion-note slot="end">
                                 <ion-button id="generateUsername" (click)="generateUsername()" tappable shape="round" color="primary" size="small" fill="outline">
@@ -85,12 +85,9 @@
                                 </ion-button>
                             </ion-note>
                         </ion-item>
-                        <ion-item *ngIf="!loginForm.controls.username.valid && submitAttempt">
-                            <p style="color: red;">Max length for username is 16.</p>
-                        </ion-item>
 
-                        <ion-item *ngIf="event.passwordUser !==''" style="--ion-background-color: transparent !important; color: white;">
-                            <ion-input id="password" style="background-color: #222428; border-radius: 10px" formControlName="password" type="password" clearInput="true" placeholder="Password">
+                        <ion-item *ngIf="event.passwordUser !==''" class="loginFormItem">
+                            <ion-input id="password" formControlName="password" type="password" clearInput="true" placeholder="Password" class="loginFormInputField">
                             </ion-input>
                         </ion-item>
 
