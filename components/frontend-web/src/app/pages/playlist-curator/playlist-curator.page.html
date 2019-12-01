@@ -89,25 +89,24 @@
 
                 <!-- Action Buttons (DEL, TOP, FIT, SEL), maybe as ICONS only to save space-->
                 <ion-col size="auto" class="track-action-col ion-align-self-center ion-text-nowrap workaroundTransparency">
-                    <!-- DEL -->
-                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="danger" (click)="deleteTrack(item, i)" tappable>
-                        <ion-icon slot="icon-only" name="trash"></ion-icon>
-                    </ion-button>
-
-                    <!-- TOP -->
-                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="primary" (click)="moveTop(item, i)" tappable>
-                        <ion-icon slot="icon-only" name="arrow-round-up"></ion-icon>
-                    </ion-button>
-
-                    <br/>
+                    <!-- SEL -->
+                    <ion-checkbox color="success" class="track-action-select" [checked]="isTrackSelected(item.id)" (click)="selectTrack(item, i)"></ion-checkbox>
 
                     <!-- FIT -->
                     <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
                         <ion-icon slot="icon-only" name="code-working"></ion-icon>
                     </ion-button>
 
-                    <!-- SEL -->
-                    <ion-checkbox color="success" class="track-action-select" [checked]="isTrackSelected(item.id)" (click)="selectTrack(item, i)"></ion-checkbox>
+                    <!-- DEL -->
+                    <ion-button size="small" class="track-action-button" fill="outline" shape="round" color="danger" (click)="deleteTrack(item, i)" tappable>
+                        <ion-icon slot="icon-only" name="trash"></ion-icon>
+                    </ion-button>
+
+                    <!-- TOP -->
+                    <ion-button size="small" class="track-action-button" fill="outline" shape="round" color="primary" (click)="moveTop(item, i)" tappable>
+                        <ion-icon slot="icon-only" name="arrow-round-up"></ion-icon>
+                    </ion-button>
+
 
                 </ion-col>
 
