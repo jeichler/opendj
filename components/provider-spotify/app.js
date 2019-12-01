@@ -439,6 +439,7 @@ async function refreshExpiredTokens() {
 // --------------------------------------------------------------------------
 
 const mapOfSimpleGenres = new Map();
+const mapOfGenreCoordinates = new Map(); // Key: String Genre Name, Value: {x, y, w}
 
 async function loadSimplifiedGenresFromFile() {
     log.trace("begin loadSimplifiedGenresFromFile");
@@ -456,6 +457,27 @@ async function loadSimplifiedGenresFromFile() {
     });
 }
 
+function loadGenreMapFromFile() {
+    const genreMap = require("./genreMap/genreMap.json");
+    // Genre Map provides absolute coordinates for each genre.
+    // We want to provide normalized coordinates ranging from 0.0 -> 1.0
+    // Thus we iterate of of genres
+    for (let genre in genreMap.genres) {
+        const genreDataAbs = genreMap.genres[genre];
+        const genreDataNorm = {
+            x: genreDataAbs.x / genreMap.width,
+            y: genreDataAbs.y / genreMap.height,
+            w: genreDataAbs.w / 100.0
+        }
+        mapOfGenreCoordinates.set(genre, genreDataNorm);
+    }
+    log.info('Loaded genre map with %s genres', mapOfGenreCoordinates.size);
+}
+
+function getFirstGenreFromComplexGenreString(complexGenreString) {
+    return complexGenreString.split(",")[0];
+
+}
 // Reduces a genre string like
 // "album rock, blues-rock, classic rock, hard rock, psychedelic rock, rock"
 // to simple "rock"
@@ -594,6 +616,7 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
         result = mapSpotifyTrackToOpenDJTrack(trackResult.body);
     }
 
+    // ---- Genre ----
     result.genre = "";
     if (albumResult && albumResult.body) {
         log.trace("adding  genres >%s< from album", albumResult.body.genres);
@@ -609,6 +632,19 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
     result.genreSimple = simplifyGenre(result.genre);
     result.genreSimpleNum = mapOfSimpleGenres.get(result.genreSimple);
 
+    // ----- Genre-Map -----
+    const firstGenre = getFirstGenreFromComplexGenreString(result.genre);
+    log.trace("genreMap: first=>%s<", firstGenre);
+    result.genreMap = mapOfGenreCoordinates.get(firstGenre);
+    if (!result.genreMap) {
+        result.genreMap = {
+            x: 0.5,
+            y: 0.5,
+            w: 0.0
+        };
+    }
+
+    // ----- Track Meta Data -----
     if (audioFeaturesResult && audioFeaturesResult.body) {
         result.danceability = Math.round(audioFeaturesResult.body.danceability * 100);
         result.energy = Math.round(audioFeaturesResult.body.energy * 100);
@@ -655,7 +691,7 @@ async function getTrackDetails(event, trackID) {
         log.warn("DataGrid GET TRACKS failed - ignoring error %s", cacheFailed);
     }
 
-    if (result) {
+    if (result && result.genreMap) {
         log.debug("trackDetails cache hit");
     } else {
         log.debug("trackDetails cache miss");
@@ -1101,6 +1137,8 @@ app.use("/api/provider-spotify/v1", router);
 
 setImmediate(async function() {
     try {
+        loadGenreMapFromFile();
+
         await loadSimplifiedGenresFromFile();
 
         await connectAllCaches();
