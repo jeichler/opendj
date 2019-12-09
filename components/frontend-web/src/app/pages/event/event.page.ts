@@ -22,12 +22,14 @@ export class EventPage implements OnDestroy, OnInit {
   loginForm: FormGroup;
 //  submitAttempt: boolean;
 
-  static getSessionStateForContext(ctx: string, eventID: string, username: string): UserSessionState {
+  static getSessionStateForContext(ctx: string, event: MusicEvent, username: string): UserSessionState {
     const state = new UserSessionState();
+    const eventID = event.eventID;
     if (ctx === 'user') {
       state.currentEventID = eventID;
       state.isLoggedIn = true;
       state.username = username;
+      state.isCurator = event.everybodyIsCurator;
     }
     if (ctx === 'owner') {
       state.currentEventID = eventID;
@@ -47,7 +49,7 @@ export class EventPage implements OnDestroy, OnInit {
 
   static login(component, event: MusicEvent, ctx: string, username: string, password: string) {
     if (ctx === 'user') {
-      component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+      component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
       component.router.navigate([`ui/playlist-user`]);
       component.presentToast('You have successfully joined this Event! Start contributing!');
       if (component.dismiss) {
@@ -57,7 +59,7 @@ export class EventPage implements OnDestroy, OnInit {
 
     if (ctx === 'owner') {
       if (event.passwordOwner === password && event.owner === username) {
-        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
         component.router.navigate(['ui/create-event']);
         component.presentToast('You have successfully logged in as Event Owner');
         if (component.dismiss) {
@@ -70,7 +72,7 @@ export class EventPage implements OnDestroy, OnInit {
 
     if (ctx === 'curator' ) {
       if (event.passwordCurator === password) {
-        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event.eventID, username));
+        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
         component.router.navigate([`ui/playlist-curator`]);
         component.presentToast('You have successfully joined this Event as Curator. Rock it!!');
         if (component.dismiss) {
