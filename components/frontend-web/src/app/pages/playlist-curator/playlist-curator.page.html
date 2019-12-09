@@ -10,7 +10,7 @@
             <ion-menu-button id="playlist-menu-button" color="light"></ion-menu-button>
         </ion-buttons>
         <ion-title color="light">
-            CURATOR {{currentEvent?.name}} - {{currentPlaylist?.nextTracks?.length}} Tracks
+            {{currentEvent?.name}} - {{currentPlaylist?.nextTracks?.length}} Tracks
         </ion-title>
 
         <ion-buttons slot="end">
@@ -89,8 +89,9 @@
 
                 <!-- Action Buttons (DEL, TOP, FIT, SEL), maybe as ICONS only to save space-->
                 <ion-col size="auto" class="track-action-col ion-align-self-center ion-text-nowrap workaroundTransparency">
-                    <!-- SEL -->
+                    <!-- SEL 
                     <ion-checkbox color="success" class="track-action-select" [checked]="isTrackSelected(item.id)" (click)="selectTrack(item, i)"></ion-checkbox>
+                    -->
 
                     <!-- FIT -->
                     <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>

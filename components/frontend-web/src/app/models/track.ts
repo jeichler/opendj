@@ -15,8 +15,7 @@ export class Track {
     popularity: number;
     genre: string;
     genreSimple: string;
-    genreMapX: number;
-    genreMapY: number;
+    genreMap: GenreMap;
     danceability: number;
     energy: number;
     acousticness: number;
@@ -33,4 +32,10 @@ export class Track {
     // Client side only attributes:
     eta: string;
     durationStr: string;
+}
+
+export class GenreMap {
+        x: number;
+        y: number;
+        w: number;
 }

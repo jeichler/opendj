@@ -89,28 +89,32 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
   }
 
   calcDistanceOfTracks(t1: Track, t2: Track) {
-    // Euclidian distance based on dimensions bpm, year and track.
+    // Euclidian distance based on dimensions bpm, year, genre.
     // values are normalize to values from 0.0 -> 1.0.
     // each dimension has a weight;
     const bpm1 = this.normalizeBPM(t1.bpm);
     const bpm2 = this.normalizeBPM(t2.bpm);
     const year1 = this.normalizeYear(t1.year);
     const year2 = this.normalizeYear(t2.year);
-    const weightBPM = 0;
-    const weightYear = 1.0;
+    const genre1 = t1.genreMap;
+    const genre2 = t2.genreMap;
+    // TODO: #195 Make Weight configurable at event (advanced options)
+    const weightBPM = 0.20;
+    const weightYear = 0.30;
+    const weightGenre = 0.50;
 
-    // TODO: Handle Genre:
-    return Math.sqrt(weightBPM * this.square(bpm2 - bpm1) + weightYear * this.square(year2 - year1));
+    return Math.sqrt(
+      weightBPM * this.square(bpm2 - bpm1)
+    + weightYear * this.square(year2 - year1)
+    + weightGenre * this.square(genre2.x - genre1.x)
+    + weightGenre * this.square(genre2.y - genre1.y)
+    );
   }
 
 
   fitTrack(selectedTrack: Track, currentPos: number) {
-    console.debug('fitTrack');
+    console.debug('begin fitTrack currentPos=%s, track=%s', currentPos, selectedTrack.name);
     const playlist = this.currentPlaylist;
-
-    this.presentToast('Sorry, fitTrack is work in progress and not yet available');
-    return;
-
 
     if (playlist.nextTracks) {
       let minDistance = Number.MAX_VALUE;
@@ -129,46 +133,52 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
         const currentTrack = playlist.nextTracks[i];
         const distance = this.calcDistanceOfTracks(currentTrack, selectedTrack);
-        if (distance <= minDistance) {
+        console.debug('distance=%s to pos=%s /track=%s', distance, i, currentTrack.name);
+        if (distance < minDistance) {
           minDistance = distance;
           targetPos = i;
         }
       }
 
-      console.debug('minDistance=%s, currentPos=%s, targetPos=%s', minDistance, currentPos, targetPos);
       if (targetPos === -1) {
         message = 'No good fit found';
       } else {
-        // Okay, we have a good targetPos.
+        console.debug('Track to which selected track has minimum distance %s at pos=%s track=%s', minDistance, targetPos, playlist.nextTracks[targetPos].name);
+        // We want to insert AFTER that track, thus we need to increment by one (pos means TOP of list):
+        targetPos++;
 
-        // TODO: avoid breaking existing "trains" of tracks, i.e. where there is already a small distance between two tracks.
+
+        // Now we have to avoid breaking existing "trains" of tracks, i.e. where there is already a small distance between two tracks.
         // (the distance to the track to be inserted could be greater)
-        // Thus, we search from here below to find a position where the distance is smaller then the successor:
+        // Thus, we search from here below to find a position where the distance is smaller then the su:
+        for (let i = targetPos; i < playlist.nextTracks.length; i++) {
+          if ( i === currentPos) {
+            console.debug('The selected track is already in the train after the best fit track, thus, it is better not to move it');
+            targetPos = currentPos;
+            break;
+          }
 
-        // Now we have to decide if we insert
-        // BEFORE or AFTER that track.
-        // Therefore, we measure the distance between the track before and after
-        const distanceToPredecessor = this.calcDistanceOfTracks(playlist.nextTracks[targetPos - 1], playlist.nextTracks[targetPos]);
-        const distanceToSuccessor = this.calcDistanceOfTracks(playlist.nextTracks[targetPos + 1], playlist.nextTracks[targetPos]);
-        const distanceToTarget = minDistance;
-
-        console.debug('distanceToSuccessor=%s, distanceToTarget=%s', distanceToSuccessor, distanceToTarget);
-        if (distanceToTarget < distanceToSuccessor) {
-          console.debug('Insert after target');
-          targetPos++;
-        } else {
-          console.debug('Insert before target');
+          const distance = this.calcDistanceOfTracks(playlist.nextTracks[targetPos - 1], playlist.nextTracks[i]);
+          console.debug('distance=%s to pos %d', distance, i);
+          if (distance > minDistance) {
+            //  Distance target->successor is greater then distance target->selected track,
+            // thus we should insert selected track before that successor :
+            targetPos = i;
+            break;
+          }
         }
+        console.debug('New targetPos after train check: %d', targetPos);
 
         if (targetPos === currentPos) {
           message = 'Not moved - already at best fitting position';
         } else {
           message = 'Moved to best fitting position ' + targetPos;
-          // this.moveTrack(currentPos, targetPos);
+          this.moveTrack(currentPos, targetPos);
         }
       }
       this.presentToast(message);
     }
+    console.debug('end fitTrack');
   }
 
   selectTrack(track, index) {
@@ -218,20 +228,30 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
   moveTrack(fromPos: number, toPos: number) {
     console.debug('moveTrack from=%s to=%s', fromPos, toPos);
-    const track = this.currentPlaylist.nextTracks.splice(fromPos, 1)[0];
-    this.currentPlaylist.nextTracks.splice(toPos, 0, track);
+
+    const track = this.currentPlaylist.nextTracks[fromPos];
+    console.debug('moveTrack t=%s', track.name);
+
+    // Remove at current Pos:
+//    this.currentPlaylist.nextTracks.splice(fromPos, 1);
+
+    // Insert at new Pos:
+//    this.currentPlaylist.nextTracks.splice(fromPos < toPos ? toPos - 1 : toPos, 0, track);
+//    this.currentPlaylist.nextTracks.splice(toPos, 0, track);
+
     this.feService.reorderTrack(this.currentEvent, track.id, fromPos, toPos).subscribe(
       data => {
         this.presentToast('Track successfully moved to pos ' + toPos);
       },
       err => console.log(err)
     );
-
   }
 
   handleTrackReorderEvent(event) {
-    console.debug(`handleTrackReorderEvent item from ${event.detail.from} to ${event.detail.to}`);
-    this.moveTrack(event.detail.from, event.detail.to);
+    console.debug('handleTrackReorderEvent %s', JSON.stringify(event.detail));
+    const from = event.detail.from;
+    const to = event.detail.to;
+    this.moveTrack(from, from < to ? to + 1 : to);
     event.detail.complete();
   }
 
