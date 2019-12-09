@@ -322,7 +322,7 @@ function moveTrack(eventID, playlist, provider, trackID, newPos) {
     // Sanity check of new pos:
     let len = playlist.nextTracks.length;
     if (newPos < 0) newPos = 0;
-    if (newPos >= len) newPos = len - 1;
+    if (newPos > len) newPos = len;
 
     // Remove at current pos:
     let track = playlist.nextTracks.splice(currentPos, 1)[0];
