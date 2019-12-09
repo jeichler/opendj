@@ -328,7 +328,7 @@ function moveTrack(eventID, playlist, provider, trackID, newPos) {
     let track = playlist.nextTracks.splice(currentPos, 1)[0];
 
     // Insert at new pos;
-    playlist.nextTracks.splice(newPos, 0, track);
+    playlist.nextTracks.splice(currentPos < newPos ? newPos - 1 : newPos, 0, track);
 
     log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, track);
 }
