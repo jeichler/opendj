@@ -85,7 +85,7 @@ http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/login
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/currentTrack
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/devices
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?q=Michael+Jackson
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
+http://localhost:8080/api/provider-spotify/v1/events/demo/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/pause/
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW&pos=5000
@@ -129,7 +129,7 @@ curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan
 curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "user": "HappyDan"}' -H "Content-Type: application/json" -X POST http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/tracks
 
 # Move Track:
-curl -d '{"provider":"spotify", "id":"3QTTAj8piyRBfhoPEfJC6y", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/reorder
+curl -d '{"provider":"spotify", "id":"3Wz5JAW46aCFe1BwZIePu6", "from": "IDontCare", "to": "0"}' -H "Content-Type: application/json" -X POST http://dev.opendj.io:8081/api/service-playlist/v1/events/demo/playlists/0/reorder
 
 # Delete Track
 curl -X DELETE http://localhost:8081/api/service-playlist/v1/events/0/playlists/0/tracks/spotify:XXX3QTTAj8piyRBfhoPEfJC6y
