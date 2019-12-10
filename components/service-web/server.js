@@ -153,7 +153,7 @@ async function onEventModified(key, entryVersion, listenerID) {
             log.trace("get and emit eventID=%s", key);
             let eventID = key;
             let event = await getEventForEventID(key);
-            let namespace = io.of("/api/service-web/socket/event/" + eventID);
+            let namespace = io.of("/event/" + eventID);
             emitEvent(namespace, event);
         }
     } catch (err) {
