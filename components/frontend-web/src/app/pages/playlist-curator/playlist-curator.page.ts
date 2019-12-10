@@ -99,9 +99,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const genre1 = t1.genreMap;
     const genre2 = t2.genreMap;
     // TODO: #195 Make Weight configurable at event (advanced options)
-    const weightBPM = 0.20;
-    const weightYear = 0.30;
-    const weightGenre = 0.50;
+    const weightBPM = 0;
+    const weightYear = 1;
+    const weightGenre = 0;
 
     return Math.sqrt(
       weightBPM * this.square(bpm2 - bpm1)
@@ -119,7 +119,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     if (playlist.nextTracks) {
       let minDistance = Number.MAX_VALUE;
       let targetPos = -1;
+      let targetTrack = null;
       let message = '';
+      let insertBefore = false;
 
       // Iterate over list of next tracks and find the track with the
       // minimum distance to the current track;
@@ -137,15 +139,33 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
         if (distance < minDistance) {
           minDistance = distance;
           targetPos = i;
+          targetTrack = currentTrack;
+        }
+      }
+
+      // Check Distance to currently playing track:
+      if (playlist.currentTrack) {
+        console.debug('check distance to currently playing track');
+        const distance = this.calcDistanceOfTracks(playlist.currentTrack, selectedTrack);
+        if (distance < minDistance) {
+          console.debug('new minDistance=%s', distance);
+          minDistance = distance;
+          targetPos = 0;
+          targetTrack = playlist.currentTrack;
+          insertBefore = true;
         }
       }
 
       if (targetPos === -1) {
         message = 'No good fit found';
       } else {
-        console.debug('Track to which selected track has minimum distance %s at pos=%s track=%s', minDistance, targetPos, playlist.nextTracks[targetPos].name);
-        // We want to insert AFTER that track, thus we need to increment by one (pos means TOP of list):
-        targetPos++;
+        console.debug('Track to which selected track has minimum distance %s at pos=%s track=%s, insertBefore=%s', minDistance, targetPos, playlist.nextTracks[targetPos].name, insertBefore);
+
+        if (!insertBefore) {
+          // We want to insert AFTER that track, thus we need to increment by one (pos 0 means TOP of list,
+          // and server side move always inserts BEFORE):
+          targetPos++;
+        }
 
 
         // Now we have to avoid breaking existing "trains" of tracks, i.e. where there is already a small distance between two tracks.
@@ -158,7 +178,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
             break;
           }
 
-          const distance = this.calcDistanceOfTracks(playlist.nextTracks[targetPos - 1], playlist.nextTracks[i]);
+          const distance = this.calcDistanceOfTracks(targetTrack, playlist.nextTracks[i]);
           console.debug('distance=%s to pos %d', distance, i);
           if (distance > minDistance) {
             //  Distance target->successor is greater then distance target->selected track,
