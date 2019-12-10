@@ -18,7 +18,7 @@ export class UserDataService {
   ) { }
 
   getUser(): Promise<UserSessionState> {
-    console.debug('getUser');
+    console.debug('UserDataService: getUser');
     return this.storage.get('USER').then((value) => {
       if (!value) {
         console.debug('getUser -> state not found in local storage, returning new state');
@@ -29,7 +29,7 @@ export class UserDataService {
   }
 
   updateUser(u: UserSessionState) {
-    console.debug('updateUser');
+    console.debug('UserDataService: updateUser');
     this.storage.set('USER', u).then( () => {
       this.events.publish('user:modified', u);
     }).catch((err) => {
@@ -38,7 +38,7 @@ export class UserDataService {
   }
 
   logout() {
-    console.debug('logout');
+    console.debug('UserDataService: logout');
     this.storage.clear().then( () => {
     });
     }

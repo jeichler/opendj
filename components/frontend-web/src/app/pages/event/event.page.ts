@@ -44,6 +44,7 @@ export class EventPage implements OnDestroy, OnInit {
       state.username = username;
       state.isCurator = true;
     }
+    state.loginContext = ctx;
     return state;
   }
 

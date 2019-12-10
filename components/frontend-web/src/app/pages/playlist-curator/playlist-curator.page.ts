@@ -188,15 +188,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
   refresh(event) {
     console.debug('refresh');
-    this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
-      newList => {
-        console.debug('refresh(): received new Playlist');
-        this.currentPlaylist = newList;
-        this.computeETAForTracks();
-        event.detail.complete();
-      },
-      err => console.error('refresh(): getCurrentPlaylistFailed', err)
-    );
+    this.refreshEvent();
+    this.refreshPlaylist();
+    event.detail.complete();
   }
 
   isTrackSelected(trackID) {
@@ -351,6 +345,36 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     return index + ', ' + element.id;
   }
 
+  checkEverybodyIsCuratorStateChange() {
+    if (this.userState.loginContext === 'user') {
+      console.debug('Simple user detected - check if everybodyIsCurator did change');
+      const oldCuratorState = this.userState.isCurator;
+      const newCuratorState = this.currentEvent.everybodyIsCurator;
+      if (oldCuratorState !== newCuratorState) {
+        console.debug('everybodyIsCurator did change: newCuratorState=%s', newCuratorState);
+        this.userState.isCurator = newCuratorState;
+        this.userDataService.updateUser(this.userState);
+
+        if (!newCuratorState) {
+          this.presentToast('Sorry, you are no longer curator of this event - bringing you back to playlist page.');
+          this.router.navigate([`ui/playlist-user`]);
+          }
+      }
+    }
+  }
+  refreshEvent() {
+    console.debug('refreshEvent()');
+    const eventID = this.userState.currentEventID;
+    this.feService.readEvent(eventID).subscribe(
+      newEvent => {
+        console.debug('refreshEvent(): received new event');
+        this.currentEvent = newEvent;
+        this.checkEverybodyIsCuratorStateChange();
+      }
+    );
+  }
+
+
   refreshPlaylist() {
     if (this.currentEvent) {
       console.debug('getCurrentPlaylist() from server');
@@ -421,6 +445,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       this.currentEvent = data as MusicEvent;
       if (this.currentEvent) {
         console.info(`event update: `, this.currentEvent);
+        this.checkEverybodyIsCuratorStateChange();
       } else {
         console.warn('Event has been deleted - navigating to landing page');
         this.router.navigate([`ui/landing`]);

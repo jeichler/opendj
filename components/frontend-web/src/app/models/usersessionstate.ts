@@ -5,4 +5,5 @@ export class UserSessionState {
     isCurator = false;
     currentEventID = '';
     trackFeedback = null;
+    loginContext = '';
 }

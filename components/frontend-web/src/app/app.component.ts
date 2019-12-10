@@ -69,6 +69,11 @@ export class AppComponent implements OnInit {
       this.router.navigate([redirectUrl]);
     });
 
+    this.userDataService.events.subscribe('user:modified', data => {
+      console.debug('Received user:modified event from user data service');
+      this.userState = data;
+    });
+
   }
 
   logout() {
