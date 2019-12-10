@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CurrentTrackComponent } from './current-track/current-track.component';
-import { PlaylistItemComponent } from './playlist-item/playlist-item.component';
 
 @NgModule({
   imports: [
@@ -11,7 +10,7 @@ import { PlaylistItemComponent } from './playlist-item/playlist-item.component';
     IonicModule,
     ReactiveFormsModule
   ],
-  declarations: [ CurrentTrackComponent, PlaylistItemComponent ],
-  exports: [ CurrentTrackComponent, PlaylistItemComponent ]
+  declarations: [ CurrentTrackComponent ],
+  exports: [ CurrentTrackComponent ]
 })
 export class SharedModule {}
