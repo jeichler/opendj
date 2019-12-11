@@ -22,7 +22,7 @@
     <!-- Current Track always visible on top, important for Curators
     to see when the next track will start: -->
     <ion-toolbar color="dark">
-        <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="true" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
+        <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="true" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
     </ion-toolbar>
 
 </ion-header>
@@ -32,8 +32,9 @@
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <!-- TODO: Get rid of this See issue#183-->
+    <!-- TODO: Get rid of this See issue#183
     <ion-button id="startPlaylist" *ngIf="currentPlaylist?.nextTracks?.length > 0 && currentPlaylist?.currentTrack === null" (click)="playTrack()">Start Playlist</ion-button>
+-->
 
     <ion-grid class="track-grid">
         <ion-reorder-group (ionItemReorder)="handleTrackReorderEvent($event)" disabled="false">

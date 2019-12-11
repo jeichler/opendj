@@ -16,22 +16,30 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() isCurator: boolean;
   @Input() isPlaying: boolean;
   @Input() set trackInput(value: any) {
-    console.debug('trackInput()');
+    console.debug('trackInput()', value);
     if (this.intervalHandle) {
       console.debug('clear interval');
       clearInterval(this.intervalHandle);
     }
-    if (value !== null) {
-      this.track = value;
-      this.progress = this.track.progress_ms / 1000;
+    if (value == null) {
+      console.debug('no track as input');
+      value = this.emptyTrack;
+      this.currentTime = '--:--';
+      this.playingTime = '--:--';
+    }
 
-      if (this.isPlaying) {
-        const now = new Date().getTime() / 1000;
-        const startedAt = new Date(this.track.started_at).getTime() / 1000;
-        const diff = (now - startedAt);
-        this.progress = diff;
-        this.intervalHandle = setInterval(() => this.countdown(), 500);
-      }
+    this.track = value;
+    this.progress = this.track.progress_ms / 1000;
+
+    if (this.isPlaying) {
+      const now = new Date().getTime() / 1000;
+      const startedAt = new Date(this.track.started_at).getTime() / 1000;
+      const diff = (now - startedAt);
+      this.progress = diff;
+      this.intervalHandle = setInterval(() => this.countdown(), 500);
+    } else {
+      this.track.started_at =  new Date().toISOString();
+      this.countdown();
     }
   }
   @Input() set currentEventInput(event: MusicEvent) {
@@ -42,13 +50,20 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     name: '---',
     artist: 'No current track',
     added_by: '---',
-    image_url: '',
-    image_url_ref: 'assets/img/Logo_OpenDJ_128.png',
+    image_url: 'assets/img/Logo_OpenDJ_128.png',
+    image_url_ref: '',
     numLikes: 0,
     numHates: 0,
     progress_ms: 0,
     duration_ms: 0,
-    started_at: '',
+    genre: '---',
+    year: '---',
+    bpm: 0,
+    isPlaying: false,
+    started_at: new Date().toISOString(),
+    danceability: 0,
+    energy: 0,
+    happiness: 0,
     isEmptyTrack: true
   };
 

@@ -61,12 +61,11 @@
     line-height: 100%;
 }
 
-.track-meta .track-feedback {
-    line-height: 8px;
-    padding: 0px;
-    margin: 0px;
+.track-meta {
+    line-height: 20px;
+    //    padding: 0px;
+    //margin: 0px;
     color: #999;
-    background: #FF00FF;
 }
 
 .track-genre-col {
@@ -82,8 +81,9 @@
 }
 
 .track-meta-col {
-    padding: 0px;
-    min-width: 80px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    min-width: 90px;
 }
 
 .track-meta-bar {

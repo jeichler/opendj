@@ -36,7 +36,7 @@ export class Track {
     started_at: string;
     // tslint:disable-next-line:variable-name
     progress_ms: number;
-
+    isEmptyTrack: false;
 }
 
 export class GenreMap {

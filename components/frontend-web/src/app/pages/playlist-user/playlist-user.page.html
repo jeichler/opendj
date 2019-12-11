@@ -28,7 +28,7 @@
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <app-current-track *ngIf="currentPlaylist && currentPlaylist?.currentTrack" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
+    <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying"></app-current-track>
 
     <ion-grid class="track-grid">
         <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
