@@ -2,6 +2,7 @@ import { FEService } from './../../providers/fes.service';
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Track } from 'src/app/models/track';
 import { MusicEvent } from 'src/app/models/music-event';
+import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-current-track',
@@ -10,6 +11,7 @@ import { MusicEvent } from 'src/app/models/music-event';
   providers: [ FEService ]
 })
 export class CurrentTrackComponent implements OnInit, OnDestroy {
+
 
   @Input() isCurator: boolean;
   @Input() isPlaying: boolean;
@@ -36,16 +38,33 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     this.currentEvent = event;
   }
 
-  track;
+  emptyTrack = {
+    name: '---',
+    artist: 'No current track',
+    added_by: '---',
+    image_url: '',
+    image_url_ref: 'assets/img/Logo_OpenDJ_128.png',
+    numLikes: 0,
+    numHates: 0,
+    progress_ms: 0,
+    duration_ms: 0,
+    started_at: '',
+    isEmptyTrack: true
+  };
+
+  track = (this.emptyTrack) as unknown as Track;
   timeRemaining = 0; // progressbar value
-  currentTime = null; // remaining playtime
-  playingTime = null; // played time
+  currentTime = '--:--'; // remaining playtime
+  playingTime = '--:--'; // played time
   totalTime = null; // total track length
   progress; // temp var for countdown
   intervalHandle = null;
   currentEvent: MusicEvent;
 
-  constructor(public feService: FEService) { }
+  constructor(
+    public feService: FEService,
+    public platform: Platform ) {
+  }
 
   calculateTotalTime() {
     const duration = this.track.duration_ms / 1000;

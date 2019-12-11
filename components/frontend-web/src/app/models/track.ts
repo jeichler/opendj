@@ -32,6 +32,11 @@ export class Track {
     // Client side only attributes:
     eta: string;
     durationStr: string;
+    // tslint:disable-next-line:variable-name
+    started_at: string;
+    // tslint:disable-next-line:variable-name
+    progress_ms: number;
+
 }
 
 export class GenreMap {

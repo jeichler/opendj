@@ -1,28 +1,160 @@
-ion-card {
-  --background: linear-gradient(0deg,  rgba(42, 44, 48, 0.8) 30%, rgba(44, 46, 49, 0.8) 100%) !important;
-  border-radius: 0;
-  // max-width: 98vw;;
+.track-grid {
+    --ion-grid-columns: 12;
+    --ion-grid-padding: 0;
+    margin: 0px;
+    padding: 0px;
+    background: #333E46
 }
 
-ion-title {
-  // margin-bottom: 1%;
+.workaroundTransparency {
+    background: #333E46
 }
 
-ion-img {
-  max-width: 100%;
-  margin-top: 0%;
-  margin-left: 0%;
+.track-row {
+    padding: 0px;
 }
 
-@media only screen and (min-width: 960px) {
-  ion-img {
-    max-width: 100%;
-    margin-top: 0%;
-    margin-left: 0%;
-  }
+.track-col {
+    padding: 0px;
 }
 
-ion-buttons {
-  margin-top: 15%;
-  margin-left: 0%;
+.track-cover-pic {
+    margin: 0px;
+    border-radius: 0px;
+    width: 64px;
+    height: auto;
 }
+
+.track-header {
+    font-size: 16px;
+    // This is needed to avoid that next colums
+    // are not visibile to the right, because of long header names.
+    // I cant find a way for angular to truncate the content correclty, this
+    // is the best workaround I have found:
+    width: 10px;
+    color: #fff;
+    margin: 0px;
+    line-height: 100%;
+}
+
+.track-details {
+    font-size: 14px;
+    width: 10px;
+    color: #999;
+    margin: 0px;
+    line-height: 100%;
+}
+
+.track-progress-bar {
+    font-size: 14px;
+    width: 100%;
+    color: #999;
+    margin: 0px 0px 0px 0px;
+    line-height: 100%;
+}
+
+.track-progress-counter {
+    font-size: 14px;
+    width: 100%;
+    color: white;
+    margin: 0px;
+    line-height: 100%;
+}
+
+.track-meta .track-feedback {
+    line-height: 8px;
+    padding: 0px;
+    margin: 0px;
+    color: #999;
+    background: #FF00FF;
+}
+
+.track-genre-col {
+    padding: 0px;
+    min-width: 90px;
+    margin: 0px;
+}
+
+.track-genre-text {
+    color: #999;
+    font-size: 14px;
+    line-height: 100%;
+}
+
+.track-meta-col {
+    padding: 0px;
+    min-width: 80px;
+}
+
+.track-meta-bar {
+    min-height: 10px;
+    --background: #3F3F4F;
+}
+
+.track-meta-bar-danceability {
+    //    --progress-background: rgb(240, 65, 65);
+    //   --progress-background: rgb(200, 25, 25);
+    --progress-background: rgb(200, 25, 200);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-energy {
+    //    --progress-background: #008800;
+    --progress-background: rgb(215, 166, 0);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-happiness {
+    //    --progress-background: rgb(255, 206, 0);
+    --progress-background: #006600;
+}
+
+.track-feedback-col {
+    padding-top: 0px;
+    min-width: 46px;
+}
+
+.track-feedback {
+    line-height: 8px;
+    text-align: center;
+}
+
+.track-feedback-icon {
+    margin-top: 2px;
+    font-size: 23px;
+}
+
+.track-feedback-counter-passive {
+    font-size: 14px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.track-button-col {
+    min-width: 225px;
+    // background: #FF00FF;
+    padding: 0px;
+    margin: 0px 0px 0px 0px;
+}
+
+.track-button {
+    //    font-size: 8px;
+    max-height: 26px;
+    vertical-align: middle;
+    margin-left: 25px;
+}
+
+.track-provider-col {
+    padding: 0px;
+}
+
+.track-provider-logo {
+    width: 21px;
+    height: 21px;
+    margin-top: 1px;
+    margin-right: 5px;
+    padding: 0px 0px 0px 0x;
+    //margin-bottom: 10px; //required to align with re-order button
+}
+
+.track-button-col {}

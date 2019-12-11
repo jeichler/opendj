@@ -1,61 +1,86 @@
-<!-- For Users - (Curator view below)
--->
-<ion-card no-margin no-padding color="opendj" *ngIf="track !== null && !isCurator">
-    <ion-row>
-        <ion-col size="2">
+<ion-grid class="track-grid" color="opendj">
+    <ion-row nowrap class="track-row">
+        <!-- Album Cover for currentTrack-->
+        <ion-col *ngIf="platform.width()>375" size="auto" class="ion-align-self-top">
             <a href="{{track.image_url_ref}}" target="_blank">
-                <ion-img [src]="track.image_url" style="max-width: 64px"></ion-img>
+                <img class="track-cover-pic" src="{{track.image_url}}">
             </a>
         </ion-col>
-        <ion-col size="10">
-            <ion-label color="dark" style="font-size: 16px; font-weight: bold; color: white;">{{ track.name }}</ion-label>
-            <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_White_64.png" style="width: 21px; height: 21px; margin-left:10px; margin-top:10px; margin-bottom:10px; margin-right:5px;"></ion-img>
-            <br/>
-            <ion-label color="dark" style="font-size: 14px;color: #ddd;">{{ track.artist }} by {{track.added_by}}</ion-label>
 
-            <div>
-                <ion-progress-bar color="success" value="{{timeRemaining}}"></ion-progress-bar>
-            </div>
-            <div>
-                {{ playingTime }} <span style="float: right">{{ currentTime }}</span>
-            </div>
+        <ion-col>
+            <ion-grid class="track-grid">
+                <ion-row nowrap class="track-row">
+                    <!-- Track Details: Name, Artist, Contributor, progress bar -->
+                    <ion-col *ngIf="track" class="ion-align-self-top ion-text-nowrap track-col">
+                        <div class="track-header ion-text-nowrap">{{track.name}}</div>
+                        <div class="track-details ion-text-nowrap">{{track.artist}}</div>
+                        <div class="track-details ion-text-nowrap">{{track.added_by}}</div>
+                    </ion-col>
+                    <!-- Track Meta1: 3 rows: genre, year, bpm -->
+                    <ion-col *ngIf="platform.width()>=500 && isCurator && track" size="auto" class="ion-align-self-top ion-text-nowrap workaroundTransparency track-genre-col">
+                        <div class="track-genre-text">{{track.genre}}</div>
+                        <div class="track-genre-text">{{track.year}}</div>
+                        <div class="track-genre-text">{{track.bpm}} bpm</div>
+                    </ion-col>
+
+                    <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->
+                    <ion-col *ngIf="platform.width()>=636 && isCurator && track" size="auto" class="ion-align-self-top ion-text-nowrap workaroundTransparency track-meta-col">
+                        <ion-progress-bar value="{{track.danceability / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-danceability"></ion-progress-bar>
+                        <ion-progress-bar value="{{track.energy / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-energy"></ion-progress-bar>
+                        <ion-progress-bar value="{{track.happiness / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-happiness"></ion-progress-bar>
+                    </ion-col>
+
+                    <!-- Track Feedback CURATORS (vertically): 0-2 rows: Like/Hate Counters. Num rows depends on what is enabled, If none, column is dropped -->
+                    <ion-col *ngIf="platform.width()>=590 && isCurator && (currentEvent.enableTrackLiking || currentEvent.enableTrackHating)" size="auto" class="ion-text-nowrap ion-align-self-top workaroundTransparency track-feedback-col">
+                        <div *ngIf="currentEvent.enableTrackLiking" class="track-meta">{{currentEvent.emojiTrackLike}} {{track.numLikes ? track.numLikes : 0}}</div>
+                        <div *ngIf="currentEvent.enableTrackHating" class="track-meta">{{currentEvent.emojiTrackHate}} {{track.numHates ? track.numHates : 0}}</div>
+                    </ion-col>
+
+
+                    <!-- Track Feedback USERS (horizontally)-->
+                    <!-- Provider Logo -->
+                    <ion-col *ngIf="!isCurator" size="auto" class="track-provider-col ion-align-self-top workaroundTransparency">
+                        <ion-img src="assets/img/spotify/Spotify_Icon_RGB_White_64.png " class="track-provider-logo ">
+                        </ion-img>
+                    </ion-col>
+
+                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackLiking" size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
+                        <div class="track-feedback-icon">{{currentEvent.emojiTrackLike}}</div><br>
+                        <div class="track-feedback-counter-passive">{{track.numLikes ? track.numLikes : 0}}</div>
+                    </ion-col>
+                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackHating" size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
+                        <div class="track-feedback-icon">{{currentEvent.emojiTrackHate}}</div><br>
+                        <div class="track-feedback-counter-passive">{{track.numHates ? track.numHates: 0}}</div>
+                    </ion-col>
+
+                    <!-- play/pause/skip buttons for curators-->
+                    <ion-col *ngIf="isCurator" size="auto" class="track-button-col ion-text-nowrap workaroundTransparency">
+                        <ion-button id="current-track-play" color="success" shape="round" *ngIf="!isPlaying" size="default" (click)="playTrack()" tappable class="track-button">
+                            <ion-icon slot="icon-only" name="play"></ion-icon>
+                        </ion-button>
+                        <ion-button id="current-track-pause" color="danger" shape="round" *ngIf="isPlaying" size="default" (click)="pauseTrack()" tappable class="track-button">
+                            <ion-icon slot="icon-only" name="pause"></ion-icon>
+                        </ion-button>
+                        <ion-button id="current-track-skip" color="warning" shape="round" size="default" (click)="nextTrack()" tappable class="track-button">
+                            <ion-icon slot="icon-only" name="skip-forward"></ion-icon>
+                        </ion-button>
+                    </ion-col>
+
+
+                </ion-row>
+                <ion-row class="track-row">
+                    <div class="track-progress-bar ion-text-nowrap">
+                        <ion-progress-bar color="success" value="{{timeRemaining}}"></ion-progress-bar>
+                    </div>
+                    <div class="track-progress-counter ion-text-nowrap">
+                        {{ playingTime }} <span style="float: right">{{ currentTime }}</span>
+                    </div>
+
+                </ion-row>
+
+            </ion-grid>
+
         </ion-col>
+
     </ion-row>
-</ion-card>
-
-
-<!-- For Curators: -->
-<ion-card no-margin no-padding color="opendj" *ngIf="track !== null && isCurator">
-    <ion-row>
-        <!-- no image for curators, sorry
-    <ion-col size="1">
-        <ion-img [src]="track.image_url"></ion-img>
-    </ion-col>
--->
-        <ion-col size="9" text-wrap>
-            <ion-label color="dark" style="font-size: 16px; font-weight: bold; color: white;">{{ track.name }}</ion-label>
-            <br/>
-            <ion-label color="dark" style="font-size: 14px;color: #ddd;">{{ track.artist }} by {{track.added_by}}</ion-label>
-
-            <div>
-                <ion-progress-bar color="success" value="{{timeRemaining}}"></ion-progress-bar>
-            </div>
-            <div>
-                {{ playingTime }} <span style="float: right">{{ currentTime }}</span>
-            </div>
-        </ion-col>
-
-        <ion-col size="3">
-            <ion-button id="current-track-play" color="success" shape="round" float-right *ngIf="!isPlaying" size="small" (click)="playTrack()" tappable>
-                <ion-icon name="play"></ion-icon>
-            </ion-button>
-            <ion-button id="current-track-pause" color="danger" shape="round" float-right *ngIf="isPlaying" size="small" (click)="pauseTrack()" tappable>
-                <ion-icon name="pause"></ion-icon>
-            </ion-button>
-            <ion-button id="current-track-skip" color="warning" shape="round" float-right size="small" (click)="nextTrack()" tappable>
-                <ion-icon name="skip-forward"></ion-icon>
-            </ion-button>
-        </ion-col>
-
-    </ion-row>
-</ion-card>
+</ion-grid>
