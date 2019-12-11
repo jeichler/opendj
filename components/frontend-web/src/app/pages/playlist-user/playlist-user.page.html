@@ -49,8 +49,11 @@
 
             <!-- Provider Logo -->
             <ion-col size="auto" class="track-feedback ion-align-self-center">
-                <ion-img src="assets/img/spotify/Spotify_Icon_RGB_White_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from" [options]="tooltipOptions ">
-                </ion-img>
+                <a href="{{item.previewViaApp}}" target="_blank">
+                    <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from" [options]="tooltipOptions ">
+                    </ion-img>
+                </a>
+
             </ion-col>
 
             <!-- Like/Hate Buttons-->
