@@ -247,6 +247,7 @@
           metadata:
             annotations:
               kubernetes.io/tls-acme: "true"
+              haproxy.router.openshift.io/balance: "roundrobin"
             labels:
               app: provider-spotify
             name: provider-spotify
@@ -273,6 +274,8 @@
           kind: Route
           apiVersion: route.openshift.io/v1
           metadata:
+            annotations:
+              haproxy.router.openshift.io/balance: "roundrobin"
             labels:
               app: provider-spotify
             name: provider-spotify

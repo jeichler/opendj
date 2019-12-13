@@ -175,3 +175,5 @@ git tag -a 0.4.1 -m "Haloween Release for multi-event"
 git push origin 0.4.1
 
 
+
+ cd /opt/datagrid/standalone/configuration/user
