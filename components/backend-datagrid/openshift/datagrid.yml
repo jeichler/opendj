@@ -84,7 +84,7 @@
     name: backend-datagrid
     namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
   spec:
-    replicas: "{{ENV.BACKEND_DATAGRID.NUM_REPLICAS}}"
+    replicas: 3
     podManagementPolicy: OrderedReady
     serviceName: backend-datagrid-ping
     revisionHistoryLimit: 5
@@ -111,6 +111,10 @@
             value: openshift.DNS_PING
           - name: OPENSHIFT_DNS_PING_SERVICE_NAME
             value: backend-datagrid-ping
+          - name: OPENSHIFT_DNS_PING_SERVICE_PORT
+            value: "8888"
+          - name: JGROUPS_CLUSTER_PASSWORD
+            value: xfdfg43dfsd
           - name: USERNAME
             valueFrom:
               secretKeyRef:
@@ -123,7 +127,7 @@
                 name: backend-datagrid
           - name: USER_CONFIG_MAP
             value: "true"
-          image: registry.redhat.io/jboss-datagrid-7/datagrid73-openshift
+          image: registry.redhat.io/jboss-datagrid-7/datagrid73-openshift:1.3
           imagePullPolicy: IfNotPresent
           livenessProbe:
             exec:

@@ -29,7 +29,6 @@ common:
     DEPLOY: true
     URL: "backend-datagrid:11222"
     UNDEPLOY: false
-    NUM_REPLICAS: 2
     LIMIT_MEMORY: "512Mi"
     STORAGE_SIZE: "1Gi"
 
