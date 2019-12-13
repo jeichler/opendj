@@ -1187,6 +1187,8 @@ const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const datagrid = require('infinispan');
 var gridPlaylists = null;
 var gridEvents = null;
+var gridEventLck = null;
+
 async function connectToGrid(name) {
     let grid = null;
     try {
@@ -1272,7 +1274,7 @@ async function cleverCheckEvents() {
     // if the update success, we did win and perform the check
 
     try {
-        let entry = await gridEvents.getWithMetadata("-1");
+        let entry = await gridEventLck.getWithMetadata("-1");
         log.trace("entry = ", JSON.stringify(entry));
         let now = new Date();
         if (entry) {
@@ -1285,7 +1287,7 @@ async function cleverCheckEvents() {
                 log.trace("Last check was performed %s ago which is below internal poll interval of %s msec - nothing to do", delta, INTERNAL_POLL_INTERVAL);
             } else {
                 log.trace("Last check is %s msec ago and above %s msec - try to enter crit sec with opt lock=>%s<", delta, INTERNAL_POLL_INTERVAL, JSON.stringify(entry.version));
-                let replaceOK = await gridEvents.replaceWithVersion("-1", now.toISOString(), entry.version);
+                let replaceOK = await gridEventLck.replaceWithVersion("-1", now.toISOString(), entry.version);
                 if (replaceOK) {
                     log.debug("cleverCheckEvents - do the check");
                     let start = Date.now();
@@ -1305,7 +1307,7 @@ async function cleverCheckEvents() {
 
         } else {
             log.debug("lastCheck Timestnot present - creating it");
-            await gridEvents.putIfAbsent("-1", now.toISOString());
+            await gridEventLck.putIfAbsent("-1", now.toISOString());
         }
     } catch (err) {
         log.fatal("!!! cleverCheckEvents failed", err);
@@ -1327,6 +1329,7 @@ setImmediate(async function() {
     try {
         log.debug("Connecting to datagrid...");
         gridEvents = await connectToGrid("EVENTS");
+        gridEventLck = await connectToGrid("EVENT_LCK");
         gridPlaylists = await connectToGrid("PLAYLISTS");
 
         if (TEST_EVENT_CREATE) {
