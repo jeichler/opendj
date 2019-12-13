@@ -221,7 +221,7 @@ function emitEvent(socketOrNamespace, event) {
     } else {
         log.debug("emitEvent current-event with null - aka delete-event");
     }
-    // Remove effective Playlist to save bandwith:
+    // Remove effective Playlist to save bandwidth:
     event.effectivePlaylist = [];
 
     socketOrNamespace.emit("current-event", event);
