@@ -334,6 +334,10 @@ async function addTrack(event, playlist, provider, trackID, user) {
         throw { code: "PLYLST-100", msg: "Unknown provider " + provider + "! Currently, only spotify is implemented as provider" };
     }
 
+    log.trace("check max tracks limit of event");
+    if (playlist.nextTracks.length >= event.maxTracksInPlaylist) {
+        throw { code: "PLYLST-115", msg: "Sorry, the playlist has reached it's maximum size of " + event.maxTracksInPlaylist + " tracks. Please come back later!" };
+    }
 
     log.trace("check next tracks for duplicate")
     let pos = findTrackPositionInList(playlist.nextTracks, provider, trackID);

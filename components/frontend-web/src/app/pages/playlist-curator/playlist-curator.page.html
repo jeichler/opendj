@@ -113,7 +113,7 @@
                 </ion-col>
 
                 <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
-                <ion-col size="auto " class="track-provider-col ion-align-self-center workaroundTransparency ">
+                <ion-col size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
                     <a href="{{item.previewViaApp}} " target="_blank ">
                         <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from " [options]="tooltipOptions ">
                         </ion-img>
@@ -133,11 +133,10 @@
 
     </ion-grid>
 
-    <!-- Add button center for curators, to avoid clash with re-order know for last track
-       issue#56 -->
-    <ion-fab vertical="bottom " horizontal="center " slot="fixed ">
-        <ion-fab-button id="playlist-addTrack-button " (click)="presentModal() ">
-            <ion-icon name="add "></ion-icon>
+    <!-- Add track button  -->
+    <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button id="playlist-addTrack-button" (click)="searchAndAddTrack()" [color]="getAddTrackButtonColor()">
+            <ion-icon name="add"></ion-icon>
         </ion-fab-button>
     </ion-fab>
 
