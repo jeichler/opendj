@@ -95,17 +95,17 @@
                     -->
 
                     <!-- FIT -->
-                    <ion-button size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
+                    <ion-button id="action-fit-{{item.id}}" size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
                         <ion-icon slot="icon-only" name="code-working"></ion-icon>
                     </ion-button>
 
                     <!-- DEL -->
-                    <ion-button size="small" class="track-action-button" fill="outline" shape="round" color="danger" (click)="deleteTrack(item, i)" tappable>
+                    <ion-button id="action-del-{{item.id}}" size="small" class="track-action-button" fill="outline" shape="round" color="danger" (click)="deleteTrack(item, i)" tappable>
                         <ion-icon slot="icon-only" name="trash"></ion-icon>
                     </ion-button>
 
                     <!-- TOP -->
-                    <ion-button size="small" class="track-action-button" fill="outline" shape="round" color="primary" (click)="moveTop(item, i)" tappable>
+                    <ion-button id="action-top-{{item.id}}" size="small" class="track-action-button" fill="outline" shape="round" color="primary " (click)="moveTop(item, i)" tappable>
                         <ion-icon slot="icon-only" name="arrow-round-up"></ion-icon>
                     </ion-button>
 
@@ -113,17 +113,17 @@
                 </ion-col>
 
                 <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
-                <ion-col size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
-                    <a href="{{item.previewViaApp}}" target="_blank">
-                        <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from" [options]="tooltipOptions">
+                <ion-col size="auto " class="track-provider-col ion-align-self-center workaroundTransparency ">
+                    <a href="{{item.previewViaApp}} " target="_blank ">
+                        <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo " tooltip="Indicates the streaming provider where this track is being played from " [options]="tooltipOptions ">
                         </ion-img>
                     </a>
                 </ion-col>
 
                 <!-- Last not least: the most important feature: the re-order button! -->
-                <ion-col size="auto" class="track-actions ion-align-self-center workaroundTransparency">
+                <ion-col size="auto " class="track-actions ion-align-self-center workaroundTransparency ">
                     <ion-reorder>
-                        <ion-chip color="secondary">{{i}}</ion-chip>
+                        <ion-chip id="action-mov-{{item.id}}" color="secondary ">{{i}}</ion-chip>
                     </ion-reorder>
                 </ion-col>
 
@@ -135,9 +135,9 @@
 
     <!-- Add button center for curators, to avoid clash with re-order know for last track
        issue#56 -->
-    <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button id="playlist-addTrack-button" (click)="presentModal()">
-            <ion-icon name="add"></ion-icon>
+    <ion-fab vertical="bottom " horizontal="center " slot="fixed ">
+        <ion-fab-button id="playlist-addTrack-button " (click)="presentModal() ">
+            <ion-icon name="add "></ion-icon>
         </ion-fab-button>
     </ion-fab>
 

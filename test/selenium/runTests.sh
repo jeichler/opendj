@@ -1,0 +1,1 @@
+selenium-side-runner ./smokeTests.side -c "browserName=firefox" --base-url http://localhost:8100
