@@ -338,7 +338,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     const eventID = this.userState.currentEventID;
 
 
-    // Connect websocket 
+    // Connect websocket
     this.websocketService.init(eventID);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {

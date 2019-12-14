@@ -466,7 +466,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     this.userState  = await this.userDataService.getUser();
     const eventID = this.userState.currentEventID;
 
-    // Connect websocket 
+    // Connect websocket
     this.websocketService.init(eventID);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
