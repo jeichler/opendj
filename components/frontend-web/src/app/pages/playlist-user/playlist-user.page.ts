@@ -53,18 +53,25 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
   }
 
 
-  refresh(event) {
-    console.debug('refresh');
-    this.refreshEvent();
-    this.refreshPlaylist();
-    event.detail.complete();
+  async refresh(event) {
+    console.debug('begin refresh');
+    try {
+      await this.refreshEvent();
+      await this.refreshPlaylist();
+    } catch (err) {
+      console.error('Refresh failed!', err);
+    } finally {
+      if (event) {
+        event.detail.complete();
+      }
+    }
+    console.debug('end refresh');
   }
 
   getAddTrackButtonColor() {
     let result = 'primary';
     if (this.currentPlaylist && this.currentPlaylist.nextTracks && this.currentEvent) {
       const percentage = this.currentPlaylist.nextTracks.length / this.currentEvent.maxTracksInPlaylist;
-      console.debug('getAddTrackButtonColor(): percentage=', percentage);
       if (percentage >= 1.0) {
         result = 'danger';
       } else if (percentage > 0.9) {
@@ -265,38 +272,31 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     }
   }
 
-  refreshEvent() {
+  async refreshEvent() {
     console.debug('refreshEvent()');
     const eventID = this.userState.currentEventID;
-    this.feService.readEvent(eventID).subscribe(
-      newEvent => {
-        console.debug('refreshEvent(): received new event');
-        this.currentEvent = newEvent;
-        this.checkEverybodyIsCuratorStateChange();
-      }
-    );
+    const newEvent = await this.feService.readEvent(eventID).toPromise();
+    console.debug('refreshEvent(): received new event');
+    this.currentEvent = newEvent;
+    this.checkEverybodyIsCuratorStateChange();
   }
 
-  refreshPlaylist() {
+  async refreshPlaylist() {
     console.debug('refreshPlaylist()');
     if (this.currentEvent) {
       console.debug('getCurrentPlaylist() from server');
-      this.feService.getCurrentPlaylist(this.currentEvent).subscribe(
-        newList => {
-          console.debug('refreshPlaylist(): received new Playlist');
-          this.currentPlaylist = newList;
-          this.computeETAForTracks();
-        },
-        err => console.error('ionViewDidEnter(): getCurrentPlaylistFailed', err)
-      );
+      const newList = await this.feService.getCurrentPlaylist(this.currentEvent).toPromise();
+      console.debug('refreshPlaylist(): received new Playlist');
+      this.currentPlaylist = newList;
+      this.computeETAForTracks();
     } else {
-      console.warn('refreshEvent() without currentEvent?!');
+      console.warn('refreshPlaylist() without currentEvent?!');
     }
   }
 
 
   async ionViewDidEnter() {
-    console.debug('Playlist page enter');
+    console.debug('begin ionViewDidEnter');
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         console.debug('ionViewDidEnter() - not connect - init websocket');
@@ -314,8 +314,9 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       this.trackFeedback = {};
     }
 
-    console.debug('getCurrentPlaylist()');
-    this.refreshPlaylist();
+    console.debug('before refresh()');
+    await this.refresh(null);
+    console.debug('end ionViewDidEnter');
   }
 
   ionViewDidLeave() {
@@ -368,8 +369,6 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
     }, 2500);
-
-  //  this.refreshPlaylist();
   }
 
   ngOnDestroy() {

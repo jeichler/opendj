@@ -57,11 +57,11 @@
             </ion-col>
 
             <!-- Like/Hate Buttons-->
-            <ion-col *ngIf="currentEvent.enableTrackLiking" (click)="trackLike(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-like-{{item.id}}">
+            <ion-col *ngIf="currentEvent.enableTrackLiking" (click)="trackLike(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-like-{{i}}">
                 <div class="track-feedback-icon">{{currentEvent.emojiTrackLike}}</div><br>
                 <div [class]="isTrackLiked(item) ?'track-feedback-counter-active' : 'track-feedback-counter-passive'">{{item.numLikes ? item.numLikes : 0}}</div>
             </ion-col>
-            <ion-col *ngIf="currentEvent.enableTrackHating" (click)="trackHate(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-hate-{{item.id}}">
+            <ion-col *ngIf="currentEvent.enableTrackHating" (click)="trackHate(item)" tappable size="auto" class="track-feedback ion-text-nowrap ion-align-self-center" id="track-hate-{{i}}">
                 <div class="track-feedback-icon">{{currentEvent.emojiTrackHate}}</div><br>
                 <div [class]="isTrackHated(item) ?'track-feedback-counter-active' : 'track-feedback-counter-passive'">{{item.numHates ? item.numHates: 0}}</div>
             </ion-col>
