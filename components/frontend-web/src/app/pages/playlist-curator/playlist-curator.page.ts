@@ -416,6 +416,12 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const newEvent = await this.feService.readEvent(eventID).toPromise();
     console.debug('refreshEvent(): received new event');
     this.currentEvent = newEvent;
+    if (!this.currentEvent) {
+      console.error('could not load event from server - something is wrong - redirect to logout');
+      this.router.navigate([`ui/login`]);
+      return;
+    }
+
     this.checkEverybodyIsCuratorStateChange();
   }
 
@@ -460,19 +466,8 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     this.userState  = await this.userDataService.getUser();
     const eventID = this.userState.currentEventID;
 
-
-    // Check that event does exists by requesting it from the server:
-    console.debug('Get Event %s from server', eventID);
-    this.currentEvent = await this.feService.readEvent(eventID).toPromise();
-    console.debug('Event from Server: %s', JSON.stringify(this.currentEvent));
-    if (!this.currentEvent) {
-        console.error('coud not load event from server - something is wrong - redirect to logout');
-        this.router.navigate([`ui/login`]);
-      }
-
-      // Connect websocket - no need to request current playlist, it will be sent
-      // as part of the welcome package upon successful connect (see service-web#onConnect())
-    this.websocketService.init(this.currentEvent.eventID);
+    // Connect websocket 
+    this.websocketService.init(eventID);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');
@@ -498,8 +493,6 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
     }, 2500);
-
-  //  this.refreshPlaylist();
   }
 
   ngOnDestroy() {
