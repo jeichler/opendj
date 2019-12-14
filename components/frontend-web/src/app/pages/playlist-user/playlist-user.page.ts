@@ -60,6 +60,20 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     event.detail.complete();
   }
 
+  getAddTrackButtonColor() {
+    let result = 'primary';
+    if (this.currentPlaylist && this.currentPlaylist.nextTracks && this.currentEvent) {
+      const percentage = this.currentPlaylist.nextTracks.length / this.currentEvent.maxTracksInPlaylist;
+      console.debug('getAddTrackButtonColor(): percentage=', percentage);
+      if (percentage >= 1.0) {
+        result = 'danger';
+      } else if (percentage > 0.9) {
+        result = 'warning';
+      }
+    }
+    return result;
+  }
+
   date2hhmm(d): string {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
@@ -191,7 +205,12 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.userDataService.updateUser(this.userState);
   }
 
-  async trackSearch() {
+  async searchAndAddTrack() {
+    if (this.getAddTrackButtonColor() === 'danger') {
+      this.presentToast('Sorry, this playlist has reached max size. Please try later');
+      return;
+    }
+
     const modal = await this.modalController.create({
       component: PlaylistAddModalComponent,
       mode: 'md',

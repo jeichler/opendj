@@ -72,7 +72,7 @@
 
     <!-- Add Track Button: -->
     <ion-fab vertical="bottom " horizontal="center" slot="fixed">
-        <ion-fab-button id="playlist-addTrack-button" (click)="trackSearch()">
+        <ion-fab-button id="playlist-addTrack-button" (click)="searchAndAddTrack()" [color]="getAddTrackButtonColor()">
             <ion-icon name="add"></ion-icon>
         </ion-fab-button>
     </ion-fab>
