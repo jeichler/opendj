@@ -629,6 +629,9 @@ async function play(event, playlist) {
             if (PAUSE_ON_PLAYERROR) {
                 log.debug("Pressing pause to avoid damage after play failed!");
                 await pause(event, playlist, err);
+
+                // Make sure to persist this state change:
+                firePlaylistChangedEvent(event.eventID, playlist);
             }
             throw { code: "PLYLST-300", msg: "Could not play track. Err=" + err };
         }
