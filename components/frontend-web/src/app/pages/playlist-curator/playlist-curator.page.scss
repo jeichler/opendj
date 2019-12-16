@@ -114,6 +114,8 @@ ion-fab-button {
 
 .track-action-button {
     font-size: 11px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .track-action-select {
@@ -133,5 +135,19 @@ ion-fab-button {
     width: 26px;
     height: 26px;
     margin-top: 7px;
+    // Spotify-Rules dictate exclusion zone  of half the height around their logo:
+    margin-left: 10px;
+    margin-right: 10px;
     //margin-bottom: 10px; //required to align with re-order button
+}
+
+.track-mov-col {
+    min-width: 47px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.track-action-mov {
+    text-align: center;
+    margin: 0px;
 }

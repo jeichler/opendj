@@ -95,7 +95,7 @@
                     -->
 
                     <!-- FIT -->
-                    <ion-button id="action-fit-{{item.id}}" size="small" class="track-action-button" fill="clear" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
+                    <ion-button id="action-fit-{{item.id}}" size="small" class="track-action-button" fill="outline" shape="round" color="warning" (click)="fitTrack(item, i)" tappable>
                         <ion-icon slot="icon-only" name="code-working"></ion-icon>
                     </ion-button>
 
@@ -121,9 +121,11 @@
                 </ion-col>
 
                 <!-- Last not least: the most important feature: the re-order button! -->
-                <ion-col size="auto " class="track-actions ion-align-self-center workaroundTransparency ">
+                <ion-col size="auto " class="track-mov-col  ion-align-self-center workaroundTransparency">
                     <ion-reorder>
-                        <ion-chip id="action-mov-{{item.id}}" color="secondary ">{{i}}</ion-chip>
+                        <ion-chip id="action-mov-{{item.id}}" color="secondary" class="track-action-mov">
+                            <ion-label>{{i}}</ion-label>
+                        </ion-chip>
                     </ion-reorder>
                 </ion-col>
 
