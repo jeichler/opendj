@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const compression = require('compression');
 const express = require('express');
 const app = express();
@@ -5,8 +6,9 @@ const http = require('http').createServer(app);
 const router = new express.Router();
 const cors = require('cors');
 const io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket' });
-
 const port = process.env.PORT || 3000;
+const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
+
 const log4js = require('log4js')
 const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
@@ -117,6 +119,20 @@ async function checkGridConnection() {
 
     log.trace("end checkGridConnection result=", result);
     return result;
+}
+
+const mapOfPlaylistThrottles = new Map();
+
+async function onPlaylistModifiedWithThrottle(key, entryVersion, listenerID) {
+    log.trace("begin onPlaylistModifiedWithThrottle key=%s", key);
+    let throttledOnPlaylistModified = mapOfPlaylistThrottles.get(key);
+    if (!throttledOnPlaylistModified) {
+        log.debug("create throttle for onPlaylistModified for event=%s", key)
+        throttledOnPlaylistModified = _.throttle(onPlaylistModified, ENV_THROTTLE_EMITTER_PLAYLIST);
+        mapOfPlaylistThrottles.set(key, throttledOnPlaylistModified);
+    }
+    throttledOnPlaylistModified(key, entryVersion, listenerID);
+    log.trace("end onPlaylistModifiedWithThrottle key=%s", key);
 }
 
 
@@ -355,6 +371,7 @@ async function readyAndHealthCheck(req, res) {
 router.get('/ready', readyAndHealthCheck);
 router.get('/health', readyAndHealthCheck);
 
+
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ------------------------------ init stuff -----------------------------
@@ -368,6 +385,13 @@ setImmediate(async function() {
             log.info('listening on *: ' + port);
             readyState.websocket = true;
         });
+
+        await onPlaylistModifiedWithThrottle('demo:0', null, null);
+        await onPlaylistModifiedWithThrottle('demo:0', null, null);
+        await onPlaylistModifiedWithThrottle('demo:0', null, null);
+        await onPlaylistModifiedWithThrottle('demo:0', null, null);
+        await onPlaylistModifiedWithThrottle('demo:0', null, null);
+
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("init failed with err %s", err);

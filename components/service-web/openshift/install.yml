@@ -127,7 +127,9 @@
                       - name: DATAGRID_URL
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                       - name: PORT
-                        value: "{{ENV.SERVICE_WEB.PORT | default('8080')}}" 
+                        value: "{{ENV.SERVICE_WEB.PORT | default('8080')}}"
+                      - name: THROTTLE_EMITTER_PLAYLIST
+                        value: "{{ENV.SERVICE_WEB.THROTTLE_EMITTER_PLAYLIST | default('1000')}}"
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:
