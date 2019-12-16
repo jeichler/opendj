@@ -44,7 +44,7 @@
             <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
 
                 <!-- Album Cover-->
-                <ion-col *ngIf="platform.width()>375" size="auto" class="ion-align-self-top">
+                <ion-col *ngIf="platform.width()>375" size="auto" class="ion-align-self-center">
                     <a href="{{item.image_url_ref}}" target="_blank">
                         <img class="track-cover-pic" src="{{item.image_url}}">
                     </a>
@@ -52,8 +52,8 @@
 
                 <!-- Track Details: 3 rows: Name, Artist, Contributor/Duration/ETA -->
                 <ion-col class="ion-align-self-center ion-text-nowrap">
-                    <div class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</div><br>
-                    <div class="track-details ion-text-nowrap" tooltip="Name of the Artist and year of publication" [options]="tooltipOptions">{{item.artist}}</div><br>
+                    <div class="track-header ion-text-nowrap" tooltip="Name of the track" [options]="tooltipOptions">{{item.name}}</div>
+                    <div class="track-details ion-text-nowrap" tooltip="Name of the Artist and year of publication" [options]="tooltipOptions">{{item.artist}}</div>
                     <div class="track-details ion-text-nowrap" tooltip="User who contributed this track and estimated time when this track will be played" [options]="tooltipOptions">{{item.durationStr}} eta {{item.eta}} - {{item.added_by}}</div>
                 </ion-col>
 
@@ -67,10 +67,9 @@
 
                 <!-- Track Meta1: 3 rows: genre, year, bpm -->
                 <ion-col *ngIf="platform.width()>=500" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-genre-col">
-                    <div class="track-meta">
-                        {{item.genre}}<br>{{item.year}}
-                        <br>{{item.bpm}} bpm
-                    </div>
+                    <div class="track-meta">{{item.genre}}</div>
+                    <div class="track-meta">{{item.year}}</div>
+                    <div class="track-meta">{{item.bpm}} bpm</div>
                 </ion-col>
 
                 <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->

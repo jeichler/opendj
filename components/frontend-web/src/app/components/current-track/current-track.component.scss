@@ -132,8 +132,8 @@
 }
 
 .track-button-col {
-    min-width: 225px;
-    // background: #FF00FF;
+    min-width: 238;
+    //    background: #FF00FF;
     padding: 0px;
     margin: 0px 0px 0px 0px;
 }
@@ -142,7 +142,15 @@
     //    font-size: 8px;
     max-height: 26px;
     vertical-align: middle;
-    margin-left: 25px;
+    margin-left: 30px;
+}
+
+.track-button-skip {
+    //    font-size: 8px;
+    max-height: 26px;
+    vertical-align: middle;
+    margin-left: 40px;
+    margin-right: 30px;
 }
 
 .track-provider-col {

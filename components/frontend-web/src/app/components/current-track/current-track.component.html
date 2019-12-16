@@ -54,14 +54,14 @@
                     </ion-col>
 
                     <!-- play/pause/skip buttons for curators-->
-                    <ion-col *ngIf="isCurator" size="auto" class="track-button-col ion-text-nowrap workaroundTransparency">
+                    <ion-col *ngIf="isCurator" size="auto" class="track-button-col ion-text-nowrap ion-align-self-center workaroundTransparency">
                         <ion-button id="current-track-play" color="success" shape="round" *ngIf="!isPlaying" size="default" (click)="playTrack()" tappable class="track-button">
                             <ion-icon slot="icon-only" name="play"></ion-icon>
                         </ion-button>
                         <ion-button id="current-track-pause" color="danger" shape="round" *ngIf="isPlaying" size="default" (click)="pauseTrack()" tappable class="track-button">
                             <ion-icon slot="icon-only" name="pause"></ion-icon>
                         </ion-button>
-                        <ion-button id="current-track-skip" color="warning" shape="round" size="default" (click)="nextTrack()" tappable class="track-button">
+                        <ion-button id="current-track-skip" color="warning" shape="round" size="default" (click)="nextTrack()" tappable class="track-button-skip">
                             <ion-icon slot="icon-only" name="skip-forward"></ion-icon>
                         </ion-button>
                     </ion-col>

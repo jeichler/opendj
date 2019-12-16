@@ -36,6 +36,7 @@ ion-fab-button {
 
 .track-cover-pic {
     margin: 0px;
+    padding: 0px;
     border-radius: 5px;
     width: 50px;
     height: auto;
@@ -50,7 +51,7 @@ ion-fab-button {
     width: 10px;
     color: #fff;
     margin: 0px;
-    line-height: 0px;
+    line-height: 100%;
 }
 
 .track-details {
@@ -58,7 +59,7 @@ ion-fab-button {
     width: 10px;
     color: #999;
     margin: 0px;
-    line-height: 0px;
+    line-height: 100%;
 }
 
 .workaroundTransparency {
@@ -66,7 +67,7 @@ ion-fab-button {
 }
 
 .track-meta {
-    line-height: 20px;
+    line-height: 100%;
     color: #999;
 }
 
