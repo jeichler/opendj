@@ -90,8 +90,6 @@
           kind: DeploymentConfig
           apiVersion: apps.openshift.io/v1
           metadata:
-            annotations:
-              template.alpha.openshift.io/wait-for-ready: 'true'
             labels:
               app: service-web
               template: opendj-nodejs-service-web
@@ -99,7 +97,7 @@
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             replicas: "{{ENV.SERVICE_WEB.REPLICAS | default('1')}}"
-            revisionHistoryLimit: 10
+            revisionHistoryLimit: 5
             selector:
               name: service-web
             strategy:
