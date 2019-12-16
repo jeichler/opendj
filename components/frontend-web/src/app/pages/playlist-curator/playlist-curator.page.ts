@@ -52,21 +52,11 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     ) {
   }
 
-  playTrack() {
-    console.debug('playTrack');
-    this.feService.playTrack(this.currentEvent).subscribe((data) => {
-      // console.log(data);
-    },
-    (err) => {
-      console.error(err.msg);
-    });
-  }
-
   deleteTrack(track, index) {
     console.debug('deleteTrack');
     this.feService.deleteTrack(this.currentEvent, track.id, index).subscribe(
       res => {
-        // console.log(res);
+        this.handlePlaylistUpdate(res);
         this.presentToast('You have deleted the track.');
       },
       err => console.error(err)
@@ -277,6 +267,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
     this.feService.reorderTrack(this.currentEvent, track.id, fromPos, toPos).subscribe(
       data => {
+        this.handlePlaylistUpdate(data);
         this.presentToast('Track successfully moved to pos ' + toPos);
       },
       err => console.log(err)
@@ -303,8 +294,8 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     if (this.isCurator) {
       this.feService.reorderTrack(this.currentEvent, item.id, index, 0).subscribe(
         data => {
+          this.handlePlaylistUpdate(data);
           this.presentToast('Track moved to top.');
-          // slidingItem.close();
         },
         err => console.error(err)
       );
@@ -431,11 +422,15 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       console.debug('getCurrentPlaylist() from server');
       const newList = await this.feService.getCurrentPlaylist(this.currentEvent).toPromise();
       console.debug('refreshPlaylist(): received new Playlist');
-      this.currentPlaylist = newList;
-      this.computeETAForTracks();
+      this.handlePlaylistUpdate(newList);
     } else {
       console.warn('refreshPlaylist() without currentEvent?!');
     }
+  }
+
+  handlePlaylistUpdate(newPlaylist) {
+    this.currentPlaylist = newPlaylist;
+    this.computeETAForTracks();
   }
 
 

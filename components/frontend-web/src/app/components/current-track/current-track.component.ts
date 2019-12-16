@@ -3,6 +3,7 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Track } from 'src/app/models/track';
 import { MusicEvent } from 'src/app/models/music-event';
 import { Platform } from '@ionic/angular';
+import { Playlist } from 'src/app/models/playlist';
 
 @Component({
   selector: 'app-current-track',
@@ -16,32 +17,9 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() isCurator: boolean;
   @Input() isPlaying: boolean;
   @Input() set trackInput(value: any) {
-//    console.debug('trackInput()', value);
-    if (this.intervalHandle) {
-//      console.debug('clear interval');
-      clearInterval(this.intervalHandle);
-    }
-    if (value == null) {
-//      console.debug('no track as input');
-      value = this.emptyTrack;
-      this.currentTime = '--:--';
-      this.playingTime = '--:--';
-    }
-
-    this.track = value;
-    this.progress = this.track.progress_ms / 1000;
-
-    if (this.isPlaying) {
-      const now = new Date().getTime() / 1000;
-      const startedAt = new Date(this.track.started_at).getTime() / 1000;
-      const diff = (now - startedAt);
-      this.progress = diff;
-      this.intervalHandle = setInterval(() => this.countdown(), 500);
-    } else {
-      this.track.started_at =  new Date().toISOString();
-      this.countdown();
-    }
+    this.setTrack(value);
   }
+
   @Input() set currentEventInput(event: MusicEvent) {
     this.currentEvent = event;
   }
@@ -79,6 +57,30 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   constructor(
     public feService: FEService,
     public platform: Platform ) {
+  }
+  setTrack(value: Track) {
+    if (this.intervalHandle) {
+      clearInterval(this.intervalHandle);
+    }
+    if (value == null) {
+      value = this.emptyTrack as any as Track;
+      this.currentTime = '--:--';
+      this.playingTime = '--:--';
+    }
+
+    this.track = value;
+    this.progress = this.track.progress_ms / 1000;
+
+    if (this.isPlaying) {
+      const now = new Date().getTime() / 1000;
+      const startedAt = new Date(this.track.started_at).getTime() / 1000;
+      const diff = (now - startedAt);
+      this.progress = diff;
+      this.intervalHandle = setInterval(() => this.countdown(), 500);
+    } else {
+      this.track.started_at =  new Date().toISOString();
+      this.countdown();
+    }
   }
 
   calculateTotalTime() {
@@ -129,20 +131,29 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   playTrack() {
+    console.debug('playTrack()');
     this.feService.playTrack(this.currentEvent).subscribe(data => {
-      console.debug(data);
+      console.debug('current-track - playTrackResponse', data);
+      this.isPlaying = data.isPlaying;
+      this.setTrack(data.currentTrack);
     });
   }
 
   pauseTrack() {
+    console.debug('pauseTrack()');
     this.feService.pauseTrack(this.currentEvent).subscribe(data => {
-      console.debug(data);
+      console.debug('current-track - pauseTrackResponse', data);
+      this.isPlaying = data.isPlaying;
+      this.setTrack(data.currentTrack);
     });
   }
 
   nextTrack() {
+    console.debug('nextTrack()');
     this.feService.playNextTrack(this.currentEvent).subscribe(data => {
-      console.debug(data);
+      console.debug('current-track - nextTrack', data);
+      this.isPlaying = data.isPlaying;
+      this.setTrack(data.currentTrack);
     });
   }
 
