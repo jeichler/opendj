@@ -9,6 +9,11 @@ function startTest {
     cd ..
 }
 
+oc project dfroehli-selenium
+oc scale --replicas=1 dc hub
+oc scale --replicas=15 dc node-firefox;
+oc scale --replicas=15 dc node-chrome;
+
 for i in {1..10}
 do
     startTest $i firefox
