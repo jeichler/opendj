@@ -89,7 +89,7 @@ async function connectToDatagrid() {
 
     log.debug("Register listeners...");
     await addCUDListenerForGrid(gridEvents, onEventModified);
-    await addCUDListenerForGrid(gridPlaylists, onPlaylistModified);
+    await addCUDListenerForGrid(gridPlaylists, onPlaylistModifiedWithThrottle);
 
     log.debug("Connecting to datagrid...DONE");
     readyState.datagridClient = true;
@@ -385,13 +385,6 @@ setImmediate(async function() {
             log.info('listening on *: ' + port);
             readyState.websocket = true;
         });
-
-        await onPlaylistModifiedWithThrottle('demo:0', null, null);
-        await onPlaylistModifiedWithThrottle('demo:0', null, null);
-        await onPlaylistModifiedWithThrottle('demo:0', null, null);
-        await onPlaylistModifiedWithThrottle('demo:0', null, null);
-        await onPlaylistModifiedWithThrottle('demo:0', null, null);
-
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("init failed with err %s", err);
