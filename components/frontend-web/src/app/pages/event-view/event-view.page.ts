@@ -100,13 +100,13 @@ export class EventViewPage implements OnInit, OnDestroy {
 
   async refreshEvent() {
     console.debug('refreshEvent()');
-    const eventID = this.userState.currentEventID;
+    const eventID = this.currentEvent.eventID;
     const newEvent = await this.feService.readEvent(eventID).toPromise();
     console.debug('refreshEvent(): received new event');
     this.currentEvent = newEvent;
     if (!this.currentEvent) {
       console.error('could not load event from server - something is wrong - redirect to logout');
-      this.router.navigate([`ui/login`]);
+      this.router.navigate([`ui/landing`]);
       return;
     }
   }
@@ -148,44 +148,75 @@ export class EventViewPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
-    console.debug('Playlist page leave');
+    console.debug('EventView page leave');
+  }
+  async init() {
+    console.debug('begin init');
+    console.debug('end init');
   }
 
+
   async ngOnInit() {
-    console.debug('Playlist page init');
-    this.userState  = await this.userDataService.getUser();
-    const eventID = this.userState.currentEventID;
+    console.debug('EventView page init');
+    let eventID = null;
 
-    // Connect websocket
-    this.websocketService.init(eventID);
-
-    let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
-      console.debug('playlist-page - received playlist update via websocket');
-      this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks();
-      console.debug(`playlist subscription: `, this.currentPlaylist);
-    });
-    this.subscriptions.push(sub);
-
-    sub = this.websocketService.observeEvent().pipe().subscribe(data => {
-      console.debug('playlist-page - received event update');
-      this.currentEvent = data as MusicEvent;
-      if (this.currentEvent) {
-        console.info(`event update: `, this.currentEvent);
+    try {
+      // Check if user did login:
+      this.userState = await this.userDataService.getUser();
+      if (this.userState && this.userState.isLoggedIn && this.userState.currentEventID) {
+        console.debug('EventID from user');
+        eventID = this.userState.currentEventID;
       } else {
-        console.warn('Event has been deleted - navigating to landing page');
-        this.router.navigate([`ui/landing`]);
+        console.debug('EventID from route');
+        eventID = this.route.snapshot.paramMap.get('eventID');
       }
-    });
-    this.subscriptions.push(sub);
 
-    this.intervalHandle = setInterval(() => {
-      this.isConnected = this.websocketService.isConnected();
-    }, 2500);
+      if (!eventID) {
+        throw new Error('No EvenID?!');
+      }
+
+      console.debug('trying to load EventID', eventID);
+      this.currentEvent = await this.feService.readEvent(eventID).toPromise();
+      console.debug('init event=', this.currentEvent);
+
+      if (this.currentEvent === null) {
+        throw new Error('Event >' + eventID + '< not found -> redirect to landing page');
+      }
+
+      // Connect websocket
+      this.websocketService.init(eventID);
+
+      let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
+        console.debug('received playlist update via websocket');
+        this.currentPlaylist = data as Playlist;
+        this.computeETAForTracks();
+        console.debug(`playlist subscription: `, this.currentPlaylist);
+      });
+      this.subscriptions.push(sub);
+
+      sub = this.websocketService.observeEvent().pipe().subscribe(data => {
+        console.debug('received event update');
+        this.currentEvent = data as MusicEvent;
+        if (this.currentEvent) {
+          console.info(`event update: `, this.currentEvent);
+        } else {
+          console.warn('Event has been deleted - navigating to landing page');
+          this.router.navigate([`ui/landing`]);
+        }
+      });
+      this.subscriptions.push(sub);
+
+      this.intervalHandle = setInterval(() => {
+        this.isConnected = this.websocketService.isConnected();
+      }, 2500);
+    } catch (err) {
+      console.error('init failed - nav2landing', err);
+      this.router.navigateByUrl('ui/landing');
+    }
   }
 
   ngOnDestroy() {
-    console.debug('Playlist page destroy');
+    console.debug('page destroy');
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });

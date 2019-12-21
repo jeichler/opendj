@@ -13,6 +13,7 @@ const routes: Routes = [
   { path: 'ui/playlist-curator', loadChildren: './pages/playlist-curator/playlist-curator.module#PlaylistCuratorPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/playlist-event', loadChildren: './pages/playlist-user/playlist-user.module#PlaylistUserPageModule', runGuardsAndResolvers: 'always' , canActivate: [AuthGuard]},
   { path: 'ui/legal', loadChildren: './pages/legal/legal.module#LegalPageModule', runGuardsAndResolvers: 'always' },
+  { path: ':eventID/view', loadChildren: './pages/event-view/event-view.module#EventViewPageModule', runGuardsAndResolvers: 'always' },
   { path: ':eventID', redirectTo: 'ui/event/:eventID', pathMatch: 'full' },
   { path: '**', redirectTo: 'ui/landing' },
 ];
