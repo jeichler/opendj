@@ -6,12 +6,12 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { EventPage, MoreOptionsComponent, LoginModalComponent} from './event.page';
+import { EventLoginPage, MoreOptionsComponent, LoginModalComponent} from './event-login.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: EventPage
+    component: EventLoginPage
   }
 ];
 
@@ -24,7 +24,7 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ],
   declarations: [
-    EventPage,
+    EventLoginPage,
     MoreOptionsComponent,
     LoginModalComponent
   ],
@@ -33,4 +33,4 @@ const routes: Routes = [
     MoreOptionsComponent,
   ]
 })
-export class EventPageModule {}
+export class EventLoginPageModule {}

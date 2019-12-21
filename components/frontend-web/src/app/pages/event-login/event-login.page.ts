@@ -11,10 +11,10 @@ import { UsernameGeneratorService } from 'src/app/providers/username-generator.s
 
 @Component({
   selector: 'event',
-  templateUrl: './event.page.html',
-  styleUrls: ['./event.page.scss'],
+  templateUrl: './event-login.page.html',
+  styleUrls: ['./event-login.page.scss'],
 })
-export class EventPage implements OnDestroy, OnInit {
+export class EventLoginPage implements OnDestroy, OnInit {
 
   event: MusicEvent;
   userState: UserSessionState;
@@ -50,7 +50,7 @@ export class EventPage implements OnDestroy, OnInit {
 
   static login(component, event: MusicEvent, ctx: string, username: string, password: string) {
     if (ctx === 'user') {
-      component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
+      component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
       component.router.navigate([`ui/playlist-user`]);
       component.presentToast('You have successfully joined this Event! Start contributing!');
       if (component.dismiss) {
@@ -60,7 +60,7 @@ export class EventPage implements OnDestroy, OnInit {
 
     if (ctx === 'owner') {
       if (event.passwordOwner === password && event.owner === username) {
-        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
+        component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
         component.router.navigate(['ui/event-edit']);
         component.presentToast('You have successfully logged in as Event Owner');
         if (component.dismiss) {
@@ -73,7 +73,7 @@ export class EventPage implements OnDestroy, OnInit {
 
     if (ctx === 'curator' ) {
       if (event.passwordCurator === password) {
-        component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
+        component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
         component.router.navigate([`ui/playlist-curator`]);
         component.presentToast('You have successfully joined this Event as Curator. Rock it!!');
         if (component.dismiss) {
@@ -209,12 +209,12 @@ export class EventPage implements OnDestroy, OnInit {
 
 
   join() {
-    console.debug('eventPage#join...');
+    console.debug('EventLoginPage#join...');
     if (this.loginForm.valid) {
       if (! this.loginForm.value.username) {
         this.generateUsername();
       }
-      EventPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
+      EventLoginPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
     }
   }
 
@@ -380,7 +380,7 @@ export class LoginModalComponent implements OnInit {
   join() {
     console.debug('loginModal#join...');
     if (this.loginForm.valid) {
-      EventPage.login(this, this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
+      EventLoginPage.login(this, this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
     }
   }
 
