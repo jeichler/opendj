@@ -10,7 +10,7 @@ import * as moment from 'moment';
 import { UsernameGeneratorService } from 'src/app/providers/username-generator.service';
 
 @Component({
-  selector: 'event',
+  selector: 'event-login',
   templateUrl: './event-login.page.html',
   styleUrls: ['./event-login.page.scss'],
 })

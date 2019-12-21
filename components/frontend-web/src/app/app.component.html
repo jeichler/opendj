@@ -16,21 +16,28 @@
                         <ion-label>
                             {{userState.username}}
                         </ion-label>
-                        <ion-icon slot="end" name="star" *ngIf="userState?.isCurator && !userState?.isEventOwner" color="yellow"></ion-icon>
-                        <ion-icon slot="end" name="star" *ngIf="userState?.isEventOwner" color="red"></ion-icon>
+                        <ion-icon name="star" slot="end" *ngIf="!userState?.isCurator && !userState?.isEventOwner"></ion-icon>
+                        <ion-icon name="star" slot="end" *ngIf="userState?.isCurator && !userState?.isEventOwner" color="warning"></ion-icon>
+                        <ion-icon name="star" slot="end" *ngIf="userState?.isEventOwner" color="danger"></ion-icon>
                     </ion-item>
 
                     <ion-item *ngIf="userState?.isLoggedIn" [routerDirection]="'root'" routerLink="/ui/playlist-user" color="opendj">
-                        <ion-icon id="app-menu-userview-icon" slot="start" [name]="'musical-notes'"></ion-icon>
+                        <ion-icon id="app-menu-userview-icon" slot="start" name="musical-notes"></ion-icon>
                         <ion-label id="app-menu-userview-label">User View</ion-label>
                     </ion-item>
                     <ion-item *ngIf="userState?.isCurator" [routerDirection]="'root'" routerLink="/ui/playlist-curator" color="opendj">
-                        <ion-icon id="app-menu-curatorview-icon" slot="start" [name]="'navigate'"></ion-icon>
+                        <ion-icon id="app-menu-curatorview-icon" slot="start" name="navigate"></ion-icon>
                         <ion-label id="app-menu-curatorview-label">Curator View</ion-label>
                     </ion-item>
 
+                    <ion-item *ngIf="userState?.isCurator" [routerDirection]="'root'" routerLink="/ui/event-view" color="opendj">
+                        <!-- compass, desktop, expand, eye -->
+                        <ion-icon id="app-menu-eventview-icon" slot="start" name="desktop"></ion-icon>
+                        <ion-label id="app-menu-eventview-label">Event View</ion-label>
+                    </ion-item>
+
                     <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/event-edit" color="opendj">
-                        <ion-icon id="app-menu-editevent-icon" slot="start" [name]="'options'"></ion-icon>
+                        <ion-icon id="app-menu-editevent-icon" slot="start" name="options"></ion-icon>
                         <ion-label id="app-menu-editevent-label">Edit Event</ion-label>
                     </ion-item>
 
@@ -42,7 +49,7 @@
                     </ion-item>
 
                     <ion-item button (click)="home()" color="opendj">
-                        <ion-icon id="app-menu-home-icon" slot="start" [name]="'home'"></ion-icon>
+                        <ion-icon id="app-menu-home-icon" slot="start" name="home"></ion-icon>
                         <ion-label id="app-menu-home-label">Home</ion-label>
                     </ion-item>
 

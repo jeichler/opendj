@@ -1,0 +1,154 @@
+@mixin gradient-top {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(0deg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+@mixin gradient-bottom {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(180deg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+@mixin gradient-left {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(90eg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
+}
+
+@mixin gradient-right {
+    --background-color: transparent;
+    --ion-color-base: transparent !important;
+    --ion-background-color: linear-gradient(270deg, rgba(56, 70, 108, .8) 15%, rgba(79, 83, 94, 0.8) 80%) !important;
+}
+
+ion-header {}
+
+ion-fab-button {
+    --background: rgb(64, 74, 187);
+}
+
+.track-grid {
+    --ion-grid-columns: 12;
+    //    --ion-grid-padding: 0px;
+    //--ion-grid-column-padding: 0px;
+}
+
+.track-cover-pic {
+    margin: 0px;
+    padding: 0px;
+    border-radius: 5px;
+    width: 50px;
+    height: auto;
+}
+
+.track-header {
+    font-size: 16px;
+    // This is needed to avoid that next colums
+    // are not visibile to the right, because of long header names.
+    // I cant find a way for angular to truncate the content correclty, this
+    // is the best workaround I have found:
+    width: 10px;
+    color: #fff;
+    margin: 0px;
+    line-height: 100%;
+}
+
+.track-details {
+    font-size: 14px;
+    width: 10px;
+    color: #999;
+    margin: 0px;
+    line-height: 100%;
+}
+
+.workaroundTransparency {
+    background: #222428
+}
+
+.track-meta {
+    line-height: 100%;
+    color: #999;
+}
+
+.track-genre-col {
+    min-width: 120px;
+    max-width: 120px;
+}
+
+.track-meta-col {
+    min-width: 90px;
+}
+
+.track-meta-bar {
+    min-height: 10px;
+    --background: #333;
+}
+
+.track-meta-bar-danceability {
+    //    --progress-background: rgb(240, 65, 65);
+    //   --progress-background: rgb(200, 25, 25);
+    --progress-background: rgb(200, 25, 200);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-energy {
+    //    --progress-background: #008800;
+    --progress-background: rgb(215, 166, 0);
+    margin-bottom: 4px;
+}
+
+.track-meta-bar-happiness {
+    //    --progress-background: rgb(255, 206, 0);
+    --progress-background: #006600;
+}
+
+.track-feedback-col {
+    min-width: 46px;
+}
+
+.track-action-col {
+    min-width: 90px;
+    line-height: 0px;
+    padding: 0px;
+}
+
+.track-action-button {
+    font-size: 11px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.track-action-select {
+    --size: 16px;
+    --background: #222428;
+    --border-color: #008800;
+    margin-top: 8px;
+    margin-left: 14px;
+}
+
+.track-provider-col {
+    //    background: #FF00FF;
+    min-height: 50px;
+}
+
+.track-provider-logo {
+    width: 26px;
+    height: 26px;
+    margin-top: 7px;
+    // Spotify-Rules dictate exclusion zone  of half the height around their logo:
+    margin-left: 10px;
+    margin-right: 10px;
+    //margin-bottom: 10px; //required to align with re-order button
+}
+
+.track-mov-col {
+    min-width: 47px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.track-action-mov {
+    text-align: center;
+    margin: 0px;
+}
