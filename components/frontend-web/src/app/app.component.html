@@ -29,7 +29,7 @@
                         <ion-label id="app-menu-curatorview-label">Curator View</ion-label>
                     </ion-item>
 
-                    <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/create-event" color="opendj">
+                    <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/event-edit" color="opendj">
                         <ion-icon id="app-menu-editevent-icon" slot="start" [name]="'options'"></ion-icon>
                         <ion-label id="app-menu-editevent-label">Edit Event</ion-label>
                     </ion-item>

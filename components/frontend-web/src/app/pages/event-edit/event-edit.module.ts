@@ -6,13 +6,13 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { CreateEventPage } from './create-event.page';
+import { EventEditPage } from './event-edit.page';
 import { TooltipModule } from 'ng2-tooltip-directive';
 
 const routes: Routes = [
   {
     path: '',
-    component: CreateEventPage
+    component: EventEditPage
   }
 ];
 
@@ -25,6 +25,6 @@ const routes: Routes = [
     TooltipModule,
     RouterModule.forChild(routes)
   ],
-  declarations: [CreateEventPage]
+  declarations: [EventEditPage]
 })
-export class CreateEventPageModule {}
+export class EventEditPageModule {}

@@ -61,7 +61,7 @@ export class EventPage implements OnDestroy, OnInit {
     if (ctx === 'owner') {
       if (event.passwordOwner === password && event.owner === username) {
         component.events.publish('sessionState:modified', EventPage.getSessionStateForContext(ctx, event, username));
-        component.router.navigate(['ui/create-event']);
+        component.router.navigate(['ui/event-edit']);
         component.presentToast('You have successfully logged in as Event Owner');
         if (component.dismiss) {
           component.dismiss(null);

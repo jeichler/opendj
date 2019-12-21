@@ -6,14 +6,13 @@ import { FormBuilder, FormGroup, Validators, FormControl, ValidatorFn, AbstractC
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
-import { EventIdValidator } from 'src/app/validators/eventId-validator';
 
 @Component({
-  selector: 'app-create-event',
-  templateUrl: './create-event.page.html',
-  styleUrls: ['./create-event.page.scss'],
+  selector: 'app-event-edit',
+  templateUrl: './event-edit.page.html',
+  styleUrls: ['./event-edit.page.scss'],
 })
-export class CreateEventPage implements OnInit {
+export class EventEditPage implements OnInit {
 
   @ViewChild(IonContent) content: IonContent;
   eventForm: FormGroup;

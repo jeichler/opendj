@@ -18,7 +18,7 @@ export class LandingPage implements OnInit {
   ) { }
 
   createOwnEvent() {
-    this.router.navigate([`ui/create-event`]);
+    this.router.navigate([`ui/event-edit`]);
   }
 
   skip() {

@@ -329,7 +329,7 @@ router.get('/auth_callback', async function(req, res) {
                 // let continueWith = "/" + eventID;
 
                 // To the create/edit event page:
-                // let continueWith = "/ui/create-event";
+                // let continueWith = "/ui/event-edit";
 
                 // To the curator page:
                 let continueWith = "/ui/playlist-curator";
