@@ -12,6 +12,8 @@ import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserSessionState } from 'src/app/models/usersessionstate';
 
+const QRCode = require('qrcode');
+
 @Component({
   selector: 'event-view',
   templateUrl: 'event-view.page.html',
@@ -28,6 +30,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   showOptions = false;
   isConnected = false;
   intervalHandle = null;
+  qrImageSrc = null;
   tooltipOptions = {
     placement: 'left',
     hideDelayTouchscreen: 2500,
@@ -36,6 +39,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     'max-width': 300,
     'show-delay': 0
   };
+  eventURLShortened: string;
 
   constructor(
     public modalController: ModalController,
@@ -100,7 +104,22 @@ export class EventViewPage implements OnInit, OnDestroy {
 
   async refreshEvent() {
     console.debug('refreshEvent()');
-    const eventID = this.currentEvent.eventID;
+    let eventID = null;
+
+    // Check if user did login:
+    this.userState = await this.userDataService.getUser();
+    if (this.userState && this.userState.isLoggedIn && this.userState.currentEventID) {
+      console.debug('EventID from user');
+      eventID = this.userState.currentEventID;
+    } else {
+      console.debug('EventID from route');
+      eventID = this.route.snapshot.paramMap.get('eventID');
+    }
+
+    if (!eventID) {
+      throw new Error('No EvenID?!');
+    }
+
     const newEvent = await this.feService.readEvent(eventID).toPromise();
     console.debug('refreshEvent(): received new event');
     this.currentEvent = newEvent;
@@ -109,6 +128,50 @@ export class EventViewPage implements OnInit, OnDestroy {
       this.router.navigate([`ui/landing`]);
       return;
     }
+
+    this.eventURLShortened = this.shortenEventUrl(newEvent.url);
+    this.qrImageSrc = await this.generateQrCode(newEvent.url);
+
+  }
+
+  generateQrCode(text): Promise<string> {
+    return new Promise((resolve, reject) => {
+      QRCode.toDataURL(text,
+      {
+        version: '',
+        errorCorrectionLevel: 'H',
+        margin: 1,
+        scale: 4,
+        width: 10,
+        color: {
+          dark: '#000000',
+          light: '#A0A0A0'
+        }
+      }, (err, url) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve(url);
+        }
+      });
+    });
+  }
+
+  shortenEventUrl(fullURL: string) {
+    let result = '';
+    if (fullURL.startsWith('https://www.')) {
+      result = fullURL.substring(12);
+    } else if (fullURL.startsWith('http://www.')) {
+      result = fullURL.substring(11);
+    } else if (fullURL.startsWith('https://')) {
+      result = fullURL.substring(8);
+    } else if (fullURL.startsWith('http://')) {
+      result = fullURL.substring(7);
+    }  else {
+      result = fullURL;
+    }
+    return result;
   }
 
   async refreshPlaylist() {
@@ -158,33 +221,12 @@ export class EventViewPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     console.debug('EventView page init');
-    let eventID = null;
 
     try {
-      // Check if user did login:
-      this.userState = await this.userDataService.getUser();
-      if (this.userState && this.userState.isLoggedIn && this.userState.currentEventID) {
-        console.debug('EventID from user');
-        eventID = this.userState.currentEventID;
-      } else {
-        console.debug('EventID from route');
-        eventID = this.route.snapshot.paramMap.get('eventID');
-      }
-
-      if (!eventID) {
-        throw new Error('No EvenID?!');
-      }
-
-      console.debug('trying to load EventID', eventID);
-      this.currentEvent = await this.feService.readEvent(eventID).toPromise();
-      console.debug('init event=', this.currentEvent);
-
-      if (this.currentEvent === null) {
-        throw new Error('Event >' + eventID + '< not found -> redirect to landing page');
-      }
+      await this.refresh(null);
 
       // Connect websocket
-      this.websocketService.init(eventID);
+      this.websocketService.init(this.currentEvent.eventID);
 
       let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
         console.debug('received playlist update via websocket');

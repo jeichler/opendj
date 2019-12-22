@@ -107,26 +107,6 @@ ion-fab-button {
     min-width: 46px;
 }
 
-.track-action-col {
-    min-width: 90px;
-    line-height: 0px;
-    padding: 0px;
-}
-
-.track-action-button {
-    font-size: 11px;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.track-action-select {
-    --size: 16px;
-    --background: #222428;
-    --border-color: #008800;
-    margin-top: 8px;
-    margin-left: 14px;
-}
-
 .track-provider-col {
     //    background: #FF00FF;
     min-height: 50px;
@@ -142,13 +122,10 @@ ion-fab-button {
     //margin-bottom: 10px; //required to align with re-order button
 }
 
-.track-mov-col {
-    min-width: 47px;
-    padding: 0px;
-    margin: 0px;
-}
+.hor-col-right {}
 
-.track-action-mov {
-    text-align: center;
-    margin: 0px;
+.hor-col-right-label {
+    background: #FF00FF;
+    margin-left: auto;
+    margin-right: auto;
 }

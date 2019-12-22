@@ -95,8 +95,15 @@
 
             </ion-col>
 
-            <ion-col size="3">
+            <!-- RIGHT HAND SIDE -->
+            <ion-col size="3" class="hor-col-right">
                 <ion-img src="assets/img/event_hdr.jpg"></ion-img>
+                <br>
+                <ion-label class="hor-col-right-label">To contribute, follow this link:</ion-label>
+                <br>
+                <img *ngIf="this.qrImageSrc" [src]="this.qrImageSrc" />
+                <br>
+                <ion-label>{{this.eventURLShortened}}</ion-label>
             </ion-col>
         </ion-row>
     </ion-grid>

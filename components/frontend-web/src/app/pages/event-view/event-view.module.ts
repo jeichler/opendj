@@ -20,7 +20,7 @@ import { TooltipModule } from 'ng2-tooltip-directive';
         path: '',
         component: EventViewPage
       }
-    ])
+    ]),
   ],
   declarations: [
     EventViewPage,
