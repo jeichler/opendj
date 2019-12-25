@@ -230,7 +230,10 @@ export class EventEditPage implements OnInit {
       enableTrackAI: [false],
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
-      demoAutoFillEmptyPlaylist: [false]
+      demoAutoFillEmptyPlaylist: [false],
+      eventViewAutoScroll: [false],
+      eventViewAutoScrollSpeed: [''],
+      eventViewTwitterURL: [''],
     });
   }
 

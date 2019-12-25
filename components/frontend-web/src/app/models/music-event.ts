@@ -31,4 +31,7 @@ export class MusicEvent {
     playlists: [0];
     effectivePlaylist: Array<Track>;
 
+    eventViewAutoScroll = false;
+    eventViewAutoScrollSpeed = 1;
+    eventViewTwitterUrl: string = null;
 }
