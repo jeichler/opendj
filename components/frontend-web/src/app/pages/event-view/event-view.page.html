@@ -29,8 +29,14 @@
             <ion-col size="3" class="ion-align-self-start ion-text-center">
                 <ion-img src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo"></ion-img>
 
+                <!-- 
                 <a class="twitter-timeline" data-width="300" data-height="500" data-theme="dark" href="https://twitter.com/RedHatDACH?ref_src=twsrc%5Etfw">Tweets by RedHatDACH</a>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+                <a href="https://twitter.com/intent/tweet?button_hashtag=RHforum&ref_src=twsrc%5Etfw" class="twitter-hashtag-button" data-show-count="false">Tweet #RHforum</a>
+                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>                
+-->
+                <ngx-twitter-timeline [data]="{sourceType: 'url', url: 'https://twitter.com/OpenDJ1'}" [opts]="{theme: 'dark', tweetLimit: 3, chrome:'nofooter noscrollbar transparent' }"></ngx-twitter-timeline>
             </ion-col>
 
             <!-- CENTER Column -->

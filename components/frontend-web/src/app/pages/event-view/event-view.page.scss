@@ -1,31 +1,8 @@
-@mixin gradient-top {
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(0deg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
-}
-
-@mixin gradient-bottom {
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(180deg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
-}
-
-@mixin gradient-left {
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(90eg, rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
-}
-
-@mixin gradient-right {
-    --background-color: transparent;
-    --ion-color-base: transparent !important;
-    --ion-background-color: linear-gradient(270deg, rgba(56, 70, 108, .8) 15%, rgba(79, 83, 94, 0.8) 80%) !important;
-}
-
 ion-header {}
 
 .hor-page-grid {
     --ion-grid-columns: 12;
+    background: #121418;
 }
 
 .hor-track-grid {
@@ -67,7 +44,7 @@ ion-header {}
 }
 
 .workaroundTransparency {
-    background: #222428
+    background: #121418
 }
 
 .track-meta {
@@ -153,7 +130,11 @@ ion-header {}
 }
 
 .hor-opendj-logo {
-    width: 50%;
+    width: 25%;
     margin-left: auto;
     margin-right: auto;
+}
+
+.timeline-Tweet {
+    max-height: 200;
 }

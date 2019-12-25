@@ -8,6 +8,8 @@ import { CurrentTrackComponent } from 'src/app/components/current-track/current-
 import { SharedModule } from 'src/app/components/shared.module';
 import { TooltipModule } from 'ng2-tooltip-directive';
 
+import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -15,6 +17,7 @@ import { TooltipModule } from 'ng2-tooltip-directive';
     IonicModule,
     TooltipModule,
     SharedModule,
+    NgxTwitterTimelineModule,
     RouterModule.forChild([
       {
         path: '',
