@@ -31,6 +31,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   isConnected = false;
   intervalHandle = null;
   qrImageSrc = null;
+
   tooltipOptions = {
     placement: 'left',
     hideDelayTouchscreen: 2500,
@@ -40,6 +41,10 @@ export class EventViewPage implements OnInit, OnDestroy {
     'show-delay': 0
   };
   eventURLShortened: string;
+  autoScrolllHandler = null;
+  autoScrollEnabled =  false;
+  autoScrollPos = 0;
+  autoScrollDirection = 1;
 
   constructor(
     public modalController: ModalController,
@@ -61,6 +66,58 @@ export class EventViewPage implements OnInit, OnDestroy {
   date2hhmm(d) {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
+  }
+
+  isVisible(el): boolean {
+    const top = el.getBoundingClientRect().top;
+    let rect;
+    el = el.parentNode;
+    do {
+        rect = el.getBoundingClientRect();
+        if (top <= rect.bottom === false) {
+            return false;
+        }
+        el = el.parentNode;
+    } while (el !== document.body);
+    // Check its within the document viewport
+    return top <= document.documentElement.clientHeight;
+  }
+
+  autoScroll() {
+//    console.debug('autoScroll: pos=' +  this.autoScrollPos + 'dir=' + this.autoScrollDirection);
+
+/* Implementation by scroll per track: */
+    if (this.autoScrollEnabled && this.currentPlaylist && this.currentPlaylist.nextTracks) {
+      const boundOffset = 5;
+      this.autoScrollPos = this.autoScrollPos + this.autoScrollDirection;
+      if (this.autoScrollPos <= boundOffset) {
+        // Reached top of list - switch direction to scroll down:
+        this.autoScrollPos = boundOffset;
+        this.autoScrollDirection = boundOffset;
+      } else if (this.autoScrollPos >= this.currentPlaylist.nextTracks.length - boundOffset) {
+        // Reached bottom of list -switch direction to scroll up:
+        this.autoScrollPos = this.currentPlaylist.nextTracks.length - boundOffset;
+        this.autoScrollDirection = -boundOffset;
+      }
+
+      const trackRow = document.getElementById('track-' + this.autoScrollPos);
+      if (trackRow)  {
+        trackRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    }
+
+  /* Implemetation to scroll pixel wise: */
+  /* Problem: is Visisble not working correcly
+     const lastTrack = document.getElementById('track-20');
+     const firstTrack = document.getElementById('track-0');
+
+     if (this.isVisible(firstTrack)) {
+      this.autoScrollDirection = 1;
+    } else if (this.isVisible(lastTrack)) {
+      this.autoScrollDirection = -1;
+    }
+     document.getElementById('track-grid').scrollBy(0, this.autoScrollDirection);
+*/
   }
 
   computeETAForTracks() {
@@ -87,6 +144,50 @@ export class EventViewPage implements OnInit, OnDestroy {
     // tslint:disable-next-line:no-unused-expression
     return index + ', ' + element.id;
   }
+
+
+  generateQrCode(text): Promise<string> {
+    return new Promise((resolve, reject) => {
+      QRCode.toDataURL(text,
+      {
+        version: '',
+        errorCorrectionLevel: 'H',
+        margin: 1,
+        scale: 4,
+        width: 10,
+        color: {
+          dark: '#000000',
+          light: '#A0A0A0'
+        }
+      }, (err, url) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          resolve(url);
+        }
+      });
+    });
+  }
+
+  shortenEventUrl(fullURL: string) {
+    let result = '';
+    if (fullURL.startsWith('https://www.')) {
+      result = fullURL.substring(12);
+    } else if (fullURL.startsWith('http://www.')) {
+      result = fullURL.substring(11);
+    } else if (fullURL.startsWith('https://')) {
+      result = fullURL.substring(8);
+    } else if (fullURL.startsWith('http://')) {
+      result = fullURL.substring(7);
+    } else if (fullURL.startsWith('www.')) {
+      result = fullURL.substring(4);
+    } else {
+      result = fullURL;
+    }
+    return result;
+  }
+
   async refresh(event) {
     console.debug('begin refresh');
     try {
@@ -132,46 +233,15 @@ export class EventViewPage implements OnInit, OnDestroy {
     this.eventURLShortened = this.shortenEventUrl(newEvent.url);
     this.qrImageSrc = await this.generateQrCode(newEvent.url);
 
-  }
-
-  generateQrCode(text): Promise<string> {
-    return new Promise((resolve, reject) => {
-      QRCode.toDataURL(text,
-      {
-        version: '',
-        errorCorrectionLevel: 'H',
-        margin: 1,
-        scale: 4,
-        width: 10,
-        color: {
-          dark: '#000000',
-          light: '#A0A0A0'
-        }
-      }, (err, url) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          resolve(url);
-        }
-      });
-    });
-  }
-
-  shortenEventUrl(fullURL: string) {
-    let result = '';
-    if (fullURL.startsWith('https://www.')) {
-      result = fullURL.substring(12);
-    } else if (fullURL.startsWith('http://www.')) {
-      result = fullURL.substring(11);
-    } else if (fullURL.startsWith('https://')) {
-      result = fullURL.substring(8);
-    } else if (fullURL.startsWith('http://')) {
-      result = fullURL.substring(7);
-    }  else {
-      result = fullURL;
+    if (this.autoScrolllHandler) {
+      clearInterval(this.autoScrolllHandler);
     }
-    return result;
+
+    if (this.autoScrollEnabled) {
+      this.autoScrolllHandler = setInterval(() => {
+        this.autoScroll();
+      }, 5000);
+    }
   }
 
   async refreshPlaylist() {
@@ -189,6 +259,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   handlePlaylistUpdate(newPlaylist) {
     this.currentPlaylist = newPlaylist;
     this.computeETAForTracks();
+    this.autoScrollPos = 0;
   }
 
 
@@ -207,6 +278,7 @@ export class EventViewPage implements OnInit, OnDestroy {
 
     console.debug('before refresh()');
     await this.refresh(null);
+
     console.debug('end ionViewDidEnter');
   }
 
@@ -215,7 +287,6 @@ export class EventViewPage implements OnInit, OnDestroy {
   }
   async init() {
     console.debug('begin init');
-    console.debug('end init');
   }
 
 
@@ -230,9 +301,7 @@ export class EventViewPage implements OnInit, OnDestroy {
 
       let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
         console.debug('received playlist update via websocket');
-        this.currentPlaylist = data as Playlist;
-        this.computeETAForTracks();
-        console.debug(`playlist subscription: `, this.currentPlaylist);
+        this.handlePlaylistUpdate(data);
       });
       this.subscriptions.push(sub);
 
@@ -264,6 +333,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     });
     this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
+    clearInterval(this.autoScrolllHandler);
   }
 
 }

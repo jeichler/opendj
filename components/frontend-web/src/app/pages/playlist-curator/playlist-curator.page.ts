@@ -466,9 +466,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');
-      this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks();
-      console.debug(`playlist subscription: `, this.currentPlaylist);
+      this.handlePlaylistUpdate(data);
     });
     this.subscriptions.push(sub);
 

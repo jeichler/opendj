@@ -24,14 +24,18 @@
 
 ion-header {}
 
-ion-fab-button {
-    --background: rgb(64, 74, 187);
+.hor-page-grid {
+    --ion-grid-columns: 12;
 }
 
-.track-grid {
+.hor-track-grid {
     --ion-grid-columns: 12;
     //    --ion-grid-padding: 0px;
     //--ion-grid-column-padding: 0px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    //   height: 500px;
+    height: 80vh;
 }
 
 .track-cover-pic {
@@ -125,7 +129,31 @@ ion-fab-button {
 .hor-col-right {}
 
 .hor-col-right-label {
-    background: #FF00FF;
+    //    width: 100%;
+    margin-top: 20px;
+    background: rgb(200, 25, 200);
+    font-weight: bold;
+    //    color: #00FFFF;
+}
+
+.hor-event-img {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hor-event-qrcode {
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hor-event-url {
+    font-size: 24px;
+}
+
+.hor-opendj-logo {
+    width: 50%;
     margin-left: auto;
     margin-right: auto;
 }

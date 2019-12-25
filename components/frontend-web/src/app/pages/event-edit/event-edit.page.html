@@ -50,7 +50,7 @@
         <ion-card *ngIf="isCreate" style="background-color: #111;">
             <ion-item>
                 <ion-icon name="wine" slot="start" color="light"></ion-icon>
-                <ion-label text-wrap>Create your own OpenDJ Music Event!</ion-label>
+                <ion-label class="ion-text-wrap">Create your own OpenDJ Music Event!</ion-label>
                 <ion-button fill="outline" slot="end">Help?</ion-button>
             </ion-item>
 
@@ -69,7 +69,7 @@
                         <ion-label>Instructions</ion-label>
                     </ion-item-divider>
                     <ion-item lines="none">
-                        <ion-label text-wrap>
+                        <ion-label class="ion-text-wrap">
                             First, fill in the mandatory fields (marked red) - the tooltips provide guidance. Second, press 'create event' button. Third, add your music provider, e.g. Spotify.
                         </ion-label>
                     </ion-item>
@@ -195,7 +195,7 @@
 -->
 
                     <ion-item>
-                        <ion-label text-wrap>Max tracks</ion-label>
+                        <ion-label class="ion-text-wrap">Max tracks</ion-label>
                         <ion-input name="maxTracksInPlaylist" type="number" formControlName="maxTracksInPlaylist" text-right>
                         </ion-input>
                         <ion-icon tooltip="The maximum number of tracks in a playlist of this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -203,7 +203,7 @@
                     </ion-item>
 
                     <ion-item>
-                        <ion-label text-wrap>Max users</ion-label>
+                        <ion-label class="ion-text-wrap">Max users</ion-label>
                         <ion-input name="maxUsers" type="number" formControlName="maxUsers" text-right></ion-input>
                         <ion-icon tooltip="The maximum number of users who can join this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
@@ -300,7 +300,7 @@
                     </ion-item-divider>
 
                     <ion-item>
-                        <ion-label text-wrap>Auto Skip after</ion-label>
+                        <ion-label class="ion-text-wrap">Auto Skip after</ion-label>
                         <ion-input name="demoAutoskip" type="number" formControlName="demoAutoskip" text-right></ion-input>
                         <ion-label>s</ion-label>
                         <ion-icon tooltip="After how many seconds shall a track be skipped automatically? 
@@ -309,7 +309,7 @@
                     </ion-item>
 
                     <ion-item>
-                        <ion-label text-wrap>No actual playing of tracks</ion-label>
+                        <ion-label class="ion-text-wrap">No actual playing of tracks</ion-label>
                         <ion-toggle id="demoNoActualPlaying" color="primary" formControlName="demoNoActualPlaying"></ion-toggle>
                         <ion-icon tooltip="If you enable this, tracks will not being played. 
                         It looks like they are being played, but the loud  speaker remains silent." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -317,7 +317,7 @@
                     </ion-item>
 
                     <ion-item>
-                        <ion-label text-wrap>Fill Empty Playlist</ion-label>
+                        <ion-label class="ion-text-wrap">Fill Empty Playlist</ion-label>
                         <ion-toggle id="demoAutoFillEmptyPlaylist" color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
                         <ion-icon tooltip="If you enable this, OpenDJ will add some tracks when the playlist is empty." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
