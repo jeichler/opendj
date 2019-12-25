@@ -1,6 +1,7 @@
 <!-- 
     Event View for displays (TVs / projectors) at the vent location.
 -->
+
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
@@ -14,9 +15,8 @@
         </ion-buttons>
 
     </ion-toolbar>
-
-
 </ion-header>
+
 
 <ion-content color="dark">
     <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -110,11 +110,17 @@
                 <ion-img class="hor-event-img" src="assets/img/event_hdr.jpg"></ion-img>
 
                 <ion-chip color="light" class="hor-col-right-label">
-                    <ion-label>To contribute, follow this link:</ion-label>
+                    <ion-label>To <b>contribute</b>, follow this link:</ion-label>
                 </ion-chip>
 
                 <ion-img *ngIf="this.qrImageSrc" [src]="this.qrImageSrc" class="hor-event-qrcode"></ion-img>
                 <ion-label class="hor-event-url">{{this.eventURLShortened}}</ion-label>
+            </ion-col>
+        </ion-row>
+
+        <ion-row>
+            <ion-col class="ion-text-center hor-bottom-row">
+                ...
             </ion-col>
         </ion-row>
     </ion-grid>
