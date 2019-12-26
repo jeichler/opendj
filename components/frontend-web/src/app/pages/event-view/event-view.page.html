@@ -51,7 +51,7 @@
     <ion-grid *ngIf="currentEvent && currentEvent.eventViewEnable" fixed="false" class="hor-page-grid">
         <ion-row>
             <!-- LEFT HAND SIDE -->
-            <ion-col *ngIf="platform.width()>=500" size="3" class="ion-align-self-start ion-text-center">
+            <ion-col *ngIf="platform.width()>=500" size="3" class="hor-col-left ion-align-self-start ion-text-center">
                 <ion-img src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo" (click)="showMenu()" tappable></ion-img>
 
                 <!-- 
@@ -65,7 +65,7 @@
             </ion-col>
 
             <!-- CENTER Column -->
-            <ion-col size="6">
+            <ion-col size="6" class="hor-col-center">
                 <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
 
                 <ion-grid class="hor-track-grid" id="track-grid">
@@ -132,6 +132,12 @@
 
                 <ion-img *ngIf="this.qrImageSrc" [src]="this.qrImageSrc" class="hor-event-qrcode"></ion-img>
                 <ion-label class="hor-event-url">{{this.eventURLShortened}}</ion-label>
+
+                <div *ngIf="platform.width()>=1250" class="legend-div">
+                    <ion-label class="legend-danceability">Danceability</ion-label><br>
+                    <ion-label class="legend-energy">Energy</ion-label><br>
+                    <ion-label class="legend-happiness">Happiness</ion-label>
+                </div>
             </ion-col>
         </ion-row>
 

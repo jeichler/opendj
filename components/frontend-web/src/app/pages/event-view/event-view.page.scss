@@ -6,18 +6,27 @@
     --ion-grid-columns: 12;
 }
 
+.hor-col-left {
+    max-height: 95vh;
+    overflow-y: visible;
+    overflow-x: hidden;
+}
+
+.timeline-Tweet {
+    max-height: 40px;
+}
+
+.hor-col-center {
+    max-height: 95vh;
+}
+
 .hor-track-grid {
     --ion-grid-columns: 12;
     //    --ion-grid-padding: 0px;
     //--ion-grid-column-padding: 0px;
     overflow-y: visible;
     overflow-x: hidden;
-    //   height: 500px;
-    height: 85vh;
-}
-
-.hor-bottom-row {
-    height: 5vh;
+    max-height: 85vh;
 }
 
 .track-cover-pic {
@@ -72,20 +81,16 @@
 }
 
 .track-meta-bar-danceability {
-    //    --progress-background: rgb(240, 65, 65);
-    //   --progress-background: rgb(200, 25, 25);
     --progress-background: rgb(200, 25, 200);
     margin-bottom: 4px;
 }
 
 .track-meta-bar-energy {
-    //    --progress-background: #008800;
     --progress-background: rgb(215, 166, 0);
     margin-bottom: 4px;
 }
 
 .track-meta-bar-happiness {
-    //    --progress-background: rgb(255, 206, 0);
     --progress-background: #006600;
 }
 
@@ -94,7 +99,6 @@
 }
 
 .track-provider-col {
-    //    background: #FF00FF;
     min-height: 50px;
 }
 
@@ -135,12 +139,29 @@
     font-size: 24px;
 }
 
-.hor-opendj-logo {
-    width: 25%;
+.legend-div {
+    margin-top: 20px;
+    font-size: 12px;
+    min-width: 50%;
+    max-width: 50%;
     margin-left: auto;
     margin-right: auto;
 }
 
-.timeline-Tweet {
-    max-height: 200;
+.legend-danceability {
+    background: rgb(200, 25, 200);
+}
+
+.legend-energy {
+    background: rgb(215, 166, 0);
+}
+
+.legend-happiness {
+    background: #006600
+}
+
+.hor-opendj-logo {
+    width: 25%;
+    margin-left: auto;
+    margin-right: auto;
 }
