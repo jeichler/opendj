@@ -1,7 +1,7 @@
 import { ConfigService } from '../../providers/config.service';
 import { UserDataService } from '../../providers/user-data.service';
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ModalController, ActionSheetController, ToastController, Platform, MenuController } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from '../../providers/fes.service';
@@ -49,6 +49,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
     public toastController: ToastController,
+    private menu: MenuController,
     public websocketService: WebsocketService,
     public mockService: MockService,
     public feService: FEService,
@@ -80,6 +81,10 @@ export class EventViewPage implements OnInit, OnDestroy {
     } while (el !== document.body);
     // Check its within the document viewport
     return top <= document.documentElement.clientHeight;
+  }
+  showMenu() {
+    console.debug('showMenu()');
+    this.menu.open('app-menu');
   }
 
   autoScroll() {

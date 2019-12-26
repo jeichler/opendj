@@ -2,6 +2,8 @@
     Event View for displays (TVs / projectors) at the vent location.
 -->
 
+
+<!-- HEADER Removed #224 
 <ion-header no-border color="dark">
     <ion-toolbar color="dark">
         <ion-buttons slot="start">
@@ -16,7 +18,7 @@
 
     </ion-toolbar>
 </ion-header>
-
+-->
 
 <ion-content color="dark">
     <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -32,7 +34,9 @@
                 <ion-chip color="danger" class="ion-text-center">
                     <ion-label><b>Event view is disabled by owner</b></ion-label>
                 </ion-chip>
-                <ion-img src="assets/img/Logo_OpenDJ_512.png" class="hor-opendj-logo"></ion-img>
+
+                <ion-img src="assets/img/Logo_OpenDJ_512.png" (click)="showMenu()" tappable class="hor-opendj-logo"></ion-img>
+
                 <ion-chip color="danger" class="ion-text-center">
                     <ion-label><b>Event view is disabled by owner</b></ion-label>
                 </ion-chip>
@@ -48,7 +52,7 @@
         <ion-row>
             <!-- LEFT HAND SIDE -->
             <ion-col size="3" class="ion-align-self-start ion-text-center">
-                <ion-img src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo"></ion-img>
+                <ion-img src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo" (click)="showMenu()" tappable></ion-img>
 
                 <!-- 
                 <a class="twitter-timeline" data-width="300" data-height="500" data-theme="dark" href="https://twitter.com/RedHatDACH?ref_src=twsrc%5Etfw">Tweets by RedHatDACH</a>
@@ -57,7 +61,7 @@
                 <a href="https://twitter.com/intent/tweet?button_hashtag=RHforum&ref_src=twsrc%5Etfw" class="twitter-hashtag-button" data-show-count="false">Tweet #RHforum</a>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>                
 -->
-                <ngx-twitter-timeline *ngIf="currentEvent.eventViewTwitterURL" [data]="{sourceType: 'url', url: currentEvent.eventViewTwitterURL}" [opts]="{theme: 'dark', tweetLimit: 3, chrome:'nofooter noscrollbar transparent' }"></ngx-twitter-timeline>
+                <ngx-twitter-timeline *ngIf="currentEvent.eventViewTwitterURL" [data]="{sourceType: 'url', url: currentEvent.eventViewTwitterURL}" [opts]="{theme: 'dark', tweetLimit: 5, chrome:'nofooter noscrollbar transparent' }"></ngx-twitter-timeline>
             </ion-col>
 
             <!-- CENTER Column -->
