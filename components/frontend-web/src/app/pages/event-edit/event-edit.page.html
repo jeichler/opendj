@@ -284,24 +284,53 @@
                     <ion-item-divider mode="md">
                         <ion-label>Event View</ion-label>
                     </ion-item-divider>
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Enabled</ion-label>
+                        <ion-toggle id="eventViewEnable" color="primary" formControlName="eventViewEnable"></ion-toggle>
+                        <ion-icon tooltip="Master Switch to enable or disable the event view" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Password</ion-label>
+                        <ion-input name="eventViewPassword" type="text" formControlName="eventViewPassword" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="Optional password needed to access the event view." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
 
                     <ion-item>
                         <ion-label class="ion-text-wrap">Auto Scroll</ion-label>
-                        <ion-toggle id="eventViewAutoScroll" color="primary" formControlName="eventViewAutoScroll"></ion-toggle>
+                        <ion-toggle id="eventViewAutoScrollEnable" color="primary" formControlName="eventViewAutoScrollEnable"></ion-toggle>
                         <ion-icon tooltip="Automatically scroll the playlist up and down in the event view." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
                     <ion-item>
+                        <ion-label class="ion-text-wrap">Auto Scroll Interval</ion-label>
+                        <ion-input name="eventViewAutoScrollInterval" type="number" formControlName="eventViewAutoScrollInterval" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="Delay in seconds between auto scrolling." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
                         <ion-label class="ion-text-wrap">Auto Scroll Speeed</ion-label>
-                        <ion-input name="autoScrollSpeed" type="number" formControlName="eventViewAutoScrollSpeed" class="ion-text-right"></ion-input>
-                        <ion-icon tooltip="Determines the speed the playlist is auto scrolled. Lower numbers are slower, higher numbers means faster." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-input name="eventViewAutoScrollSpeed" type="number" formControlName="eventViewAutoScrollSpeed" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="Number of tracks the list is scrolled at each interval" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Auto Scroll Top on Next</ion-label>
+                        <ion-toggle id="eventViewAutoScrollTopOnNext" color="primary" formControlName="eventViewAutoScrollTopOnNext"></ion-toggle>
+                        <ion-icon tooltip="Scroll to top of list if a new track is being played." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
                     <ion-item>
                         <ion-label class="ion-text-wrap">Twitter URL</ion-label>
-                        <ion-input name="twitterURL" type="text" formControlName="eventViewTwitterURL" class="ion-text-right"></ion-input>
+                        <ion-input name="eventViewTwitterURL" type="text" formControlName="eventViewTwitterURL" class="ion-text-right"></ion-input>
                         <ion-icon tooltip="If your provide an URL to a twitter handle, the corresponding timeline is displayed. Example: https://twitter.com/OpenDJ1 - Leave empty to not show twitter stuff. " [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end"
                             name="ios-help-circle-outline">
                         </ion-icon>

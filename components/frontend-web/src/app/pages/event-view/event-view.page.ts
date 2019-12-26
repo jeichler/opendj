@@ -41,8 +41,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     'show-delay': 0
   };
   eventURLShortened: string;
-  autoScrolllHandler = null;
-  autoScrollEnabled =  false;
+  autoScrollHandler = null;
   autoScrollPos = 0;
   autoScrollDirection = 1;
 
@@ -84,20 +83,20 @@ export class EventViewPage implements OnInit, OnDestroy {
   }
 
   autoScroll() {
-//    console.debug('autoScroll: pos=' +  this.autoScrollPos + 'dir=' + this.autoScrollDirection);
 
 /* Implementation by scroll per track: */
-    if (this.autoScrollEnabled && this.currentPlaylist && this.currentPlaylist.nextTracks) {
+    if (this.currentEvent && this.currentEvent.eventViewAutoScrollEnable && this.currentPlaylist && this.currentPlaylist.nextTracks) {
+      console.debug('autoScroll: pos=' +  this.autoScrollPos + 'dir=' + this.autoScrollDirection + 'speed=' + this.currentEvent.eventViewAutoScrollSpeed);
       const boundOffset = 5;
-      this.autoScrollPos = this.autoScrollPos + this.autoScrollDirection;
+      this.autoScrollPos = this.autoScrollPos + this.autoScrollDirection * this.currentEvent.eventViewAutoScrollSpeed;
       if (this.autoScrollPos <= boundOffset) {
         // Reached top of list - switch direction to scroll down:
         this.autoScrollPos = boundOffset;
-        this.autoScrollDirection = boundOffset;
+        this.autoScrollDirection = 1;
       } else if (this.autoScrollPos >= this.currentPlaylist.nextTracks.length - boundOffset) {
         // Reached bottom of list -switch direction to scroll up:
         this.autoScrollPos = this.currentPlaylist.nextTracks.length - boundOffset;
-        this.autoScrollDirection = -boundOffset;
+        this.autoScrollDirection = -1;
       }
 
       const trackRow = document.getElementById('track-' + this.autoScrollPos);
@@ -106,8 +105,8 @@ export class EventViewPage implements OnInit, OnDestroy {
       }
     }
 
-  /* Implemetation to scroll pixel wise: */
-  /* Problem: is Visisble not working correcly
+  /* Implementation to scroll pixel wise: */
+  /* Problem: isVisible not working correctly
      const lastTrack = document.getElementById('track-20');
      const firstTrack = document.getElementById('track-0');
 
@@ -222,27 +221,36 @@ export class EventViewPage implements OnInit, OnDestroy {
     }
 
     const newEvent = await this.feService.readEvent(eventID).toPromise();
-    console.debug('refreshEvent(): received new event');
+    console.debug('refreshEvent(): received new event', newEvent);
     this.currentEvent = newEvent;
+
+    await this.handleEventUpdate();
+  }
+
+  async handleEventUpdate() {
+    console.debug('handlePlaylistUpdate()');
+
     if (!this.currentEvent) {
       console.error('could not load event from server - something is wrong - redirect to logout');
       this.router.navigate([`ui/landing`]);
       return;
     }
 
-    this.eventURLShortened = this.shortenEventUrl(newEvent.url);
-    this.qrImageSrc = await this.generateQrCode(newEvent.url);
+    this.eventURLShortened = this.shortenEventUrl(this.currentEvent.url);
+    this.qrImageSrc = await this.generateQrCode(this.currentEvent.url);
 
-    if (this.autoScrolllHandler) {
-      clearInterval(this.autoScrolllHandler);
+    if (this.autoScrollHandler) {
+      clearInterval(this.autoScrollHandler);
     }
 
-    if (this.autoScrollEnabled) {
-      this.autoScrolllHandler = setInterval(() => {
+    if (this.currentEvent.eventViewAutoScrollEnable) {
+      this.autoScrollHandler = setInterval(() => {
         this.autoScroll();
-      }, 5000);
+      }, this.currentEvent.eventViewAutoScrollInterval * 1000);
     }
   }
+
+
 
   async refreshPlaylist() {
     console.debug('refreshPlaylist()');
@@ -257,9 +265,12 @@ export class EventViewPage implements OnInit, OnDestroy {
   }
 
   handlePlaylistUpdate(newPlaylist) {
+    console.debug('handlePlaylistUpdate()');
     this.currentPlaylist = newPlaylist;
     this.computeETAForTracks();
-    this.autoScrollPos = 0;
+    if (this.currentEvent && this.currentEvent.eventViewAutoScrollTopOnNext) {
+      this.autoScrollPos = 0;
+    }
   }
 
 
@@ -305,15 +316,10 @@ export class EventViewPage implements OnInit, OnDestroy {
       });
       this.subscriptions.push(sub);
 
-      sub = this.websocketService.observeEvent().pipe().subscribe(data => {
-        console.debug('received event update');
+      sub = this.websocketService.observeEvent().pipe().subscribe(async data => {
+        console.debug('received event update', data);
         this.currentEvent = data as MusicEvent;
-        if (this.currentEvent) {
-          console.info(`event update: `, this.currentEvent);
-        } else {
-          console.warn('Event has been deleted - navigating to landing page');
-          this.router.navigate([`ui/landing`]);
-        }
+        await this.handleEventUpdate();
       });
       this.subscriptions.push(sub);
 
@@ -333,7 +339,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     });
     this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
-    clearInterval(this.autoScrolllHandler);
+    clearInterval(this.autoScrollHandler);
   }
 
 }

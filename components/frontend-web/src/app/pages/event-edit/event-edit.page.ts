@@ -231,8 +231,13 @@ export class EventEditPage implements OnInit {
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],
-      eventViewAutoScroll: [false],
-      eventViewAutoScrollSpeed: [''],
+
+      eventViewEnable: [true],
+      eventViewPassword: [''],
+      eventViewAutoScrollEnable: [false],
+      eventViewAutoScrollSpeed: [5, Validators.min(1)],
+      eventViewAutoScrollInterval: [10, Validators.min(1)],
+      eventViewAutoScrollTopOnNext: [true],
       eventViewTwitterURL: [''],
     });
   }
