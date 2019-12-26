@@ -1,27 +1,21 @@
-@mixin gradient-bottom {
-  --background-color: transparent;
-  --ion-color-base: transparent !important;
-  --ion-background-color: linear-gradient(180deg,  rgba(56, 70, 108, .8) 30%, rgba(79, 83, 94, 0.8) 100%) !important;
-}
-
 ion-header {
-  // @include gradient-bottom;
-  --ion-background-color: rgba(56, 70, 108, .8);
+    // @include gradient-bottom;
+    --ion-background-color: rgba(56, 70, 108, .8);
 }
 
 ion-content {
-  // @include gradient-bottom;
-  --ion-background-color: rgba(56, 70, 108, .8);
+    // @include gradient-bottom;
+    --ion-background-color: rgba(56, 70, 108, .8);
 }
 
 .desktop-footer {
-  position: fixed;
-  bottom: 0;
-  left: 2%;
+    position: fixed;
+    bottom: 0;
+    left: 2%;
 }
 
 .menu-footer {
-  position: fixed;
-  bottom: 0;
-  left: 2%;
+    position: fixed;
+    bottom: 0;
+    left: 2%;
 }

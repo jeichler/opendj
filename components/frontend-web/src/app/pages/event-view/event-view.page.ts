@@ -91,6 +91,7 @@ export class EventViewPage implements OnInit, OnDestroy {
 
 /* Implementation by scroll per track: */
     if (this.currentEvent && this.currentEvent.eventViewAutoScrollEnable && this.currentPlaylist && this.currentPlaylist.nextTracks) {
+      console.debug('platform width = ', this.platform.width());
       console.debug('autoScroll: pos=' +  this.autoScrollPos + 'dir=' + this.autoScrollDirection + 'speed=' + this.currentEvent.eventViewAutoScrollSpeed);
       const boundOffset = 5;
       this.autoScrollPos = this.autoScrollPos + this.autoScrollDirection * this.currentEvent.eventViewAutoScrollSpeed;

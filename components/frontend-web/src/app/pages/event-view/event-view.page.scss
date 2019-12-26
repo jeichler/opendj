@@ -1,13 +1,16 @@
+.event-view-content {
+    --ion-color-dark: #121418;
+}
+
 .hor-page-grid {
     --ion-grid-columns: 12;
-    background: #121418;
 }
 
 .hor-track-grid {
     --ion-grid-columns: 12;
     //    --ion-grid-padding: 0px;
     //--ion-grid-column-padding: 0px;
-    overflow-y: scroll;
+    overflow-y: visible;
     overflow-x: hidden;
     //   height: 500px;
     height: 85vh;
