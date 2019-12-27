@@ -29,19 +29,36 @@
     <!-- -----------------------         DISABLED VIEW      ------------------------------------- -->
     <!-- ---------------------------------------------------------------------------------------- -->
     <ion-grid *ngIf="currentEvent && !currentEvent.eventViewEnable" fixed="false" class="hor-page-grid">
+
+
+        <ion-row>
+            <ion-col size="12" class="ion-align-self-start ion-text-center hor-col-disabled">
+                <ion-chip color="danger" class="ion-text-center">
+                    <ion-label><b>Event view is disabled by owner</b></ion-label>
+                </ion-chip><br>
+
+                <ion-img *ngIf="platform.width()<550" src="assets/img/Logo_OpenDJ_512.png" (click)="showMenu()" tappable class="hor-opendj-logo-disabled"></ion-img>
+                <video *ngIf="platform.width()>=550" autoplay loop muted playsinline width="512" height="512" poster="assets/img/Logo_OpenDJ_512.png" (click)="showMenu()" tappable class="hor-opendj-logo-disabled">
+                    <source src="assets/img/Logo_OpenDJ_Anim_512_crf18.webm" type="video/webm">
+                </video><br>
+
+                <ion-chip color="danger" class="ion-text-center">
+                    <ion-label><b>Event view is disabled by owner</b></ion-label>
+                </ion-chip><br>
+
+            </ion-col>
+        </ion-row>
+
+        <!--
         <ion-row>
             <ion-col size="12" class="ion-align-self-start ion-text-center">
                 <ion-chip color="danger" class="ion-text-center">
                     <ion-label><b>Event view is disabled by owner</b></ion-label>
-                </ion-chip>
-
-                <ion-img src="assets/img/Logo_OpenDJ_512.png" (click)="showMenu()" tappable class="hor-opendj-logo"></ion-img>
-
-                <ion-chip color="danger" class="ion-text-center">
-                    <ion-label><b>Event view is disabled by owner</b></ion-label>
-                </ion-chip>
+                </ion-chip><br>
             </ion-col>
         </ion-row>
+-->
+
     </ion-grid>
 
 
@@ -51,8 +68,12 @@
     <ion-grid *ngIf="currentEvent && currentEvent.eventViewEnable" fixed="false" class="hor-page-grid">
         <ion-row>
             <!-- LEFT HAND SIDE -->
-            <ion-col *ngIf="platform.width()>=500" size="3" class="hor-col-left ion-align-self-start ion-text-center">
-                <ion-img src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo" (click)="showMenu()" tappable></ion-img>
+            <ion-col *ngIf="platform.width()>=768" size="3" class="hor-col-left ion-align-self-start ion-text-center">
+                <ion-img *ngIf="platform.width()<960" src="assets/img/Logo_OpenDJ_256.png" class="hor-opendj-logo" (click)="showMenu()" tappable></ion-img>
+
+                <video *ngIf="platform.width()>=960" autoplay loop muted playsinline width="256" height="256" poster="assets/img/Logo_OpenDJ_128.png" (click)="showMenu()" tappable>
+                    <source src="assets/img/Logo_OpenDJ_Anim_256_crf18.webm" type="video/webm">
+                </video>
 
                 <!-- 
                 <a class="twitter-timeline" data-width="300" data-height="500" data-theme="dark" href="https://twitter.com/RedHatDACH?ref_src=twsrc%5Etfw">Tweets by RedHatDACH</a>
@@ -109,7 +130,7 @@
 
 
                         <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
-                        <ion-col *ngIf="platform.width()>=500" size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
+                        <ion-col *ngIf="platform.width()>=768" size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
                             <a href="{{item.previewViaApp}} " target="_blank ">
                                 <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" class="track-provider-logo" tooltip="Indicates the streaming provider where this track is being played from" [options]="tooltipOptions">
                                 </ion-img>

@@ -6,10 +6,24 @@
     --ion-grid-columns: 12;
 }
 
+.hor-col-disabled {}
+
+.hor-opendj-logo-disabled {
+    max-width: 512px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .hor-col-left {
     max-height: 95vh;
     overflow-y: visible;
     overflow-x: hidden;
+}
+
+.hor-opendj-logo {
+    max-width: 256px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .timeline-Tweet {
@@ -158,10 +172,4 @@
 
 .legend-happiness {
     background: #006600
-}
-
-.hor-opendj-logo {
-    width: 25%;
-    margin-left: auto;
-    margin-right: auto;
 }
