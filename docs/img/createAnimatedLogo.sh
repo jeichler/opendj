@@ -19,5 +19,5 @@
 for i in 64 128 256 512 1024
 do
   echo "Encode $i"
-  ffmpeg -framerate 10 -i logo/Logo_%03d.png -vf scale=$i:-1 -c vp9 -b:v 0 -crf 41 Logo_OpenDJ_Anim_${i}_crf41.webm
+  ffmpeg -framerate 10 -i logo/Logo_%03d.png -vf scale=$i:-1 -c vp9 -b:v 0 -crf 18 Logo_OpenDJ_Anim_${i}_crf18.webm
 done
