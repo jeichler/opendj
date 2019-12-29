@@ -3,15 +3,16 @@
 const compression = require('compression');
 const express = require('express');
 const app = express();
-var request = require('request-promise-native');
-var cors = require('cors');
-var router = new express.Router();
-var log4js = require('log4js');
-var log = log4js.getLogger();
+const request = require('request-promise-native');
+const cors = require('cors');
+const router = new express.Router();
+const log4js = require('log4js');
+const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
+const eventActivityClient = require('../common/EventActivityClient');
 
-var COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
-var readyState = {
+const COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
+const readyState = {
     datagridClient: false,
     lastError: ""
 };
@@ -399,6 +400,12 @@ async function addTrack(event, playlist, provider, trackID, user) {
             log.trace("TrackAI disabled, adding to the end of the list");
             playlist.nextTracks.push(track);
 
+            eventActivityClient.publishActivity(
+                'TRACK_ADDED',
+                event.eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, track: track },
+                user + " contributed " + track.name
+            );
+
         }
     } catch (err) {
         log.error("getTrackDetailsForTrackID failed!", err);
@@ -417,7 +424,7 @@ async function addTrack(event, playlist, provider, trackID, user) {
     log.trace("end addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 }
 
-function moveTrack(eventID, playlist, provider, trackID, newPos) {
+function moveTrack(eventID, playlist, provider, trackID, newPos, user) {
     log.trace("begin moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s, newPos=%s", eventID, playlist.playlistID, provider, trackID, newPos);
 
     let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
@@ -436,10 +443,17 @@ function moveTrack(eventID, playlist, provider, trackID, newPos) {
     // Insert at new pos;
     playlist.nextTracks.splice(currentPos < newPos ? newPos - 1 : newPos, 0, track);
 
+    eventActivityClient.publishActivity(
+        'TRACK_MOVED',
+        eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, newPos: newPos, track: track },
+        '' + user + ' moved track ' + track.name + ' from pos ' + currentPos + ' to ' + newPos
+    );
+
+
     log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, track);
 }
 
-function deleteTrack(eventID, playlist, provider, trackID) {
+function deleteTrack(eventID, playlist, provider, trackID, user) {
     log.trace("begin deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 
     let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
@@ -448,8 +462,13 @@ function deleteTrack(eventID, playlist, provider, trackID) {
     }
 
     // Remove at current pos:
-    playlist.nextTracks.splice(currentPos, 1);
+    let track = playlist.nextTracks.splice(currentPos, 1)[0];
 
+    eventActivityClient.publishActivity(
+        'TRACK_DELETED',
+        eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, track: track },
+        '' + user + ' deleted track ' + track.name + ' at position ' + currentPos
+    );
 
     log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 }
@@ -474,13 +493,15 @@ function trackFeedbackSanityCheck(track) {
 
 
 
-function provideTrackFeedback(eventID, playlist, provider, trackID, feedback) {
+function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, user) {
     log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", eventID, playlist.playlistID, provider, trackID);
 
     let track = findTrackInList(playlist.nextTracks, provider, trackID);
     let stateChanged = false;
 
     if (track) {
+        let activityMsg = '?';
+
         ensureFeedbackAttributes(track);
         let oldFeedback = feedback.old ? feedback.old : '';
         let newFeedback = feedback.new ? feedback.new : '';
@@ -489,31 +510,44 @@ function provideTrackFeedback(eventID, playlist, provider, trackID, feedback) {
         if (oldFeedback === 'H' && newFeedback === 'L') {
             log.trace("User changed her mind from hate to like, thus we need to reduce hate counter.");
             track.numHates--;
+            activityMsg = 'User ' + user + ' changed mind from hate to like regarding track ' + track.name;
         }
         if (oldFeedback === 'L' && newFeedback === 'H') {
             log.trace("User changed her mind from like to hate, thus we need to reduce hate counter");
             track.numLikes--;
+            activityMsg = 'User ' + user + ' changed mind from like to hate regarding track ' + track.name;
         }
 
         if (oldFeedback === 'L' && newFeedback === '') {
             log.trace("User liked in the past and now clicked like again, meaning to remove the like");
             track.numLikes--;
+            activityMsg = 'User ' + user + ' does not like anymore track ' + track.name;
         } else if (newFeedback === 'L') {
             log.trace("User liked new");
             track.numLikes++;
-
+            activityMsg = 'User ' + user + ' liked track ' + track.name;
         }
+
         if (oldFeedback === 'H' && newFeedback === '') {
             log.trace("User liked in the past and now clicked like again, meaning to remove the like");
             track.numHates--;
+            activityMsg = 'User ' + user + ' does not hate anymore track ' + track.name;
         } else if (newFeedback === 'H') {
             log.trace("User hates new");
             track.numHates++;
+            activityMsg = 'User ' + user + ' hated track ' + track.name;
         }
 
         trackFeedbackSanityCheck(track);
         stateChanged = true;
         log.debug("trackFeedback after:  old=%s new=%s, likes=%s, hates=%s", oldFeedback, newFeedback, track.numLikes, track.numHates);
+
+        eventActivityClient.publishActivity(
+            'TRACK_FEEDBACK',
+            eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, feedback: feedback, track: track },
+            activityMsg
+        );
+
 
     } else {
         log.info("provideTrackFeedback IGNORED - track %s:%s not found in playlist - maybe it has been deleted meanwhile ", provider, trackID)
@@ -637,9 +671,16 @@ async function play(event, playlist) {
         }
     }
 
+    eventActivityClient.publishActivity(
+        'TRACK_PLAY',
+        event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
+        'Now playing: ' + playlist.currentTrack.name
+    );
+
     // Start playing was successful!
     log.info("PLAY event=%s, playlist=%s, track=%s, startAt=%s, name=%s", event.eventID, playlist.playlistID, playlist.currentTrack.id, playlist.currentTrack.progress_ms, playlist.currentTrack.name);
     setTimerForEvent(event, playlist);
+
 
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
 }
@@ -665,10 +706,17 @@ async function pause(event, playlist, err) {
             // throw { code: "PLYLST-400", msg: "Could not pause track. Err=" + err };
         }
     }
+
+    eventActivityClient.publishActivity(
+        'TRACK_PAUSE',
+        event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
+        'Playback paused for ' + playlist.currentTrack.name
+    );
+
 }
 
 
-async function skip(event, playlist) {
+async function skip(event, playlist, user) {
     log.trace("skip begin");
     log.debug("SKIP event=%s, playlist=%s", event.eventID, playlist.playlistID);
 
@@ -685,7 +733,17 @@ async function skip(event, playlist) {
         }
     }
 
+    // Note SKIP Event only if actually skipped by a user, not at regular "skip" and the end of the current track_
+    if (!playlist.isPlaying || isTrackPlaying(event, playlist)) {
+        eventActivityClient.publishActivity(
+            'TRACK_SKIP',
+            event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
+            'Track ' + lastTrack.name + ' was skipped by ' + user
+        );
+    }
+
     let lastTrack = playlist.currentTrack;
+
 
     playlist.currentTrack = playlist.nextTracks.shift();
     if (playlist.currentTrack) {
@@ -925,12 +983,26 @@ async function createEvent(event) {
     log.trace("begin createEvent");
     event = await validateEvent(event, true);
     fireEventChangedEvent(event);
+
+    eventActivityClient.publishActivity(
+        'EVENT_CREATE',
+        event.eventID, { event: event },
+        'Event ' + event.eventID + ' created by ' + event.owner
+    );
+
     log.trace("end createEvent");
 }
 async function updateEvent(event) {
     log.trace("begin updateEvent");
     event = await validateEvent(event, false);
     fireEventChangedEvent(event);
+
+    eventActivityClient.publishActivity(
+        'EVENT_UPDATE',
+        event.eventID, { event: event },
+        'Event ' + event.eventID + ' updated by ' + event.owner
+    );
+
     log.trace("end updateEvent");
 }
 
@@ -946,6 +1018,12 @@ async function deleteEvent(eventID) {
         event.eventEndsAt = new Date().toISOString();
         fireEventChangedEvent(event);
         log.info("EVENT MARKED FOR DELETION %s", eventID);
+
+        eventActivityClient.publishActivity(
+            'EVENT_DELETE',
+            event.eventID, { event: event },
+            'Event ' + event.eventID + ' deleted by ' + event.owner
+        );
     } else {
         log.warn("deleteEvent ignored because event with id %s not found", eventID);
     }
