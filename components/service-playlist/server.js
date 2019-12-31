@@ -446,7 +446,7 @@ function moveTrack(eventID, playlist, provider, trackID, newPos, user) {
     eventActivityClient.publishActivity(
         'TRACK_MOVED',
         eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, newPos: newPos, track: track },
-        '' + user + ' moved track ' + track.name + ' from pos ' + currentPos + ' to ' + newPos
+        '' + user + ' moved ' + track.name + ' from pos ' + currentPos + ' to ' + newPos
     );
 
 
@@ -467,7 +467,7 @@ function deleteTrack(eventID, playlist, provider, trackID, user) {
     eventActivityClient.publishActivity(
         'TRACK_DELETED',
         eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, track: track },
-        '' + user + ' deleted track ' + track.name + ' at position ' + currentPos
+        '' + user + ' deleted ' + track.name + ' at position ' + currentPos
     );
 
     log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
@@ -685,7 +685,7 @@ async function play(event, playlist) {
     log.trace("play end event=%s, playlist=%s", event.eventID, playlist.playlistID);
 }
 
-async function pause(event, playlist, err) {
+async function pause(event, playlist, err, user) {
     log.info("PAUSE event=%s, playlist=%s", event.eventID, playlist.playlistID);
     // Make sure we take note of the current progress:
     updateCurrentTrackProgress(playlist);
@@ -707,11 +707,13 @@ async function pause(event, playlist, err) {
         }
     }
 
-    eventActivityClient.publishActivity(
-        'TRACK_PAUSE',
-        event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
-        'Playback paused for ' + playlist.currentTrack.name
-    );
+    if (!err) {
+        eventActivityClient.publishActivity(
+            'TRACK_PAUSE',
+            event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
+            'Playback paused for ' + playlist.currentTrack.name + ' by ' + user
+        );
+    }
 
 }
 
@@ -738,7 +740,7 @@ async function skip(event, playlist, user) {
         eventActivityClient.publishActivity(
             'TRACK_SKIP',
             event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
-            'Track ' + playlist.currentTrack.name + ' was skipped by ' + user
+            '' + playlist.currentTrack.name + ' was skipped by ' + user
         );
     }
 
@@ -1275,8 +1277,9 @@ router.post('/events/:eventID/playlists/:listID/reorder', async function(req, re
         let provider = req.body.provider;
         let trackID = req.body.id;
         let to = parseInt(req.body.to);
+        let user = req.body.user;
 
-        moveTrack(req.params.eventID, playlist, provider, trackID, to);
+        moveTrack(req.params.eventID, playlist, provider, trackID, to, user);
         firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
         log.info("Track MOVED eventId=%s, listId=%s, track=%s:%s, to=%s", req.params.eventID, req.params.listID, provider, trackID, to);
@@ -1298,9 +1301,10 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function
         let playlist = await getPlaylistForRequest(req);
 
         // Track is in format <provider>:<trackID>, thus we need to split:
-        let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
+        let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);
+        let user = req.query.user;
 
-        deleteTrack(req.params.eventID, playlist, provider, trackID);
+        deleteTrack(req.params.eventID, playlist, provider, trackID, user);
 
         firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
@@ -1323,8 +1327,9 @@ router.post('/events/:eventID/playlists/:listID/tracks/:track/feedback', async f
         let playlist = await getPlaylistForRequest(req);
         let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
         let feedback = req.body;
+        let user = req.body.user;
 
-        let stateChanged = provideTrackFeedback(req.params.eventID, playlist, provider, trackID, feedback);
+        let stateChanged = provideTrackFeedback(req.params.eventID, playlist, provider, trackID, feedback, user);
         if (stateChanged)
             firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send();

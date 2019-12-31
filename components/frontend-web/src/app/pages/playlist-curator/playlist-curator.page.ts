@@ -54,7 +54,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
   deleteTrack(track, index) {
     console.debug('deleteTrack');
-    this.feService.deleteTrack(this.currentEvent, track.id, index).subscribe(
+    this.feService.deleteTrack(this.currentEvent, track.id, index, this.userState).subscribe(
       res => {
         this.handlePlaylistUpdate(res);
         this.presentToast('You have deleted the track.');
@@ -265,7 +265,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 //    this.currentPlaylist.nextTracks.splice(fromPos < toPos ? toPos - 1 : toPos, 0, track);
 //    this.currentPlaylist.nextTracks.splice(toPos, 0, track);
 
-    this.feService.reorderTrack(this.currentEvent, track.id, fromPos, toPos).subscribe(
+    this.feService.reorderTrack(this.currentEvent, track.id, fromPos, toPos, this.userState).subscribe(
       data => {
         this.handlePlaylistUpdate(data);
         this.presentToast('Track successfully moved to pos ' + toPos);
@@ -292,7 +292,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
   moveTop(item, index, slidingItem) {
     if (this.isCurator) {
-      this.feService.reorderTrack(this.currentEvent, item.id, index, 0).subscribe(
+      this.feService.reorderTrack(this.currentEvent, item.id, index, 0, this.userState).subscribe(
         data => {
           this.handlePlaylistUpdate(data);
           this.presentToast('Track moved to top.');
@@ -355,7 +355,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
           icon: 'trash',
           handler: () => {
             console.debug('Delete clicked');
-            this.feService.deleteTrack(this.currentEvent, data.id, index).subscribe(
+            this.feService.deleteTrack(this.currentEvent, data.id, index, this.userState).subscribe(
               res => {
                 console.debug(res);
                 this.presentToast('You have deleted the track.');

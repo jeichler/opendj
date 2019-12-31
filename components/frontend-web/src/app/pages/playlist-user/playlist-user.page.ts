@@ -159,7 +159,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] =  newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe();
     this.presentToast(message);
     }
 
@@ -193,7 +193,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] = newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback).subscribe();
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe();
     this.presentToast(message);
   }
 

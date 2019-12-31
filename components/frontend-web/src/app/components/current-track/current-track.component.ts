@@ -4,6 +4,8 @@ import { Track } from 'src/app/models/track';
 import { MusicEvent } from 'src/app/models/music-event';
 import { Platform } from '@ionic/angular';
 import { Playlist } from 'src/app/models/playlist';
+import { UserDataService } from 'src/app/providers/user-data.service';
+import { UserSessionState } from 'src/app/models/usersessionstate';
 
 @Component({
   selector: 'app-current-track',
@@ -23,6 +25,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() set currentEventInput(event: MusicEvent) {
     this.currentEvent = event;
   }
+  @Input() user: UserSessionState;
 
   emptyTrack = {
     name: '---',
@@ -132,7 +135,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   playTrack() {
     console.debug('playTrack()');
-    this.feService.playTrack(this.currentEvent).subscribe(data => {
+    this.feService.playTrack(this.currentEvent, this.user).subscribe(data => {
       console.debug('current-track - playTrackResponse', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
@@ -141,7 +144,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   pauseTrack() {
     console.debug('pauseTrack()');
-    this.feService.pauseTrack(this.currentEvent).subscribe(data => {
+    this.feService.pauseTrack(this.currentEvent, this.user).subscribe(data => {
       console.debug('current-track - pauseTrackResponse', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
@@ -150,7 +153,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   nextTrack() {
     console.debug('nextTrack()');
-    this.feService.playNextTrack(this.currentEvent).subscribe(data => {
+    this.feService.playNextTrack(this.currentEvent, this.user).subscribe(data => {
       console.debug('current-track - nextTrack', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);

@@ -7,6 +7,8 @@ import { query } from '@angular/core/src/render3';
 import { ConfigService } from './config.service';
 import { retry, catchError, timeout } from 'rxjs/operators';
 import { MusicEvent } from '../models/music-event';
+import { UserSessionState } from '../models/usersessionstate';
+import { userInfo } from 'os';
 
 @Injectable({
     providedIn: 'root'
@@ -98,14 +100,15 @@ export class FEService {
           );
     }
 
-    deleteTrack(event: MusicEvent, trackId: string, index: string): Observable<any> {
+    deleteTrack(event: MusicEvent, trackId: string, index: string, user: UserSessionState): Observable<any> {
         if (trackId === null || trackId === undefined || index === null || index === undefined) {
             throw new Error('Required parameter trackId was null or undefined when calling deleteTrack.');
         }
         return this.http.delete(this.PLAYLIST_PROVIDER_API
                                 + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
                                 + '/tracks/' + encodeURIComponent(`spotify:${trackId}`)
-                                + '?index=' + encodeURIComponent('' + index))
+                                + '?index=' + encodeURIComponent('' + index)
+                                + '&user=' + encodeURIComponent(user.username))
             .pipe(
                 timeout(this.SERVER_TIMEOUT),
                 retry(1),
@@ -114,13 +117,13 @@ export class FEService {
         // return this.http.delete(this.PLAYLIST_PROVIDER_API + '/events/'+event.eventID+'/playlists/'+event.activePlaylist+'/tracks/' + encodeURIComponent(`spotify:${trackId}`));
     }
 
-    reorderTrack(event: MusicEvent, trackId: string, fromIndex: number, toIndex: number): Observable<any> {
+    reorderTrack(event: MusicEvent, trackId: string, fromIndex: number, toIndex: number, user: UserSessionState): Observable<any> {
         if (trackId === null || trackId === undefined || fromIndex === null || fromIndex === undefined || toIndex === null || toIndex === undefined) {
             throw new Error('Required parameter track was null or undefined when calling addTrack.');
         }
         return this.http.post(this.PLAYLIST_PROVIDER_API
                                 + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
-                                + '/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify' })
+                                + '/reorder', { from: fromIndex, to: toIndex, id: trackId, provider: 'spotify', user: user.username })
             .pipe(
                 timeout(this.SERVER_TIMEOUT),
                 retry(1),
@@ -128,24 +131,24 @@ export class FEService {
           );
     }
 
-    playTrack(event: MusicEvent): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/play', {}).pipe(
+    playTrack(event: MusicEvent, user: UserSessionState): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/play?user=' + encodeURIComponent(user.username), {}).pipe(
             timeout(this.SERVER_TIMEOUT),
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    pauseTrack(event: MusicEvent): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/pause', {}).pipe(
+    pauseTrack(event: MusicEvent, user: UserSessionState): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/pause?user=' + encodeURIComponent(user.username), {}).pipe(
             timeout(this.SERVER_TIMEOUT),
             retry(1),
             catchError(this.handleError)
           );
     }
 
-    playNextTrack(event: MusicEvent): Observable<any> {
-        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/next', {}).pipe(
+    playNextTrack(event: MusicEvent, user: UserSessionState): Observable<any> {
+        return this.http.get(this.PLAYLIST_PROVIDER_API + '/events/' + event.eventID + '/playlists/' + event.activePlaylist + '/next?user=' + encodeURIComponent(user.username), {}).pipe(
             timeout(this.SERVER_TIMEOUT),
             retry(1),
             catchError(this.handleError)
@@ -163,7 +166,7 @@ export class FEService {
           );
     }
 
-    provideTrackFeedback(event: MusicEvent, track: Track, oldFeedback: string, newFeedback: string): Observable<any> {
+    provideTrackFeedback(event: MusicEvent, track: Track, oldFeedback: string, newFeedback: string, user: UserSessionState): Observable<any> {
         console.debug('begin provideTrackFeedback', track.id, oldFeedback, newFeedback);
         if (!oldFeedback) {
             oldFeedback = '';
@@ -176,7 +179,7 @@ export class FEService {
         + '/events/' + event.eventID + '/playlists/' + event.activePlaylist
         + '/tracks/' + encodeURIComponent(`${track.provider}:${track.id}`)
         + '/feedback';
-        const body = { old: oldFeedback, new: newFeedback };
+        const body = { old: oldFeedback, new: newFeedback, user: user.username };
 
         console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
         return this.http.post(url, body)
