@@ -510,32 +510,32 @@ function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, us
         if (oldFeedback === 'H' && newFeedback === 'L') {
             log.trace("User changed her mind from hate to like, thus we need to reduce hate counter.");
             track.numHates--;
-            activityMsg = 'User ' + user + ' changed mind from hate to like regarding track ' + track.name;
+            activityMsg = '' + user + ' changed mind from hate to like regarding ' + track.name;
         }
         if (oldFeedback === 'L' && newFeedback === 'H') {
             log.trace("User changed her mind from like to hate, thus we need to reduce hate counter");
             track.numLikes--;
-            activityMsg = 'User ' + user + ' changed mind from like to hate regarding track ' + track.name;
+            activityMsg = '' + user + ' changed mind from like to hate regarding ' + track.name;
         }
 
         if (oldFeedback === 'L' && newFeedback === '') {
             log.trace("User liked in the past and now clicked like again, meaning to remove the like");
             track.numLikes--;
-            activityMsg = 'User ' + user + ' does not like anymore track ' + track.name;
+            activityMsg = '' + user + ' does not like anymore ' + track.name;
         } else if (newFeedback === 'L') {
             log.trace("User liked new");
             track.numLikes++;
-            activityMsg = 'User ' + user + ' liked track ' + track.name;
+            activityMsg = '' + user + ' liked track ' + track.name;
         }
 
         if (oldFeedback === 'H' && newFeedback === '') {
             log.trace("User liked in the past and now clicked like again, meaning to remove the like");
             track.numHates--;
-            activityMsg = 'User ' + user + ' does not hate anymore track ' + track.name;
+            activityMsg = 'User ' + user + ' does not hate anymore ' + track.name;
         } else if (newFeedback === 'H') {
             log.trace("User hates new");
             track.numHates++;
-            activityMsg = 'User ' + user + ' hated track ' + track.name;
+            activityMsg = '' + user + ' hated ' + track.name;
         }
 
         trackFeedbackSanityCheck(track);
@@ -734,11 +734,11 @@ async function skip(event, playlist, user) {
     }
 
     // Note SKIP Event only if actually skipped by a user, not at regular "skip" and the end of the current track_
-    if (!playlist.isPlaying || isTrackPlaying(event, playlist)) {
+    if (playlist.currentTrack && (!playlist.isPlaying || isTrackPlaying(event, playlist))) {
         eventActivityClient.publishActivity(
             'TRACK_SKIP',
             event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
-            'Track ' + lastTrack.name + ' was skipped by ' + user
+            'Track ' + playlist.currentTrack.name + ' was skipped by ' + user
         );
     }
 
