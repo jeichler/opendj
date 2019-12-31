@@ -9,7 +9,7 @@ const router = new express.Router();
 const log4js = require('log4js');
 const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
-const eventActivityClient = require('../common/EventActivityClient');
+const eventActivityClient = require('./EventActivityClient');
 
 const COMPRESS_RESULT = process.env.COMPRESS_RESULT || "true";
 const readyState = {
