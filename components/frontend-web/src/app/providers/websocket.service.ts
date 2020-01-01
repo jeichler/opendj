@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as io from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
+import { UserSessionState } from '../models/usersessionstate';
 
 @Injectable()
 export class WebsocketService {
@@ -12,7 +13,7 @@ export class WebsocketService {
     constructor(private confService: ConfigService) {}
 
 // TODO: Add "query" parameter with event ID to be received by server:
-    init(eventID: string) {
+    init(eventID: string, user: UserSessionState) {
         console.debug('init ws -> eventID=%s', eventID);
 
         // Use /event/<EventID> as socket.io Namespace, which must be added to host parameter:
@@ -27,7 +28,10 @@ export class WebsocketService {
             reconnectionDelayMax: 5000,
             randomizationFactor: 0.5,
             timeout: this.confService.SERVER_TIMEOUT,
-            path: pathStr
+            path: pathStr,
+            query: {
+                user: user.username
+            }
         });
 
         this.socket.on('connect', (socket) => {

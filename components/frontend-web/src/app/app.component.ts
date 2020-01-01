@@ -6,6 +6,9 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { UserDataService } from './providers/user-data.service';
 import { UserSessionState } from './models/usersessionstate';
+import { ConfigService } from './providers/config.service';
+import { HttpClient } from '@angular/common/http';
+import { retry, catchError, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +27,9 @@ export class AppComponent implements OnInit {
     private events: Events,
     private router: Router,
     private menu: MenuController,
-    private userDataService: UserDataService
+    private userDataService: UserDataService,
+    private confService: ConfigService,
+    private http: HttpClient
   ) {
     this.initializeApp();
     this.registerEventSubscribers();
@@ -46,6 +51,22 @@ export class AppComponent implements OnInit {
     this.userState = await this.userDataService.getUser();
   }
 
+  async serverSideLogout(user: UserSessionState) {
+    if (user) {
+      const url = this.confService.WEB_PROVIDER_API
+      + '/events/' + user.currentEventID + '/user/logout';
+      const body = { user };
+
+      console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
+      return this.http.post(url, body)
+          .pipe(
+          timeout(this.confService.SERVER_TIMEOUT),
+          retry(1)
+          );
+    }
+  }
+
+
   registerEventSubscribers() {
     console.debug('registerEventSubscribers');
 
@@ -64,6 +85,8 @@ export class AppComponent implements OnInit {
         redirectUrl = 'ui/event/' + this.userState.currentEventID;
       }
 
+      this.serverSideLogout(this.userState);
+
       this.userState = new UserSessionState();
       this.userDataService.updateUser(this.userState);
       this.router.navigate([redirectUrl]);
@@ -75,6 +98,7 @@ export class AppComponent implements OnInit {
     });
 
   }
+
 
   logout() {
     this.events.publish('user:logout');

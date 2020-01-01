@@ -439,7 +439,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID);
+        this.websocketService.init(this.currentEvent.eventID, this.userState);
       }
     }, 100);
 
@@ -462,7 +462,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const eventID = this.userState.currentEventID;
 
     // Connect websocket
-    this.websocketService.init(eventID);
+    this.websocketService.init(eventID, this.userState);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');

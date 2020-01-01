@@ -306,7 +306,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID);
+        this.websocketService.init(this.currentEvent.eventID, this.userState);
       }
     }, 100);
 
@@ -339,7 +339,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
 
     // Connect websocket
-    this.websocketService.init(eventID);
+    this.websocketService.init(eventID, this.userState);
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');

@@ -3,12 +3,10 @@ import { Track } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { query } from '@angular/core/src/render3';
 import { ConfigService } from './config.service';
 import { retry, catchError, timeout } from 'rxjs/operators';
 import { MusicEvent } from '../models/music-event';
 import { UserSessionState } from '../models/usersessionstate';
-import { userInfo } from 'os';
 
 @Injectable({
     providedIn: 'root'

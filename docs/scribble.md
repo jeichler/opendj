@@ -140,6 +140,8 @@ curl -X DELETE http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0
 # Provide Track Feedback:
 curl -d '{"old":"", "new":"L"}' -H "Content-Type: application/json" -X POST  http://localhost:8082/api/service-playlist/v1/events/demo/playlists/0/tracks/spotify%3A6u7jPi22kF8CTQ3rb9DHE7/feedback
 
+# Login
+curl -d '{"userState": {"username":"Daniel"}}' -H "Content-Type: application/json" -X POST  http://localhost:8083/api/service-web/v1/events/demo/user/login
 
 
 # Cleanup:

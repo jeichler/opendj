@@ -16,7 +16,7 @@
 
 .hor-col-left {
     max-height: 95vh;
-    overflow-y: visible;
+    overflow-y: scroll;
     overflow-x: hidden;
 }
 
@@ -38,7 +38,7 @@
     --ion-grid-columns: 12;
     //    --ion-grid-padding: 0px;
     //--ion-grid-column-padding: 0px;
-    overflow-y: visible;
+    overflow-y: scroll;
     overflow-x: hidden;
     max-height: 85vh;
 }

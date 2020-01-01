@@ -214,6 +214,10 @@ export class EventViewPage implements OnInit, OnDestroy {
 
     // Check if user did login:
     this.userState = await this.userDataService.getUser();
+    if (!this.userState.username) {
+      this.userState.username = 'AnonEventView';
+    }
+
     if (this.userState && this.userState.isLoggedIn && this.userState.currentEventID) {
       console.debug('EventID from user');
       eventID = this.userState.currentEventID;
@@ -285,7 +289,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.websocketService.isConnected) {
         console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID);
+        this.websocketService.init(this.currentEvent.eventID, this.userState);
       }
     }, 100);
 
@@ -314,7 +318,7 @@ export class EventViewPage implements OnInit, OnDestroy {
       await this.refresh(null);
 
       // Connect websocket
-      this.websocketService.init(this.currentEvent.eventID);
+      this.websocketService.init(this.currentEvent.eventID, this.userState);
 
       let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
         console.debug('received playlist update via websocket');

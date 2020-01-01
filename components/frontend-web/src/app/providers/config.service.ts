@@ -1,7 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { of, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 
 @Injectable({
@@ -16,6 +14,7 @@ export class ConfigService {
     websocketPath;
     SPOTIFY_PROVIDER_API;
     PLAYLIST_PROVIDER_API;
+    WEB_PROVIDER_API;
     SERVER_TIMEOUT = 1000;
 
     constructor(public http: HttpClient) {}
@@ -31,6 +30,7 @@ export class ConfigService {
         this.playlistMaxSize = data.playlistMaxSize;
         this.websocketHost = data.websocketHost;
         this.websocketPath = data.websocketPath;
+        this.WEB_PROVIDER_API = data.WEB_PROVIDER_API;
         this.SPOTIFY_PROVIDER_API = data.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = data.PLAYLIST_PROVIDER_API;
         this.SERVER_TIMEOUT = data.SERVER_TIMEOUT;

@@ -1330,7 +1330,6 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function
 });
 
 // Provide Track Feedback:
-// Reorder // move Track:
 router.post('/events/:eventID/playlists/:listID/tracks/:track/feedback', async function(req, res) {
     log.trace("begin provideTrackFeedback eventId=%s, listId=%s, track=%s", req.params.eventID, req.params.listID, req.params.track);
     log.trace("body=%s", JSON.stringify(req.body));

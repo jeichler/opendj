@@ -6,6 +6,7 @@ const http = require('http').createServer(app);
 const router = new express.Router();
 const cors = require('cors');
 const io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket' });
+const eventActivityClient = require('./EventActivityClient');
 const port = process.env.PORT || 3000;
 const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
 
@@ -14,6 +15,7 @@ const log = log4js.getLogger();
 log.level = process.env.LOG_LEVEL || "trace";
 app.use(cors());
 app.use(compression())
+app.use(express.json());
 app.use("/api/service-web/v1", router);
 
 var readyState = {
@@ -281,8 +283,13 @@ async function onRefreshPlaylist(socket) {
 }
 
 function onDisconnect(socket) {
-    // Not really something to do for us:
-    log.debug('socket %s disconnected from event %s', socket.id, getEventIDFromSocketNamespace(socket));
+    const eventID = getEventIDFromSocketNamespace(socket);
+    const user = socket.handshake.query.user;
+    if (eventID) {
+        log.debug('user %s disconnected to event %s with socket %s', user, eventID, socket.id);
+        eventActivityClient.publishActivity(
+            'USER_DISCONNECT', eventID, { user: user }, '' + user + ' disconnected');
+    }
 }
 
 
@@ -290,9 +297,10 @@ async function onWebsocketConnection(socket) {
     log.trace("begin onWebsocketConnection socket.id=%s", socket.id);
 
     const eventID = getEventIDFromSocketNamespace(socket);
+    const user = socket.handshake.query.user;
 
     if (eventID) {
-        log.debug('socket %s connected to event %s', socket.id, eventID);
+        log.debug('user %s connected to event %s with socket %s', user, eventID, socket.id);
 
         log.debug("Register callbacks");
         socket.on('refresh-event', function() {
@@ -308,7 +316,6 @@ async function onWebsocketConnection(socket) {
 
         try {
             // Send Welcome Package:
-            let eventID = getEventIDFromSocketNamespace(socket);
             let event = await getEventForEventID(eventID);
             if (event) {
                 emitEvent(socket, event);
@@ -318,6 +325,10 @@ async function onWebsocketConnection(socket) {
                 } else {
                     log.warn("onWebsocketConnection: no active playlist with ID %s for event %s in grid", event.activePlaylist, eventID);
                 }
+
+                eventActivityClient.publishActivity(
+                    'USER_CONNECT', eventID, { user: user }, '' + user + ' connected');
+
             } else {
                 log.warn("onWebsocketConnection: no event with ID %s in grid", eventID);
             }
@@ -352,7 +363,51 @@ io.of("/event/0")
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
 
+// ------
+// Login:
+router.post('/events/:eventID/user/login', async function(req, res) {
+    log.trace("begin login eventId=%s", req.params.eventID);
+    log.trace("body=%s", JSON.stringify(req.body));
+    log.trace("headers=%s", JSON.stringify(req.headers));
 
+    try {
+        let eventID = req.params.eventID;
+        let userState = req.body.userState;
+        let data = {
+            fromClient: req.body,
+            requestHeaders: req.headers,
+            connectionSrcIP: req.connection.remoteAddress
+        }
+        eventActivityClient.publishActivity(
+            'USER_LOGIN', eventID, data, 'Welcome ' + userState.username);
+        res.status(200).send();
+    } catch (error) {
+        log.debug(error);
+        res.status(406).send(JSON.stringify(error));
+    }
+});
+
+// ------
+// Logout:
+router.post('/events/:eventID/user/logout', async function(req, res) {
+    log.trace("begin logout eventId=%s", req.params.eventID);
+    log.trace("body=%s", JSON.stringify(req.body));
+
+    try {
+        let eventID = req.params.eventID;
+        let userState = req.body.userState;
+        eventActivityClient.publishActivity(
+            'USER_LOGOUT', eventID, { userState: userState }, 'Goodbye ' + userState.username);
+        res.status(200).send();
+    } catch (error) {
+        log.debug(error);
+        res.status(406).send(JSON.stringify(error));
+    }
+});
+
+
+// -----------------------
+// Ready and Health Check:
 async function readyAndHealthCheck(req, res) {
     log.trace("begin readyAndHealthCheck");
     // Default: not ready:

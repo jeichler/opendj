@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Events, ModalController, ToastController, AlertController, PopoverController } from '@ionic/angular';
+import { Events, ModalController, ToastController, AlertController, PopoverController, Platform } from '@ionic/angular';
 import { UserDataService } from '../../providers/user-data.service';
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
@@ -8,6 +8,9 @@ import { UserSessionState } from 'src/app/models/usersessionstate';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import { UsernameGeneratorService } from 'src/app/providers/username-generator.service';
+import { HttpClient } from '@angular/common/http';
+import { ConfigService } from 'src/app/providers/config.service';
+import { retry, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'event-login',
@@ -49,8 +52,11 @@ export class EventLoginPage implements OnDestroy, OnInit {
   }
 
   static login(component, event: MusicEvent, ctx: string, username: string, password: string) {
+    let userState = null;
+
     if (ctx === 'user') {
-      component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
+      userState = EventLoginPage.getSessionStateForContext(ctx, event, username);
+      component.events.publish('sessionState:modified', userState);
       component.router.navigate([`ui/playlist-user`]);
       component.presentToast('You have successfully joined this Event! Start contributing!');
       if (component.dismiss) {
@@ -60,7 +66,8 @@ export class EventLoginPage implements OnDestroy, OnInit {
 
     if (ctx === 'owner') {
       if (event.passwordOwner === password && event.owner === username) {
-        component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
+        userState = EventLoginPage.getSessionStateForContext(ctx, event, username);
+        component.events.publish('sessionState:modified', userState);
         component.router.navigate(['ui/event-edit']);
         component.presentToast('You have successfully logged in as Event Owner');
         if (component.dismiss) {
@@ -73,7 +80,8 @@ export class EventLoginPage implements OnDestroy, OnInit {
 
     if (ctx === 'curator' ) {
       if (event.passwordCurator === password) {
-        component.events.publish('sessionState:modified', EventLoginPage.getSessionStateForContext(ctx, event, username));
+        userState = EventLoginPage.getSessionStateForContext(ctx, event, username);
+        component.events.publish('sessionState:modified', userState);
         component.router.navigate([`ui/playlist-curator`]);
         component.presentToast('You have successfully joined this Event as Curator. Rock it!!');
         if (component.dismiss) {
@@ -83,7 +91,36 @@ export class EventLoginPage implements OnDestroy, OnInit {
         component.presentToast('Please check your credentials');
       }
     }
+
+    return userState;
   }
+
+  static async serverSideLogin(user: UserSessionState, event: MusicEvent, confService: ConfigService, platform: Platform, http: HttpClient) {
+    if (user) {
+      const url = confService.WEB_PROVIDER_API
+      + '/events/' + event.eventID + '/user/login';
+
+      const body = {
+        userState: user,
+        platform: {
+          platforms: platform.platforms(),
+          width: platform.width(),
+          height: platform.height(),
+          url: platform.url()
+        }
+
+       };
+
+      console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
+      return http.post(url, body)
+          .pipe(
+          timeout(confService.SERVER_TIMEOUT),
+          retry(1)
+          );
+    }
+  }
+
+
 
 
   constructor(
@@ -98,6 +135,9 @@ export class EventLoginPage implements OnDestroy, OnInit {
     public alertController: AlertController,
     public popOverCtrl: PopoverController,
     public formBuilder: FormBuilder,
+    public http: HttpClient,
+    public confService: ConfigService,
+    public platform: Platform
   ) {
     this.navigationSubscription = this.router.events.subscribe((e: any) => {
       if (e instanceof NavigationEnd) {
@@ -162,7 +202,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
           break;
 
           default:
-            throw new Error('Unexpected data from more options popover dismis:' + info.data);
+            throw new Error('Unexpected data from more options popover dismiss:' + info.data);
         }
       }
     });
@@ -203,6 +243,22 @@ export class EventLoginPage implements OnDestroy, OnInit {
   }
 
 
+  async serverSideLogout(user: UserSessionState) {
+    if (user) {
+      const url = this.confService.WEB_PROVIDER_API
+      + '/events/' + this.event.eventID + '/user/logout';
+      const body = { user };
+
+      console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
+      return this.http.post(url, body)
+          .pipe(
+          timeout(this.confService.SERVER_TIMEOUT),
+          retry(1)
+          );
+    }
+  }
+
+
   formatDate(date) {
     return moment(date).format('DD.MM.YYYY | HH:MM');
   }
@@ -214,13 +270,17 @@ export class EventLoginPage implements OnDestroy, OnInit {
       if (! this.loginForm.value.username) {
         this.generateUsername();
       }
-      EventLoginPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
+      const user = EventLoginPage.login(this, this.event, 'user', this.loginForm.value.username, this.loginForm.value.password);
+      if (user) {
+        EventLoginPage.serverSideLogin(user, this.event, this.confService, this.platform, this.http);
+      }
     }
   }
 
 
   logout() {
     this.events.publish('user:logout');
+    this.serverSideLogout(this.userState);
   }
 
   clearNavSubscription() {
@@ -342,13 +402,16 @@ export class LoginModalComponent implements OnInit {
 
 
   constructor(
-    public modalController: ModalController,
-    public feService: FEService,
-    public usergenerator: UsernameGeneratorService,
-    public formBuilder: FormBuilder,
+    private modalController: ModalController,
+    private feService: FEService,
+    private usergenerator: UsernameGeneratorService,
+    private formBuilder: FormBuilder,
     private events: Events,
     private router: Router,
-    public toastController: ToastController,
+    private toastController: ToastController,
+    private http: HttpClient,
+    private confService: ConfigService,
+    private platform: Platform
   ) {
   }
 
@@ -380,7 +443,11 @@ export class LoginModalComponent implements OnInit {
   join() {
     console.debug('loginModal#join...');
     if (this.loginForm.valid) {
-      EventLoginPage.login(this, this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
+
+      const user = EventLoginPage.login(this, this.currentEvent, this.context, this.loginForm.value.username, this.loginForm.value.password);
+      if (user) {
+        EventLoginPage.serverSideLogin(user, this.currentEvent, this.confService, this.platform, this.http);
+      }
     }
   }
 
