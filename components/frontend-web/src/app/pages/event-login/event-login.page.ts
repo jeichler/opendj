@@ -244,10 +244,10 @@ export class EventLoginPage implements OnDestroy, OnInit {
 
 
   serverSideLogout(user: UserSessionState) {
-    if (user) {
+    if (user && this.event && this.event.eventID) {
       const url = this.confService.WEB_PROVIDER_API
       + '/events/' + this.event.eventID + '/user/logout';
-      const body = { user };
+      const body = { userState: user };
 
       console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
       this.http.post(url, body)
