@@ -95,7 +95,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
     return userState;
   }
 
-  static async serverSideLogin(user: UserSessionState, event: MusicEvent, confService: ConfigService, platform: Platform, http: HttpClient) {
+  static serverSideLogin(user: UserSessionState, event: MusicEvent, confService: ConfigService, platform: Platform, http: HttpClient) {
     if (user) {
       const url = confService.WEB_PROVIDER_API
       + '/events/' + event.eventID + '/user/login';
@@ -112,11 +112,11 @@ export class EventLoginPage implements OnDestroy, OnInit {
        };
 
       console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
-      return http.post(url, body)
+      http.post(url, body)
           .pipe(
           timeout(confService.SERVER_TIMEOUT),
           retry(1)
-          );
+          ).subscribe();
     }
   }
 
@@ -243,18 +243,18 @@ export class EventLoginPage implements OnDestroy, OnInit {
   }
 
 
-  async serverSideLogout(user: UserSessionState) {
+  serverSideLogout(user: UserSessionState) {
     if (user) {
       const url = this.confService.WEB_PROVIDER_API
       + '/events/' + this.event.eventID + '/user/logout';
       const body = { user };
 
       console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
-      return this.http.post(url, body)
+      this.http.post(url, body)
           .pipe(
           timeout(this.confService.SERVER_TIMEOUT),
           retry(1)
-          );
+          ).subscribe();
     }
   }
 

@@ -51,18 +51,18 @@ export class AppComponent implements OnInit {
     this.userState = await this.userDataService.getUser();
   }
 
-  async serverSideLogout(user: UserSessionState) {
+  serverSideLogout(user: UserSessionState) {
     if (user) {
       const url = this.confService.WEB_PROVIDER_API
       + '/events/' + user.currentEventID + '/user/logout';
       const body = { user };
 
       console.debug('before post url=%s, body=%s', url, JSON.stringify(body));
-      return this.http.post(url, body)
+      this.http.post(url, body)
           .pipe(
           timeout(this.confService.SERVER_TIMEOUT),
           retry(1)
-          );
+          ).subscribe();
     }
   }
 
