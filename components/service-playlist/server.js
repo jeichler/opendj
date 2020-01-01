@@ -1213,7 +1213,7 @@ router.get('/events/:eventID/playlists/:listID/pause', async function(req, res) 
     let playlist = await getPlaylistForRequest(req);
     let user = req.query.user;
 
-    pause(event, playlist, user).then(function() {
+    pause(event, playlist, null, user).then(function() {
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
     }).catch(function(err) {
