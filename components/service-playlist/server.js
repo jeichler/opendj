@@ -323,6 +323,9 @@ async function createAutofillPlayList(eventID) {
         track.added_by = "OpenDJ";
         result.push(track);
     }
+
+    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', eventID, { numTracks: emergencyTrackIDs.length }, 'OpenDJ added ' + emergencyTrackIDs.length + ' tracks')
+
     log.trace("createAutofillPlayList end eventID=%s len=%s", eventID, result.length);
     return result;
 }
@@ -854,11 +857,11 @@ async function autofillPlaylistIfNecessary(event, playlist) {
 
 async function checkPlaylist(event, playlist) {
     log.trace("checkPlaylist begin");
-    let stateChanged = await autofillPlaylistIfNecessary(event, playlist);
+    let stateChanged = await autofillPlaylistIfNecessary(event, playlist, 'OpenDJ');
 
     if (playlist.isPlaying && !isTrackPlaying(event, playlist)) {
         log.trace("playlist is playing but no track is playing - skipping to next track");
-        await skip(event, playlist);
+        await skip(event, playlist, 'OpenDJ');
         stateChanged = true;
     } else {
         log.trace("playlist is not playing, or track is playing - nothing to do for us");
@@ -1192,7 +1195,8 @@ router.get('/events/:eventID/playlists/:listID/play', async function(req, res) {
 
     let event = await getEventForRequest(req);
     let playlist = await getPlaylistForRequest(req);
-    play(event, playlist)
+    let user = req.query.user;
+    play(event, playlist, user)
         .then(function() {
             firePlaylistChangedEvent(event.eventID, playlist);
             res.status(200).send(playlist);
@@ -1207,7 +1211,9 @@ router.get('/events/:eventID/playlists/:listID/pause', async function(req, res) 
     log.trace("begin PAUSE playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     let event = await getEventForRequest(req);
     let playlist = await getPlaylistForRequest(req);
-    pause(event, playlist).then(function() {
+    let user = req.query.user;
+
+    pause(event, playlist, user).then(function() {
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
     }).catch(function(err) {
@@ -1221,7 +1227,9 @@ router.get('/events/:eventID/playlists/:listID/next', async function(req, res) {
     log.trace("begin NEXT playlist eventId=%s, listId=%s", req.params.eventID, req.params.listID);
     let event = await getEventForRequest(req);
     let playlist = await getPlaylistForRequest(req);
-    skip(event, playlist).then(function() {
+    let user = req.query.user;
+
+    skip(event, playlist, user).then(function() {
         firePlaylistChangedEvent(event.eventID, playlist);
         res.status(200).send(playlist);
     }).catch(function(err) {
