@@ -313,20 +313,24 @@ async function getTrackDetailsForTrackID(eventID, trackID) {
     return result;
 }
 
-async function createAutofillPlayList(eventID) {
-    log.trace("createAutofillPlayList begin eventID=%s", eventID);
+async function createAutofillPlayList(event) {
+    log.trace("createAutofillPlayList begin eventID=%s", event.eventID);
     let result = [];
-    log.debug("AUTOFILL event=%s", eventID);
+    log.debug("AUTOFILL event=%s", event.eventID);
 
     for (let trackID of emergencyTrackIDs) {
-        let track = await getTrackDetailsForTrackID(eventID, trackID);
+        if (result.length >= event.maxTracksInPlaylist) {
+            break;
+        }
+
+        let track = await getTrackDetailsForTrackID(event.eventID, trackID);
         track.added_by = "OpenDJ";
         result.push(track);
     }
 
-    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', eventID, { numTracks: emergencyTrackIDs.length }, 'OpenDJ added ' + emergencyTrackIDs.length + ' tracks')
+    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', event.eventID, { numTracks: result.length }, 'OpenDJ added ' + result.length + ' tracks')
 
-    log.trace("createAutofillPlayList end eventID=%s len=%s", eventID, result.length);
+    log.trace("createAutofillPlayList end eventID=%s len=%s", event.eventID, result.length);
     return result;
 }
 
@@ -843,7 +847,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
         log.trace("playlist is empty");
         if (event.demoAutoFillEmptyPlaylist) {
             log.debug("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
-            playlist.nextTracks = await createAutofillPlayList(event.eventID);
+            playlist.nextTracks = await createAutofillPlayList(event);
             stateChanged = true;
             log.debug("AutoFilling Playlist %s of event %s....DONE", playlist.playlistID, event.eventID);
         }
