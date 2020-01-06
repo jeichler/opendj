@@ -90,56 +90,63 @@
                 <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist.isPlaying"></app-current-track>
 
                 <ion-grid class="hor-track-grid" id="track-grid">
-                    <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement" id="track-{{i}}">
-
-                        <!-- Album Cover-->
-                        <ion-col *ngIf="platform.width()>500" size="auto" class="ion-align-self-center">
-                            <a href="{{item.image_url_ref}}" target="_blank">
-                                <img class="track-cover-pic" src="{{item.image_url}}">
-                            </a>
-                        </ion-col>
-
-                        <!-- Track Details: 3 rows: Name, Artist, Contributor/Duration/ETA -->
-                        <ion-col class="ion-align-self-center ion-text-nowrap">
-                            <div class="track-header ion-text-nowrap">{{item.name}}</div>
-                            <div class="track-details ion-text-nowrap">{{item.artist}}</div>
-                            <div class="track-details ion-text-nowrap">{{item.durationStr}} eta {{item.eta}} - {{item.added_by}}</div>
-                        </ion-col>
-
-                        <!-- Track Meta1: 3 rows: genre, year, bpm -->
-                        <ion-col *ngIf="platform.width()>=1080" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-genre-col">
-                            <div class="track-meta">{{item.genre}}</div>
-                            <div class="track-meta">{{item.year}}</div>
-                            <div class="track-meta">{{item.bpm}} bpm</div>
-                        </ion-col>
-
-                        <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->
-                        <ion-col *ngIf="platform.width()>=1250" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-meta-col">
-                            <ion-progress-bar value="{{item.danceability / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-danceability"></ion-progress-bar>
-                            <ion-progress-bar value="{{item.energy / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-energy"></ion-progress-bar>
-                            <ion-progress-bar value="{{item.happiness / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-happiness"></ion-progress-bar>
-                        </ion-col>
-
-                        <!-- Track Feedback: 0-2 rows: Like/Hate Counters. Num rows depends on what is enabled, If none, column is dropped -->
-                        <ion-col *ngIf="platform.width()>=850 && (currentEvent.enableTrackLiking || currentEvent.enableTrackHating)" size="auto" class="ion-text-nowrap ion-align-self-center workaroundTransparency track-feedback-col">
-                            <div *ngIf="currentEvent.enableTrackLiking" class="track-meta">{{currentEvent.emojiTrackLike}} {{item.numLikes ? item.numLikes : 0}}<br/></div>
-
-                            <div *ngIf="currentEvent.enableTrackHating" class="track-meta">{{currentEvent.emojiTrackHate}} {{item.numHates ? item.numHates : 0}}<br/></div>
-
-                        </ion-col>
 
 
-                        <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
-                        <ion-col *ngIf="platform.width()>=768" size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
-                            <a href="{{item.previewViaApp}} " target="_blank ">
-                                <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" class="track-provider-logo">
-                                </ion-img>
-                            </a>
-                        </ion-col>
+                    <ion-virtual-scroll [items]="currentPlaylist.nextTracks" virtualTrackBy="item.id" approxItemHeight="63px">
+                        <!--
+                            <ion-row nowrap *virtualItem="let item of visibleTracks;  index as i; trackBy: trackElement" id="track-{{i}}">
+-->
+                        <ion-row nowrap *virtualItem="let item" id="track-{{item.id}}">
+                            <!-- Album Cover-->
+                            <ion-col *ngIf="platform.width()>500" size="auto" class="ion-align-self-center">
+                                <a href="{{item.image_url_ref}}" target="_blank">
+                                    <img class="track-cover-pic" src="{{item.image_url}}">
+                                </a>
+                            </ion-col>
 
-                    </ion-row>
+                            <!-- Track Details: 3 rows: Name, Artist, Contributor/Duration/ETA -->
+                            <ion-col class="ion-align-self-center ion-text-nowrap">
+                                <div class="track-header ion-text-nowrap">{{item.name}}</div>
+                                <div class="track-details ion-text-nowrap">{{item.artist}}</div>
+                                <div class="track-details ion-text-nowrap">{{item.durationStr}} eta {{item.eta}} - {{item.added_by}}</div>
+                            </ion-col>
 
+                            <!-- Track Meta1: 3 rows: genre, year, bpm -->
+                            <ion-col *ngIf="platform.width()>=1080" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-genre-col">
+                                <div class="track-meta">{{item.genre}}</div>
+                                <div class="track-meta">{{item.year}}</div>
+                                <div class="track-meta">{{item.bpm}} bpm</div>
+                            </ion-col>
+
+                            <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->
+                            <ion-col *ngIf="platform.width()>=1250" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-meta-col">
+                                <ion-progress-bar value="{{item.danceability / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-danceability"></ion-progress-bar>
+                                <ion-progress-bar value="{{item.energy / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-energy"></ion-progress-bar>
+                                <ion-progress-bar value="{{item.happiness / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-happiness"></ion-progress-bar>
+                            </ion-col>
+
+                            <!-- Track Feedback: 0-2 rows: Like/Hate Counters. Num rows depends on what is enabled, If none, column is dropped -->
+                            <ion-col *ngIf="platform.width()>=850 && (currentEvent.enableTrackLiking || currentEvent.enableTrackHating)" size="auto" class="ion-text-nowrap ion-align-self-center workaroundTransparency track-feedback-col">
+                                <div *ngIf="currentEvent.enableTrackLiking" class="track-meta">{{currentEvent.emojiTrackLike}} {{item.numLikes ? item.numLikes : 0}}<br/></div>
+
+                                <div *ngIf="currentEvent.enableTrackHating" class="track-meta">{{currentEvent.emojiTrackHate}} {{item.numHates ? item.numHates : 0}}<br/></div>
+
+                            </ion-col>
+
+
+                            <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
+                            <ion-col *ngIf="platform.width()>=768" size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
+                                <a href="{{item.previewViaApp}} " target="_blank ">
+                                    <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" class="track-provider-logo">
+                                    </ion-img>
+                                </a>
+                            </ion-col>
+
+                        </ion-row>
+                    </ion-virtual-scroll>
                 </ion-grid>
+
+
 
             </ion-col>
 

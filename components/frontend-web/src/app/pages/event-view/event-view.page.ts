@@ -31,6 +31,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   isConnected = false;
   intervalHandle = null;
   qrImageSrc = null;
+  visibleTracks: Track[] = [];
 
   tooltipOptions = {
     placement: 'left',
@@ -68,20 +69,6 @@ export class EventViewPage implements OnInit, OnDestroy {
     return d.substring(0, 5);
   }
 
-  isVisible(el): boolean {
-    const top = el.getBoundingClientRect().top;
-    let rect;
-    el = el.parentNode;
-    do {
-        rect = el.getBoundingClientRect();
-        if (top <= rect.bottom === false) {
-            return false;
-        }
-        el = el.parentNode;
-    } while (el !== document.body);
-    // Check its within the document viewport
-    return top <= document.documentElement.clientHeight;
-  }
   showMenu() {
     console.debug('showMenu()');
     this.menu.open('app-menu');
@@ -89,7 +76,6 @@ export class EventViewPage implements OnInit, OnDestroy {
 
   autoScroll() {
 
-/* Implementation by scroll per track: */
     if (this.currentEvent && this.currentEvent.eventViewAutoScrollEnable && this.currentPlaylist && this.currentPlaylist.nextTracks) {
       console.debug('platform width = ', this.platform.width());
       console.debug('autoScroll: pos=' +  this.autoScrollPos + 'dir=' + this.autoScrollDirection + 'speed=' + this.currentEvent.eventViewAutoScrollSpeed);
@@ -110,19 +96,27 @@ export class EventViewPage implements OnInit, OnDestroy {
         trackRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
     }
+  }
 
-  /* Implementation to scroll pixel wise: */
-  /* Problem: isVisible not working correctly
-     const lastTrack = document.getElementById('track-20');
-     const firstTrack = document.getElementById('track-0');
-
-     if (this.isVisible(firstTrack)) {
-      this.autoScrollDirection = 1;
-    } else if (this.isVisible(lastTrack)) {
-      this.autoScrollDirection = -1;
+  addTrackToVisible() {
+    let numTracksAvailToAdd = this.currentPlaylist.nextTracks.length - this.visibleTracks.length;
+    const offset = this.visibleTracks.length;
+    if (numTracksAvailToAdd > 5) {
+      numTracksAvailToAdd = 5;
     }
-     document.getElementById('track-grid').scrollBy(0, this.autoScrollDirection);
-*/
+
+    for (let i = 0; i < numTracksAvailToAdd; i++) {
+      this.visibleTracks.push(this.currentPlaylist.nextTracks[offset + i]);
+
+    }
+
+    return numTracksAvailToAdd > 0;
+  }
+
+  loadMoreData(event) {
+    const more = this.addTrackToVisible();
+    event.target.complete();
+    event.target.disabled = !more;
   }
 
   computeETAForTracks() {
@@ -280,6 +274,10 @@ export class EventViewPage implements OnInit, OnDestroy {
     this.computeETAForTracks();
     if (this.currentEvent && this.currentEvent.eventViewAutoScrollTopOnNext) {
       this.autoScrollPos = 0;
+    }
+    if (this.visibleTracks.length === 0 ) {
+      this.addTrackToVisible();
+
     }
   }
 
