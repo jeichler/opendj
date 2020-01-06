@@ -28,7 +28,7 @@
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
             kafka:
-              version: 2.1.1
+              version: 2.3.0
 # WTF - Why is this not working? k8s is expected int, but cast does not work???
 #              replicas: "{{ ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS | int }}"
               replicas: 2
@@ -40,7 +40,7 @@
                 offsets.topic.replication.factor: 2
                 transaction.state.log.replication.factor: 1
                 transaction.state.log.min.isr: 1
-                log.message.format.version: "2.1"
+                log.message.format.version: "2.3"
               storage:
                 type: persistent-claim
                 size: 1Gi

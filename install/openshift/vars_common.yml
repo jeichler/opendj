@@ -16,12 +16,12 @@ common:
     CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-{{STAGE}}"
 
   BACKEND_EVENTSTORE:
-    DEPLOY: false
+    DEPLOY: true
     KAFKA:
       USE: false
       OPERATOR_AVAILABLE: true
       TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
-      NUM_BROKERS: 1
+      NUM_BROKERS: 2
       NUM_ZOOKEPERS: 1
       NUM_PARTITIONS: 3
       
