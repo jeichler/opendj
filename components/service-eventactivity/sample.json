@@ -1,0 +1,45 @@
+{
+    "activity": "USER_LOGIN",
+    "eventID": "demo",
+    "display": "Welcome AnonPython87",
+    "timestamp": "",
+    "data": {
+        "fromClient": {
+            "userState": {
+                "username": "AnonPython87",
+                "isLoggedIn": true,
+                "isEventOwner": false,
+                "isCurator": false,
+                "currentEventID": "demo",
+                "trackFeedback": null,
+                "loginContext": "user"
+            },
+            "platform": {
+                "platforms": [
+                    "desktop"
+                ],
+                "width": 1280,
+                "height": 1306,
+                "url": "http://dev.opendj.io/ui/event/demo"
+            }
+        },
+        "requestHeaders": {
+            "content-length": "272",
+            "accept": "application/json , text/plain, */*",
+            "origin": "http://dev.opendj.io",
+            "user-agent": "Mozilla/5.0  (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
+            "content-type": "application/json",
+            "referer": "http://dev.opendj.io/ui/event/demo",
+            "accept-encoding": "gzip , deflate",
+            "accept-language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cookie": "ff18cc90d083a36f28b1b36bedb38bb6=88efb44f741a47506746fc4b636a8369; io=pUIBK3RT1PmzwqMuAAAA; 484f3d5930908ad502b7d20fb57ed191=69739a71084e85608257a396e77cd2b9",
+            "host": "dev.opendj.io",
+            "x-forwarded-host": "dev.opendj.io",
+            "x-forwarded-port": "80",
+            "x-forwarded-proto": "http",
+            "forwarded": "for=172.16.10.1;host=dev.opendj.io;proto=http;proto-version=",
+            "x-forwarded-for": "172.16.10.1"
+        },
+        "connectionSrcIP": "::ffff:10.1.4.1"
+    }
+}

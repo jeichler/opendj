@@ -144,6 +144,9 @@ curl -d '{"old":"", "new":"L"}' -H "Content-Type: application/json" -X POST  htt
 curl -d '{"userState": {"username":"Daniel"}}' -H "Content-Type: application/json" -X POST  http://localhost:8083/api/service-web/v1/events/demo/user/login
 
 
+# EventActivity
+curl -d '{"old":"", "new":"L"}' -H "Content-Type: application/json" -X POST  http://localhost:8080/api/service-eventactivity/v1/events/demo/activity -v
+
 # Cleanup:
 oc adm prune builds --confirm
 oc adm prune deployments --confirm
@@ -179,3 +182,10 @@ git push origin 0.4.1
 
 
  cd /opt/datagrid/standalone/configuration/user
+
+ # Build and run event activity:
+ ./mvnw compile quarkus:dev
+
+ # Debug Quarkus:
+ F1 Quarkus - Debug current Project
+
