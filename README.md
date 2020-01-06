@@ -1,7 +1,7 @@
 # OpenDJ -Apply Open Source principles to the Dance Floor! 
 
 ## Vision
-<img src="docs/img/Logo_OpenDJ_256.png" width="25%" align="right">
+<img src="opendj/opendj-docs/docs/img/Logo_OpenDJ_256.png" width="25%" align="right">
 Have you ever been at an event and disliked the music being played?  
 
 The vision of OpenDJ is to solve this problem by applying open source principles to the music playlist of an event:  
