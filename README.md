@@ -21,7 +21,7 @@ You can add tracks by using the blue "Add" button.
 In the demo, tracks are skipped every 20s (they are not actually being played). And if the playlist is empty, it is out-filled with some example tracks.  
 
 ## Learn more about the idea
-Read the user stories in the requirements doc [here](docs/10requirements/100requirements.md)
+Read the user stories in the requirements doc [here](opendj/opendj-docs/docs/10requirements/100requirements.md)
 
 ## Contribute
 If you like the idea and want to contribute, welcome! We always need people helping with UX Design, Architecture, Design, Coding, Testing, Coding, Documentation etc.  Please read the project charter if your are interested! 
