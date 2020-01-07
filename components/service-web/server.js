@@ -441,9 +441,6 @@ setImmediate(async function() {
             readyState.websocket = true;
         });
 
-        eventActivityClient.publishActivity(
-            'USER_LOGOUT', 'demo', { userState: 'Egal' }, 'Goodbye ');
-
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("init failed with err %s", err);
