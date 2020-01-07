@@ -38,30 +38,17 @@
 
         <ion-card *ngIf="event" style="background-color: #111;">
 
+            <img src="assets/img/Logo_OpenDJ_128.png" class="event-logo-left" />
+            <img src="assets/img/event_redhat.png" class="event-logo-right" />
 
             <ion-card-header>
-                <img src="assets/img/event_hdr.jpg" style="margin: auto; width: 160px; height: 107px " />
-                <div style="width: 100%;  position: absolute;  top: 75px; color: #fff;">
-                    <ion-card-title>{{event.name}}</ion-card-title>
-                    <ion-card-subtitle style="color: white">organized by {{event.owner}}</ion-card-subtitle>
-                </div>
+                <!--                <div style="width: 75%;  position: absolute;  top: 75px; color: #fff;">
+-->
+                <ion-card-title>{{event.name}}</ion-card-title>
+                <ion-card-subtitle style="color: white">organized by {{event.owner}}</ion-card-subtitle>
             </ion-card-header>
 
-            <ion-card-content>
-                <!--                
-                <ion-chip color="light">
-                    <ion-icon name="calendar" color="success"></ion-icon>
-                    <ion-label color="light">{{formatDate(event.eventStartsAt)}}</ion-label>
-                </ion-chip>
-                <ion-chip color="light">
-                    <ion-icon name="calendar" color="danger"></ion-icon>
-                    <ion-label color="light">{{formatDate(event.eventEndsAt)}}</ion-label>
-                </ion-chip>
-                <ion-chip color="light">
-                    <ion-icon name="people" color="light"></ion-icon>
-                    <ion-label color="light">Max {{event.maxUsers}} Users </ion-label>
-                </ion-chip>
--->
+            <ion-card-content class="event-content">
                 <p style="color: white;">
                     Welcome to OpenDJ! We would like to know who you are, please enter a name.
                     <span *ngIf="event.passwordUser !==''">

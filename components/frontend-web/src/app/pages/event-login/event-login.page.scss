@@ -48,3 +48,26 @@ ion-input {
     background-color: #222428;
     border-radius: 10px
 }
+
+.event-logo-left {
+    // margin-top: 0;
+    //    margin-left: 0;
+    //    margin-right: auto;
+    width: 80px;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+}
+
+.event-logo-right {
+    //margin-top: 0;
+    width: 80px;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    //    height: 107px
+}
+
+.event-content {
+    //    margin-top: 30px;
+}
