@@ -195,8 +195,10 @@
       spec:
         containers:
           - env:
-              - name: LOG_LEVEL
-                value: "{{ENV.SERVICE_EVENTACTIVITY.LOG_LEVEL | default('info')}}"
+              - name: quarkus_log_console_level
+                value: "{{ENV.SERVICE_EVENTACTIVITY.LOG_LEVEL | default('ALL')}}"
+              - name: "mp_messaging_outgoing_event_activity_bootstrap_servers"
+                value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST}}"
             imagePullPolicy: IfNotPresent
             name: service-eventactivity-minimal
             resources:

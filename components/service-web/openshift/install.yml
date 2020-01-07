@@ -121,7 +121,7 @@
                       - name: LOG_LEVEL
                         value: "{{ENV.SERVICE_WEB.LOG_LEVEL | default('info')}}"
                       - name: KAFKA_HOST
-                        value: "{{ENV.SERVICE_WEB.KAFKA_HOST | default('backend-eventstore-kafka-bootstrap:9092')}}"
+                        value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST | default('backend-eventstore-kafka-bootstrap:9092')}}"
                       - name: DATAGRID_URL
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                       - name: PORT
