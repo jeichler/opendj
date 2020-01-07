@@ -46,6 +46,21 @@
           - apiGroup: rbac.authorization.k8s.io
             kind: Group
             name: opendj-developer
+    - name: Create quay secret 
+      when:
+      tags: prj,quay
+      k8s:
+        state: present
+        definition:
+          kind: Secret
+          apiVersion: v1
+          metadata:
+            name: opendj-quay-secret
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          data:
+            .dockerconfigjson: "{{ENV.COMMON.QUAY_SECRET}}" 
+          type: kubernetes.io/dockerconfigjson
+
     - name: Grant access to images from other namespace
       when: not ENV.COMMON.CONTAINER_IMAGE_BUILD
       tags: prj

@@ -33,6 +33,8 @@ specific:
     REPLICAS: 2
 
   FRONTEND_WEB:
-    REPLICAS: 2
+    REPLICAS: 1
     USE_ACME_CERTS: "true"
     USE_RUNTIME_IMAGE: false
+    SERVER_TIMEOUT: "10000"
+  
