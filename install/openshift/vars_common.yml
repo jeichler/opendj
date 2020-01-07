@@ -56,6 +56,7 @@ common:
     DEPLOY: true
 
   SERVICE_EVENTACTIVITY:
+    PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
     REPLICAS: 1
 

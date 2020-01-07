@@ -134,6 +134,8 @@
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                       - name: SPOTIFY_PROVIDER_URL
                         value: "{{ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/')}}"   
+                      - name: EVENTACTIVITY_PROVIDER_URL
+                        value: "{{ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/')}}"   
                       - name: EVENT_URL
                         value: "{{ENV.COMMON.DNS_BASENAME | default('localhost:8080')}}"
                       - name: DEFAULT_AUTOFILL_EMPTY_PLAYLIST

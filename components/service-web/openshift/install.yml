@@ -120,6 +120,8 @@
                   - env:
                       - name: LOG_LEVEL
                         value: "{{ENV.SERVICE_WEB.LOG_LEVEL | default('info')}}"
+                      - name: EVENTACTIVITY_PROVIDER_URL
+                        value: "{{ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/')}}"   
                       - name: KAFKA_HOST
                         value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST | default('backend-eventstore-kafka-bootstrap:9092')}}"
                       - name: DATAGRID_URL
