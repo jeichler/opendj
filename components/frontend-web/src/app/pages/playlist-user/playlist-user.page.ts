@@ -81,6 +81,22 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     return result;
   }
 
+  isUserAboveContributionLimit() {
+    let result = false;
+    if (this.currentEvent && this.currentEvent.maxContributionsPerUser > 0 &&  this.currentPlaylist &&  this.currentPlaylist.nextTracks ) {
+      let numContributions = 0;
+      this.currentPlaylist.nextTracks.forEach(t => {
+          if (t.added_by === this.userState.username) {
+            numContributions++;
+          }
+      });
+
+      result = numContributions >= this.currentEvent.maxContributionsPerUser;
+    }
+
+    return result;
+  }
+
   date2hhmm(d): string {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
@@ -215,6 +231,12 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
   async searchAndAddTrack() {
     if (this.getAddTrackButtonColor() === 'danger') {
       this.presentToast('Sorry, this playlist has reached max size. Please try later');
+      return;
+    }
+
+    if (this.isUserAboveContributionLimit()) {
+      this.presentToast('Sorry, you are above the contribution limit of ' + this.currentEvent.maxContributionsPerUser
+      + ' tracks. Please let other users also contribute. Try later when your songs have been played.');
       return;
     }
 
