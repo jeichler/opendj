@@ -200,6 +200,12 @@
                         <ion-icon tooltip="The maximum number of users who can join this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Max contributions per User</ion-label>
+                        <ion-input name="maxContributionsPerUser" type="number" formControlName="maxContributionsPerUser" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="The maximum number of tracks a user can add to the playlist. 0 means unlimited" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
                 </ion-item-group>
 
 
@@ -327,6 +333,12 @@
                         <ion-icon tooltip="Scroll to top of list if a new track is being played." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Show Meta bars</ion-label>
+                        <ion-toggle id="eventViewShowMetaBars" color="primary" formControlName="eventViewShowMetaBars"></ion-toggle>
+                        <ion-icon tooltip="Show bars for dancebility, energy and happiness" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
 
                     <ion-item>
                         <ion-label class="ion-text-wrap">Twitter URL</ion-label>
@@ -365,6 +377,12 @@
                         <ion-label class="ion-text-wrap">Fill Empty Playlist</ion-label>
                         <ion-toggle id="demoAutoFillEmptyPlaylist" color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
                         <ion-icon tooltip="If you enable this, OpenDJ will add some tracks when the playlist is empty." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Number of Tracks to add</ion-label>
+                        <ion-input id="demoAutoFillNumTracks" type="number" formControlName="demoAutoFillNumTracks" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="Number of tracks to add - 0 means up to the max length of the list. Set to 1 to always have a track playing." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 

@@ -216,8 +216,9 @@ export class EventEditPage implements OnInit {
       passwordUser: [''],
       maxDurationInMinutes: [0, Validators.min(10)],
       maxTracksInPlaylist: [0, Validators.min(2)],
+      maxContributionsPerUser: [0],
       eventStartsAt: [new Date().toISOString(), Validators.required],
-      eventEndsAt: [{value: '', disabled: true}, Validators.nullValidator],
+      eventEndsAt: [{value: ''/*, disabled: true*/}, Validators.nullValidator],
       allowDuplicateTracks: [false],
       progressPercentageRequiredForEffectivePlaylist: [false],
       beginPlaybackAtEventStart: [false],
@@ -231,6 +232,7 @@ export class EventEditPage implements OnInit {
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],
+      demoAutoFillNumTracks: [0],
 
       eventViewEnable: [true],
       eventViewPassword: [''],
@@ -238,6 +240,7 @@ export class EventEditPage implements OnInit {
       eventViewAutoScrollSpeed: [5, Validators.min(1)],
       eventViewAutoScrollInterval: [10, Validators.min(1)],
       eventViewAutoScrollTopOnNext: [true],
+      eventViewShowMetaBars: [true],
       eventViewTwitterURL: [''],
     });
   }

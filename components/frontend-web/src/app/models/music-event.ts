@@ -11,6 +11,7 @@ export class MusicEvent {
     maxUsers: number;
     maxDurationInMinutes: number;
     maxTracksInPlaylist: number;
+    maxContributionsPerUser: number;
     eventStartsAt: string; // ISO DateTime as String
     eventEndsAt: string; // ISO DateTime as String
     allowDuplicateTracks: boolean;
@@ -26,6 +27,7 @@ export class MusicEvent {
     demoAutoskip: number;
     demoNoActualPlaying: boolean;
     demoAutoFillEmptyPlaylist: boolean;
+    demoAutoFillNumTracks: number;
     providers: Array<string>;
     activePlaylist = 0;
     playlists: [0];
@@ -37,7 +39,7 @@ export class MusicEvent {
     eventViewAutoScrollInterval: number;
     eventViewAutoScrollSpeed: number;
     eventViewAutoScrollTopOnNext: boolean;
-
+    eventViewShowMetaBars: boolean;
 
     eventViewTwitterURL: string;
 }

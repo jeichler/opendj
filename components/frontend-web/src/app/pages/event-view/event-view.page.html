@@ -119,7 +119,7 @@
                             </ion-col>
 
                             <!-- Track Meta2: 3 rows: Danceability, Engery, Happiness, as bars: -->
-                            <ion-col *ngIf="platform.width()>=1250" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-meta-col">
+                            <ion-col *ngIf="platform.width()>=1250 && currentEvent.eventViewShowMetaBars" size="auto" class="ion-align-self-center ion-text-nowrap workaroundTransparency track-meta-col">
                                 <ion-progress-bar value="{{item.danceability / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-danceability"></ion-progress-bar>
                                 <ion-progress-bar value="{{item.energy / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-energy"></ion-progress-bar>
                                 <ion-progress-bar value="{{item.happiness / 100.0}}" type="determinate" class="track-meta-bar track-meta-bar-happiness"></ion-progress-bar>
@@ -161,7 +161,7 @@
                 <ion-img *ngIf="this.qrImageSrc" [src]="this.qrImageSrc" class="hor-event-qrcode"></ion-img>
                 <ion-label class="hor-event-url">{{this.eventURLShortened}}</ion-label>
 
-                <div *ngIf="platform.width()>=1250" class="legend-div">
+                <div *ngIf="platform.width()>=1250 && currentEvent.eventViewShowMetaBars" class="legend-div">
                     <ion-label class="legend-danceability">Danceability</ion-label><br>
                     <ion-label class="legend-energy">Energy</ion-label><br>
                     <ion-label class="legend-happiness">Happiness</ion-label>
