@@ -316,19 +316,41 @@ async function getTrackDetailsForTrackID(eventID, trackID) {
 async function createAutofillPlayList(event) {
     log.trace("createAutofillPlayList begin eventID=%s", event.eventID);
     let result = [];
-    log.debug("AUTOFILL event=%s", event.eventID);
+    let mapOfTrackIDs = new Map();
 
-    for (let trackID of emergencyTrackIDs) {
-        if (result.length >= event.maxTracksInPlaylist) {
-            break;
-        }
-
-        let track = await getTrackDetailsForTrackID(event.eventID, trackID);
-        track.added_by = "OpenDJ";
-        result.push(track);
+    let numTracksToAdd = event.maxTracksInPlaylist;
+    if (event.demoAutoFillNumTracks > 0 && event.demoAutoFillNumTracks < event.maxTracksInPlaylist) {
+        numTracksToAdd = event.demoAutoFillNumTracks;
     }
 
-    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', event.eventID, { numTracks: result.length }, 'OpenDJ added ' + result.length + ' tracks')
+
+    for (let i = 0; i < numTracksToAdd; i++) {
+        // Try 10 times to pick a random ID from emergencyTrackIDs that is
+        // not already in the list:
+        let added = false;
+        let trackID = null;
+        let trackNum = 0;
+
+        for (let j = 0; j < 10; j++) {
+            trackNum = Math.floor(Math.random() * emergencyTrackIDs.length);
+            trackID = emergencyTrackIDs[trackNum];
+            if (!mapOfTrackIDs.has(trackID)) {
+                mapOfTrackIDs.set(trackID, trackID);
+                let track = await getTrackDetailsForTrackID(event.eventID, trackID);
+                track.added_by = "OpenDJ";
+                result.push(track);
+                added = true;
+                break; // inner loop
+            }
+        }
+
+        if (!added) {
+            log.warn("createAutofillPlayList(): could not add random tracks with 10 tries, maybe we have not enough tracks in emergency list?!");
+            break; // Outer Loop.
+        }
+    }
+
+    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', event.eventID, { numTracks: result.length }, 'OpenDJ added ' + result.length + ' track' + (result.length > 1 ? 's' : ''))
 
     log.trace("createAutofillPlayList end eventID=%s len=%s", event.eventID, result.length);
     return result;
@@ -1558,7 +1580,10 @@ setImmediate(async function() {
                 log.debug("Initial check of testEvent");
                 await checkEvent(testEvent);
             }
+
         }
+
+
     } catch (err) {
         log.fatal("Init failed, something is seriously wrong. Will terminate.", err);
         process.exit(42);
