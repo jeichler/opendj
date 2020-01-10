@@ -245,6 +245,8 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       for (let i = 0; i < playlist.nextTracks.length; i++) {
         const track = playlist.nextTracks[i];
         track.eta = this.date2hhmm(new Date(ts));
+        track.pos = i;
+
         ts += track.duration_ms;
 
         track.durationStr = new Date(track.duration_ms).toISOString().slice(14, 19);

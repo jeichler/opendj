@@ -37,6 +37,7 @@ export class Track {
     // tslint:disable-next-line:variable-name
     progress_ms: number;
     isEmptyTrack: false;
+    pos: number;
 }
 
 export class GenreMap {

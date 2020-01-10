@@ -112,6 +112,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < playlist.nextTracks.length; i++) {
           playlist.nextTracks[i].eta = this.date2hhmm(new Date(ts));
+          playlist.nextTracks[i].pos = i;
           ts += playlist.nextTracks[i].duration_ms;
       }
     }
