@@ -16,7 +16,7 @@
 
 .hor-col-left {
     max-height: 95vh;
-    overflow-y: scroll;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 
@@ -31,7 +31,8 @@
 }
 
 .hor-col-center {
-    //    max-height: 95vh;
+    max-height: 95vh;
+    overflow-y: hidden;
 }
 
 .hor-track-grid {
