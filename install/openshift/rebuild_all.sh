@@ -1,5 +1,6 @@
 oc start-build provider-spotify
 oc start-build service-playlist
+oc start-build service-eventactivity-native
 oc start-build service-web
 oc start-build service-housekeeping
 

@@ -300,7 +300,7 @@ function findTrackInList(listOfTracks, provider, trackID) {
             break;
         }
     }
-    log.trace("end findTrackInList return track from position=%s", pos);
+    log.trace("end findTrackInList return track from position=%s, result=%s", pos, result);
     return result;
 }
 
@@ -869,7 +869,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
     }
 
     if (numTracksToAdd > 0) {
-        log.trace("need to add tracks num=", numTracksToAdd);
+        log.trace("need to add %s tracks", numTracksToAdd);
 
         for (let i = 0; i < numTracksToAdd; i++) {
             // Try 10 times to pick a random ID from emergencyTrackIDs that is
@@ -881,15 +881,19 @@ async function autofillPlaylistIfNecessary(event, playlist) {
             for (let j = 0; j < emergencyTrackIDs.length * 2; j++) {
                 trackNum = Math.floor(Math.random() * emergencyTrackIDs.length);
                 trackID = emergencyTrackIDs[trackNum];
-                if (!isTrackInList(playlist, trackID) &&
+                log.trace("autofill: trying to add track %s", trackID);
+                if (!isTrackInList(playlist.nextTracks, trackID) &&
                     (event.allowDuplicateTracks || !isTrackInList(event.effectivePlaylist, trackID))) {
 
                     let track = await getTrackDetailsForTrackID(event.eventID, trackID);
                     track.added_by = "OpenDJ";
-                    playlist.push(track);
+                    playlist.nextTracks.push(track);
                     actuallyAdded++;
                     added = true;
+                    log.trace("autofill: added track %s", trackID);
                     break; // inner loop
+                } else {
+                    log.trace("Track is in already in current or effective playlist - need to try again");
                 }
             }
 
