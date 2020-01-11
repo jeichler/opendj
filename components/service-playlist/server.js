@@ -483,7 +483,7 @@ async function deleteTrack(event, playlist, provider, trackID, user) {
     await autofillPlaylistIfNecessary(event, playlist);
 
 
-    log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
+    log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 }
 
 function ensureFeedbackAttributes(track) {
