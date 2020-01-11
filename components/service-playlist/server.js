@@ -863,6 +863,9 @@ async function autofillPlaylistIfNecessary(event, playlist) {
 
         } else if (event.demoAutoFillNumTracks > 0) {
             numTracksToAdd = event.demoAutoFillNumTracks - playlist.nextTracks.length;
+            if (numTracksToAdd > event.maxTracksInPlaylist) {
+                numTracksToAdd = event.maxTracksInPlaylist;
+            }
         }
     } else {
         log.trace("demoAutoFillEmptyPlaylist is not active - nothin to do for us");
@@ -883,6 +886,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
                 trackID = emergencyTrackIDs[trackNum];
                 log.trace("autofill: trying to add track %s", trackID);
                 if (!isTrackInList(playlist.nextTracks, trackID) &&
+                    (('' + playlist.currentTrack.provider + ':' + playlist.currentTrack.id) != trackID) &&
                     (event.allowDuplicateTracks || !isTrackInList(event.effectivePlaylist, trackID))) {
 
                     let track = await getTrackDetailsForTrackID(event.eventID, trackID);
