@@ -262,10 +262,15 @@ function createEmptyPlaylist(eventID, playlistID) {
 }
 
 function splitTrackIDIntoProviderAndTrack(id) {
-    let splitter = id.split(":");
-    let provider = splitter[0];
+    const splitter = id.split(":");
+    const provider = splitter[0];
     let trackID = splitter[1];
     return [provider, trackID];
+}
+
+function isTrackInList(list, track) {
+    const [provider, trackID] = splitTrackIDIntoProviderAndTrack(track);
+    return findTrackInList(list, provider, trackID) != null;
 }
 
 function findTrackPositionInList(listOfTracks, provider, trackID) {
@@ -332,50 +337,6 @@ async function getTrackDetailsForTrackID(eventID, trackID) {
         log.trace("end getTrackDetailsForTrackID eventID=%s, trackID=%s, result=$s", eventID, trackID, JSON.stringify(result));
     return result;
 }
-
-async function createAutofillPlayList(event) {
-    log.trace("createAutofillPlayList begin eventID=%s", event.eventID);
-    let result = [];
-    let mapOfTrackIDs = new Map();
-
-    let numTracksToAdd = event.maxTracksInPlaylist;
-    if (event.demoAutoFillNumTracks > 0 && event.demoAutoFillNumTracks < event.maxTracksInPlaylist) {
-        numTracksToAdd = event.demoAutoFillNumTracks;
-    }
-
-
-    for (let i = 0; i < numTracksToAdd; i++) {
-        // Try 10 times to pick a random ID from emergencyTrackIDs that is
-        // not already in the list:
-        let added = false;
-        let trackID = null;
-        let trackNum = 0;
-
-        for (let j = 0; j < 10; j++) {
-            trackNum = Math.floor(Math.random() * emergencyTrackIDs.length);
-            trackID = emergencyTrackIDs[trackNum];
-            if (!mapOfTrackIDs.has(trackID)) {
-                mapOfTrackIDs.set(trackID, trackID);
-                let track = await getTrackDetailsForTrackID(event.eventID, trackID);
-                track.added_by = "OpenDJ";
-                result.push(track);
-                added = true;
-                break; // inner loop
-            }
-        }
-
-        if (!added) {
-            log.warn("createAutofillPlayList(): could not add random tracks with 10 tries, maybe we have not enough tracks in emergency list?!");
-            break; // Outer Loop.
-        }
-    }
-
-    eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', event.eventID, { numTracks: result.length }, 'OpenDJ added ' + result.length + ' track' + (result.length > 1 ? 's' : ''))
-
-    log.trace("createAutofillPlayList end eventID=%s len=%s", event.eventID, result.length);
-    return result;
-}
-
 
 async function addTrack(event, playlist, provider, trackID, user) {
     log.trace("begin addTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
@@ -502,8 +463,8 @@ function moveTrack(eventID, playlist, provider, trackID, newPos, user) {
     log.trace("end moveTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, track);
 }
 
-function deleteTrack(eventID, playlist, provider, trackID, user) {
-    log.trace("begin deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
+async function deleteTrack(event, playlist, provider, trackID, user) {
+    log.trace("begin deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", event.eventID, playlist.playlistID, provider, trackID);
 
     let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
     if (currentPos < 0) {
@@ -515,9 +476,12 @@ function deleteTrack(eventID, playlist, provider, trackID, user) {
 
     eventActivityClient.publishActivity(
         'TRACK_DELETED',
-        eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, track: track },
+        event.eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, currentPos: currentPos, track: track },
         '' + user + ' deleted ' + track.name + ' at position ' + currentPos
     );
+
+    await autofillPlaylistIfNecessary(event, playlist);
+
 
     log.trace("end deleteTrack eventID=%s, playlistID=%s, provider=%s, track=%s", eventID, playlist.playlistID, provider, trackID);
 }
@@ -803,6 +767,9 @@ async function skip(event, playlist, user) {
         if (playlist.isPlaying) {
             await play(event, playlist);
         }
+
+        // Maybe we have to top off the playlist:
+        await autofillPlaylistIfNecessary(event, playlist);
     } else {
         log.debug("SKIP: reached end of playlist");
         playlist.currentTrack = null;
@@ -885,16 +852,59 @@ function isTrackPlaying(event, playlist) {
 async function autofillPlaylistIfNecessary(event, playlist) {
     log.trace("begin autofillPlaylistIfNecessary");
     let stateChanged = false;
-    if (playlist.nextTracks.length == 0) {
-        log.trace("playlist is empty");
-        if (event.demoAutoFillEmptyPlaylist) {
-            log.debug("AutoFilling Playlist %s of event %s....", playlist.playlistID, event.eventID);
-            playlist.nextTracks = await createAutofillPlayList(event);
-            stateChanged = true;
-            log.debug("AutoFilling Playlist %s of event %s....DONE", playlist.playlistID, event.eventID);
+    let numTracksToAdd = 0;
+    let actuallyAdded = 0;
+
+    if (event.demoAutoFillEmptyPlaylist) {
+        log.trace("demoAutoFillEmptyPlaylist is active");
+        if (event.demoAutoFillNumTracks == 0 && playlist.nextTracks.length == 0) {
+            // List is empty and we should add to max:
+            numTracksToAdd = event.maxTracksInPlaylist;
+
+        } else if (event.demoAutoFillNumTracks > 0) {
+            numTracksToAdd = event.demoAutoFillNumTracks - playlist.nextTracks.length;
         }
     } else {
-        log.trace("playlist has tracks");
+        log.trace("demoAutoFillEmptyPlaylist is not active - nothin to do for us");
+    }
+
+    if (numTracksToAdd > 0) {
+        log.trace("need to add tracks num=", numTracksToAdd);
+
+        for (let i = 0; i < numTracksToAdd; i++) {
+            // Try 10 times to pick a random ID from emergencyTrackIDs that is
+            // not already in the list (or in effective Playlist if duplicates are not allowed)
+            let trackID = null;
+            let trackNum = 0;
+            let added = false;
+
+            for (let j = 0; j < emergencyTrackIDs.length * 2; j++) {
+                trackNum = Math.floor(Math.random() * emergencyTrackIDs.length);
+                trackID = emergencyTrackIDs[trackNum];
+                if (!isTrackInList(playlist, trackID) &&
+                    (event.allowDuplicateTracks || !isTrackInList(event.effectivePlaylist, trackID))) {
+
+                    let track = await getTrackDetailsForTrackID(event.eventID, trackID);
+                    track.added_by = "OpenDJ";
+                    playlist.push(track);
+                    actuallyAdded++;
+                    added = true;
+                    break; // inner loop
+                }
+            }
+
+            if (!added) {
+                log.warn("autofillPlaylistIfNecessary(): could not add random tracks with " + emergencyTrackIDs.length * 2 + " tries, maybe we have not enough tracks in emergency list, or we have already played all tracks from emergency list.");
+                break; // Outer Loop.
+            }
+        }
+
+        if (actuallyAdded > 0) {
+            eventActivityClient.publishActivity('PLAYLIST_AUTOFILLED', event.eventID, { numTracks: actuallyAdded }, 'OpenDJ added ' + actuallyAdded + ' track' + (actuallyAdded > 1 ? 's' : ''))
+            stateChanged = true;
+        }
+    } else {
+        log.trace("no need to add tracks");
     }
 
     log.trace("end autofillPlaylistIfNecessary stateChanged=%s", stateChanged);
@@ -1352,13 +1362,14 @@ router.delete('/events/:eventID/playlists/:listID/tracks/:track', async function
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
+        let event = await getEventForRequest(req);
         let playlist = await getPlaylistForRequest(req);
 
         // Track is in format <provider>:<trackID>, thus we need to split:
         let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);
         let user = req.query.user;
 
-        deleteTrack(req.params.eventID, playlist, provider, trackID, user);
+        await deleteTrack(event, playlist, provider, trackID, user);
 
         firePlaylistChangedEvent(req.params.eventID, playlist);
         res.status(200).send(playlist);
