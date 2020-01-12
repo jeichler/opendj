@@ -75,20 +75,13 @@
                     <source src="assets/img/Logo_OpenDJ_Anim_256_crf18.webm" type="video/webm">
                 </video>
 
-                <!-- 
-                <a class="twitter-timeline" data-width="300" data-height="500" data-theme="dark" href="https://twitter.com/RedHatDACH?ref_src=twsrc%5Etfw">Tweets by RedHatDACH</a>
-                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-                <a href="https://twitter.com/intent/tweet?button_hashtag=RHforum&ref_src=twsrc%5Etfw" class="twitter-hashtag-button" data-show-count="false">Tweet #RHforum</a>
-                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>                
--->
                 <ngx-twitter-timeline *ngIf="currentEvent.eventViewTwitterURL" [data]="{sourceType: 'url', url: currentEvent.eventViewTwitterURL}" [opts]="{theme: 'dark', tweetLimit: 5, chrome:'nofooter noscrollbar transparent' }"></ngx-twitter-timeline>
 
                 <ion-list *ngIf="!currentEvent.eventViewTwitterURL && currentEvent.eventViewShowActivityFeed" lines="none" class="ion-text-nowrap ion-no-padding" color="dark">
                     <ion-list-header color="dark">Recent Activity:
                     </ion-list-header>
 
-                    <ion-item *ngFor="let activity of activityList.reverse()" color="dark" class="activity-item">
+                    <ion-item *ngFor="let activity of activityList" color="dark" class="activity-item">
                         <ion-label class="activity-label">
                             {{activity.timestamp}} {{activity.display}}
                         </ion-label>
