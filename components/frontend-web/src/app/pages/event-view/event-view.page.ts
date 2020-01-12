@@ -11,6 +11,7 @@ import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserSessionState } from 'src/app/models/usersessionstate';
+import { EventActivity } from 'src/app/models/eventactivity';
 
 const QRCode = require('qrcode');
 
@@ -32,6 +33,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   intervalHandle = null;
   qrImageSrc = null;
   visibleTracks: Track[] = [];
+  activityList: EventActivity[] = [];
 
   tooltipOptions = {
     placement: 'left',
@@ -67,6 +69,10 @@ export class EventViewPage implements OnInit, OnDestroy {
   date2hhmm(d) {
     d = d.toTimeString().split(' ')[0];
     return d.substring(0, 5);
+  }
+  date2hhmmss(d) {
+    d = d.toTimeString().split(' ')[0];
+    return d.substring(0, 8);
   }
 
   showMenu() {
@@ -280,6 +286,19 @@ export class EventViewPage implements OnInit, OnDestroy {
 
     }
   }
+  handleActivity(activity) {
+
+    const ts = new Date(activity.timestamp);
+    activity.timestamp = this.date2hhmmss(ts);
+    console.debug('ts=' + activity.timestamp);
+
+    this.activityList.push(activity);
+    while (this.activityList.length > 20) {
+      this.activityList.shift();
+    }
+
+
+  }
 
 
   async ionViewDidEnter() {
@@ -330,6 +349,14 @@ export class EventViewPage implements OnInit, OnDestroy {
         await this.handleEventUpdate();
       });
       this.subscriptions.push(sub);
+
+      sub = this.websocketService.observeActivity().pipe().subscribe(data => {
+        console.debug('received activity', data);
+        const activity = data as EventActivity;
+        this.handleActivity(activity);
+      });
+      this.subscriptions.push(sub);
+
 
       this.intervalHandle = setInterval(() => {
         this.isConnected = this.websocketService.isConnected();

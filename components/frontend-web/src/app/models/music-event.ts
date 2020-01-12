@@ -40,6 +40,7 @@ export class MusicEvent {
     eventViewAutoScrollSpeed: number;
     eventViewAutoScrollTopOnNext: boolean;
     eventViewShowMetaBars: boolean;
+    eventViewShowActivityFeed: boolean;
 
     eventViewTwitterURL: string;
 }

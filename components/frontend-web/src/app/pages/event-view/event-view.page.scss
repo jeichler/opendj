@@ -52,6 +52,27 @@
     height: auto;
 }
 
+.activity-list {
+    background: #FF00FF;
+}
+
+.activity-item {
+    --inner-padding: 0px;
+    padding: 0px;
+    margin: 0px;
+    background: #FF00FF;
+}
+
+.activity-label {
+    padding: 0px;
+    margin-left: 0px;
+    margin-right: auto;
+    font-size: 12px;
+    color: #999;
+    margin: 0px;
+    line-height: 100%;
+}
+
 .track-header {
     font-size: 16px;
     // This is needed to avoid that next colums

@@ -336,6 +336,7 @@ function emitEventActivity(socket, activity) {
     if (ENV_EMIT_ACTIVITY) {
         // We broadcast only a striped down version to save bandwidth:
         let simpleActivity = {
+            activity: activity.activity,
             display: activity.display,
             timestamp: activity.timestamp
         };

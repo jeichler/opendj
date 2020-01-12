@@ -67,6 +67,16 @@ export class WebsocketService {
         return observable;
     }
 
+    observeActivity() {
+        console.debug('observeActivity');
+        const observable = new Observable(observer => {
+            this.socket.on('event-activity', (data) => {
+                console.debug('observeActivity -> Received activity');
+                observer.next(data);
+            });
+        });
+        return observable;
+    }
 
 
     refreshPlaylist() {

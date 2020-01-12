@@ -241,6 +241,7 @@ export class EventEditPage implements OnInit {
       eventViewAutoScrollInterval: [10, Validators.min(1)],
       eventViewAutoScrollTopOnNext: [true],
       eventViewShowMetaBars: [true],
+      eventViewShowActivityFeed:[true],
       eventViewTwitterURL: [''],
     });
   }

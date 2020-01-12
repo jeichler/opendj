@@ -538,7 +538,7 @@ function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, us
         } else if (newFeedback === 'L') {
             log.trace("User liked new");
             track.numLikes++;
-            activityMsg = '' + user + ' liked track ' + track.name;
+            activityMsg = '' + user + ' liked ' + track.name;
         }
 
         if (oldFeedback === 'H' && newFeedback === '') {
