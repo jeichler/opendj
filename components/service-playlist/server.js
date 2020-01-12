@@ -960,7 +960,7 @@ async function checkEvent(event) {
             log.debug("checkEvent - ignored for non-existing event");
         }
     } catch (err) {
-        log.error("checkEvent %s failed with err %s - ignored", event.eventID, err);
+        log.error("checkEvent %s failed with err - ignored", event.eventID, err);
     }
     log.trace("end checkEvent");
 }
