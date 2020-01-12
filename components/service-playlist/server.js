@@ -720,7 +720,7 @@ async function pause(event, playlist, err, user) {
         }
     }
 
-    if (!err) {
+    if (!err && playlist && playlist.currentTrack) {
         eventActivityClient.publishActivity(
             'TRACK_PAUSE',
             event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
