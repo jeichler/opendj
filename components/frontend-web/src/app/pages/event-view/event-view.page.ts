@@ -292,9 +292,9 @@ export class EventViewPage implements OnInit, OnDestroy {
     activity.timestamp = this.date2hhmmss(ts);
     console.debug('ts=' + activity.timestamp);
 
-    this.activityList.push(activity);
-    while (this.activityList.length > 20) {
-      this.activityList.shift();
+    this.activityList.unshift(activity);
+    while (this.activityList.length > 40) {
+      this.activityList.pop();
     }
 
 
