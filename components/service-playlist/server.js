@@ -886,7 +886,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
                 trackID = emergencyTrackIDs[trackNum];
                 log.trace("autofill: trying to add track %s", trackID);
                 if (!isTrackInList(playlist.nextTracks, trackID) &&
-                    (('' + playlist.currentTrack.provider + ':' + playlist.currentTrack.id) != trackID) &&
+                    (!playlist.currentTrack || ('' + playlist.currentTrack.provider + ':' + playlist.currentTrack.id) != trackID) &&
                     (event.allowDuplicateTracks || !isTrackInList(event.effectivePlaylist, trackID))) {
 
                     let track = await getTrackDetailsForTrackID(event.eventID, trackID);
