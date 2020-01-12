@@ -12,6 +12,8 @@ const uuid = require('uuid/v1');
 const eventActivityClient = require('./EventActivityClient');
 const port = process.env.PORT || 3000;
 const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
+const ENV_EMIT_ACTIVITY = (process.env.EMIT_ACTIVITY || 'true') == 'true';
+
 const ENV_KAFKA_HOST = process.env.KAFKA_HOST || "localhost:9092";
 const ENV_KAFKA_TOPIC_ACTIVITY = process.env.topic || "opendj.event.activity";
 
@@ -78,25 +80,25 @@ function startKafkaConsumer() {
     });
 
     kafkaConsumer.on('message', function(message) {
-        log.trace("kafkaConsumer received message: %s", JSON.stringify(message));
+        log.trace("begin kafkaConsumer.onMessage");
 
         try {
 
-            var msg = JSON.parse(JSON.stringify(message));
-            if (msg.offset == msg.highWaterOffset - 1) {
-                log.trace("High Water Message received");
-                var msgPayload = JSON.parse(msg.value);
-                /*                
-                                currentPlaylist = msgPayload;
-                                io.emit('current-playlist', currentPlaylist);
-                                log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
-                */
+            //            var msg = JSON.parse(JSON.stringify(message));
+            if (message.offset == message.highWaterOffset - 1) {
+                log.trace("High Water Message received - payload = %s", message.value);
+                let activity = JSON.parse(message.value);
+                let eventID = activity.eventID;
+                let namespace = getNameSpaceForEventID(eventID);
+                emitEventActivity(namespace, activity);
+
             } else {
                 log.trace("Ignoring old message");
             }
         } catch (e) {
-            log.error("kafkaConsumer Exception %s while processing message", e);
+            log.error("kafkaConsumer Exception %s while processing message - ignored", e);
         }
+        log.trace("end kafkaConsumer.onMessage");
     });
 
     kafkaConsumer.on('error', function(error) {
@@ -229,7 +231,7 @@ async function onPlaylistModified(key, entryVersion, listenerID) {
         let playlistID = splitter[1];
 
         let playlist = await getPlaylistForPlaylistID(key);
-        let namespace = io.of("/event/" + eventID);
+        let namespace = getNameSpaceForEventID(eventID);
         emitPlaylist(namespace, playlist);
     } catch (err) {
         log.error("onPlaylistModified  failed - ignoring err=%s", err);
@@ -249,7 +251,7 @@ async function onEventModified(key, entryVersion, listenerID) {
             log.trace("get and emit eventID=%s", key);
             let eventID = key;
             let event = await getEventForEventID(key);
-            let namespace = io.of("/event/" + eventID);
+            let namespace = getNameSpaceForEventID(eventID);
             emitEvent(namespace, event);
         }
     } catch (err) {
@@ -300,6 +302,11 @@ function getEventIDFromSocketNamespace(socket) {
     return eventID;
 }
 
+function getNameSpaceForEventID(eventID) {
+    return io.of("/event/" + eventID);
+}
+
+
 
 function emitPlaylist(socketOrNamespace, playlist) {
     log.trace("begin emitPlaylist id=%s", playlist.playlistID);
@@ -323,6 +330,25 @@ function emitEvent(socketOrNamespace, event) {
     socketOrNamespace.emit("current-event", event);
     log.trace("end emitEvent");
 }
+
+function emitEventActivity(socket, activity) {
+    log.trace("begin emitEventActivity");
+    if (ENV_EMIT_ACTIVITY) {
+        // We broadcast only a striped down version to save bandwidth:
+        let simpleActivity = {
+            display: activity.display,
+            timestamp: activity.timestamp
+        };
+        socket.emit("event-activity", simpleActivity);
+        log.debug("event activity emitted successfully %s", JSON.stringify(simpleActivity));
+    } else {
+        log.debug("event activity emitter is disabled");
+    }
+
+    log.trace("end emitEventActivity");
+}
+
+
 
 async function emitEventToSocket(socket) {
     log.trace("begin emitEventToSocket");
@@ -427,13 +453,6 @@ log.trace("Register websocket namespace");
 
 io.of(/^\/event\/.+$/)
     .on('connect', onWebsocketConnection);
-
-/*
-io.of("/event/0")
-    .on('connect', onWebsocketConnection);
-*/
-
-//io.on('connect', onWebsocketConnection);
 
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------

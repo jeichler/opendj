@@ -59,6 +59,7 @@ common:
     PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
     REPLICAS: 1
+    EMIT_ACTIVITY: true
 
     
   FRONTEND_WEB:

@@ -130,6 +130,8 @@
                         value: "{{ENV.SERVICE_WEB.PORT | default('8080')}}"
                       - name: THROTTLE_EMITTER_PLAYLIST
                         value: "{{ENV.SERVICE_WEB.THROTTLE_EMITTER_PLAYLIST | default('1000')}}"
+                      - name: EMIT_ACTIVITY
+                        value: "{{ENV.SERVICE_WEB.EMIT_ACTIVITY | default('true')}}"
                     imagePullPolicy: IfNotPresent
                     name: service-web
                     ports:
