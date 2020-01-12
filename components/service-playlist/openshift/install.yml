@@ -15,13 +15,6 @@
     - name: Skip deployment if not needed
       meta: end_play
       when: not ENV.SERVICE_PLAYLIST.DEPLOY
-
-    - name: Create kafka topic
-      when: ENV.BACKEND_EVENTSTORE.KAFKA.USE
-      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.data.event --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 
-      register: topic_result
-      failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
-      changed_when: '"already exists" not in topic_result.stderr'
       
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
@@ -128,8 +121,6 @@
                         value: "{{ENV.SERVICE_PLAYLIST.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
                         value: "true"
-                      - name: KAFKA_HOST
-                        value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST  | default('backend-eventstore-kafka-bootstrap:9092')}}"
                       - name: DATAGRID_URL
                         value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
                       - name: SPOTIFY_PROVIDER_URL
