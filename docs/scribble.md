@@ -36,8 +36,8 @@ kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.pro
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.event
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.event.playlist
 
-
-
+# Prod:
+/opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 --delete --topic opendj.event.activity
 
 
 ```

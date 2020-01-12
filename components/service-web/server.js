@@ -6,9 +6,14 @@ const http = require('http').createServer(app);
 const router = new express.Router();
 const cors = require('cors');
 const io = require('socket.io')(http, { origins: '*:*', path: '/api/service-web/socket' });
+const kafka = require('kafka-node');
+const uuid = require('uuid/v1');
+
 const eventActivityClient = require('./EventActivityClient');
 const port = process.env.PORT || 3000;
 const ENV_THROTTLE_EMITTER_PLAYLIST = parseInt(process.env.THROTTLE_EMITTER_PLAYLIST || '1000');
+const ENV_KAFKA_HOST = process.env.KAFKA_HOST || "localhost:9092";
+const ENV_KAFKA_TOPIC_ACTIVITY = process.env.topic || "opendj.event.activity";
 
 const log4js = require('log4js')
 const log = log4js.getLogger();
@@ -20,11 +25,84 @@ app.use("/api/service-web/v1", router);
 
 var readyState = {
     datagridClient: false,
+    kafkaClient: false,
     websocket: false,
     lastError: ""
 };
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ------------------------------ kafka stuff -----------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 
+var kafkaClient = new kafka.KafkaClient({
+    kafkaHost: ENV_KAFKA_HOST,
+    connectTimeout: 1000,
+    requestTimeout: 500,
+    autoConnect: true,
+    connectRetryOptions: {
+        retries: 10,
+        factor: 1,
+        minTimeout: 1000,
+        maxTimeout: 1000,
+        randomize: true,
+    },
+    idleConnection: 60000,
+    reconnectOnIdle: true,
+});
+
+kafkaClient.on('error', function(err) {
+    log.error("kafkaClient error: %s -  reconnecting....", err);
+    readyState.kafkaClient = false;
+    readyState.lastError = err;
+    kafkaClient.connect();
+});
+
+kafkaClient.on('connect', function(data) {
+    log.info("kafkaClient connected");
+    readyState.kafkaClient = true;
+    readyState.lastError = '';
+});
+
+function startKafkaConsumer() {
+
+    var kafkaConsumer = new kafka.Consumer(kafkaClient, [
+        { topic: ENV_KAFKA_TOPIC_ACTIVITY } // offset, partition
+    ], {
+        groupId: uuid(), // All pods need to consume for now, thus we use a random consumer group
+        autoCommit: true,
+        // Fix #72: Do not start at the beginning
+        // fromOffset: true,
+        // offset: 0
+    });
+
+    kafkaConsumer.on('message', function(message) {
+        log.trace("kafkaConsumer received message: %s", JSON.stringify(message));
+
+        try {
+
+            var msg = JSON.parse(JSON.stringify(message));
+            if (msg.offset == msg.highWaterOffset - 1) {
+                log.trace("High Water Message received");
+                var msgPayload = JSON.parse(msg.value);
+                /*                
+                                currentPlaylist = msgPayload;
+                                io.emit('current-playlist', currentPlaylist);
+                                log.info("emitted playlist to %s connected clients", io.engine.clientsCount);
+                */
+            } else {
+                log.trace("Ignoring old message");
+            }
+        } catch (e) {
+            log.error("kafkaConsumer Exception %s while processing message", e);
+        }
+    });
+
+    kafkaConsumer.on('error', function(error) {
+        log.error("kafkaConsumer error: %s", error);
+    });
+}
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -435,6 +513,7 @@ router.get('/health', readyAndHealthCheck);
 setImmediate(async function() {
     try {
         await connectToDatagrid();
+        startKafkaConsumer();
 
         http.listen(port, function() {
             log.info('listening on *: ' + port);
