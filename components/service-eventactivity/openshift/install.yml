@@ -17,13 +17,14 @@
       when: not ENV.SERVICE_EVENTACTIVITY.DEPLOY
 
     - name: Create kafka topic
+      tags: kafka
       when: ENV.BACKEND_EVENTSTORE.KAFKA.USE
       command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.event.activity --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 
       register: topic_result
       failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
       changed_when: '"already exists" not in topic_result.stderr'
 
-    - name: Create deployment with image build 
+    - name: Create definitions for image build 
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
         state: present
@@ -33,6 +34,24 @@
             strict: no
         definition: "{{ (lookup('template', 'definitionsForImageBuild.yml') | from_yaml_all | list)[0] }}"
 
+    - name: Create definitions for external image
+      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      k8s:
+        state: present
+        wait: true
+        validate:
+            fail_on_error: no
+            strict: no
+        definition: "{{ (lookup('template', 'definitionsForExternalImage.yml') | from_yaml_all | list)[0] }}"
+
+    - name: Create definitions for deployment
+      k8s:
+        state: present
+        wait: true
+        validate:
+            fail_on_error: no
+            strict: no
+        definition: "{{ (lookup('template', 'definitionsForDeployment.yml') | from_yaml_all | list)[0] }}"
     - name: Create Route with Let's Encrypt Certs
       when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
@@ -93,3 +112,5 @@
               name: service-eventactivity
               weight: 100
             wildcardPolicy: None
+
+

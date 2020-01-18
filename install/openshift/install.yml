@@ -62,7 +62,7 @@
           type: kubernetes.io/dockerconfigjson
 
     - name: Grant access to images from other namespace
-      when: not ENV.COMMON.CONTAINER_IMAGE_BUILD
+      when: not ENV.COMMON.CONTAINER_IMAGE_BUILD and not ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
       tags: prj
       k8s:
         state: present

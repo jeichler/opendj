@@ -14,9 +14,13 @@ common:
     CONTAINER_IMAGE_BUILD: true
     CONTAINER_IMAGE_TAG: "latest"
     CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-{{STAGE}}"
+    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: false
+    CONTAINER_IMAGE_EXTERNAL_REGISTRY: "undefined"
+    QUAY_SECRET: "{{VAULT_QUAY_SECRET}}"
+
+
     MAVEN_MIRROR_URL: "http://nexus-oschneid-cluster-nexus.apps.ocp1.stormshift.coe.muc.redhat.com/repository/maven-public/"
     NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
-    QUAY_SECRET: "{{VAULT_QUAY_SECRET}}"
 
   BACKEND_EVENTSTORE:
     DEPLOY: true

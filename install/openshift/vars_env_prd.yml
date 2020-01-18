@@ -8,7 +8,14 @@ specific:
     DNS_BASENAME: "www.opendj.io"
     GIT:
       REF: "master"
-    CONTAINER_IMAGE_FROM_NAMESPACE: "dfroehli-opendj-prd"
+    CONTAINER_IMAGE_BUILD: false
+    CONTAINER_IMAGE_TAG: "prd"
+    CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
+    CONTAINER_IMAGE_EXTERNAL_REGISTRY: "quay.io/opendj"
+
+
+
+
   BACKEND_EVENTSTORE:
     KAFKA:
       OPERATOR_AVAILABLE: false
@@ -43,6 +50,5 @@ specific:
   FRONTEND_WEB:
     REPLICAS: 1
     USE_ACME_CERTS: "true"
-    USE_RUNTIME_IMAGE: false
     SERVER_TIMEOUT: "10000"
   

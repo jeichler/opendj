@@ -165,12 +165,12 @@ ionic serve
 
 # oc label from dev to tst:
 oc project dfroehli-opendj-dev
-oc tag provider-spotify:latest provider-spotify:test
-oc tag service-playlist:latest service-playlist:test
-oc tag service-web:latest service-web:test
-oc tag service-housekeeping:latest service-housekeeping:test
-oc tag frontend-web-artifact:latest frontend-web-artifact:test
-oc tag frontend-web:latest frontend-web:test
+oc tag provider-spotify:latest provider-spotify:tst
+oc tag service-playlist:latest service-playlist:tst
+oc tag service-web:latest service-web:tst
+oc tag service-housekeeping:latest service-housekeeping:tst
+oc tag frontend-web-artifact:latest frontend-web-artifact:tst
+oc tag frontend-web:latest frontend-web:tst
 
 
 NPM_MIRROR=https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org
@@ -213,6 +213,9 @@ oc create serviceaccount skopeo
 oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}' |tee skopeo-token
 TOKEN="$(cat skopeo-token)"
  
+ TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}')
+
+
  skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:tst
 
  skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.io/opendj/service-eventactivity:tst
@@ -220,6 +223,7 @@ TOKEN="$(cat skopeo-token)"
 skopeo inspect --tls-verify=false docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest
 
 
+# Release local OpenShift LATEST to QUAY LATEST
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
@@ -231,4 +235,16 @@ skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-reg
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
+
+# Label QUAY LATEST to PRD:
+skopeo copy docker://quay.io/opendj/provider-spotify:latest docker://quay.io/opendj/provider-spotify:prd
+skopeo copy docker://quay.io/opendj/service-playlist:latest docker://quay.io/opendj/service-playlist:prd
+skopeo copy docker://quay.io/opendj/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:prd
+skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.io/opendj/service-eventactivity:prd
+skopeo copy docker://quay.io/opendj/service-web:latest docker://quay.io/opendj/service-web:prd
+skopeo copy docker://quay.io/opendj/frontend-web:latest docker://quay.io/opendj/frontend-web:prd
+
+
+# Import PRD TAG from Quay to OpenShift:
+oc tag --source=docker quay.io/opendj/provider-spotify:prd provider-spotify:prd --reference-policy=local --scheduled=true
 

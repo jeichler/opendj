@@ -39,6 +39,35 @@
           spec:
             lookupPolicy:
               local: false
+
+    - name: Create ImageStreamTag for external Registry
+      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            labels:
+              app: provider-spotify
+            name: provider-spotify
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            lookupPolicy:
+              local: false
+            tags:
+              - annotations: null
+                from:
+                  kind: DockerImage
+                  name: "{{ENV.COMMON.CONTAINER_IMAGE_EXTERNAL_REGISTRY}}/provider-spotify:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                generation: 2
+                importPolicy:
+                  scheduled : true
+                name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                referencePolicy:
+                  type: Local
+
     - name: Create BuildConfig
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:

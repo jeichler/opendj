@@ -1,0 +1,21 @@
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    labels:
+      app: service-eventactivity-minimal
+    name: service-eventactivity-minimal
+    namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+      - annotations: null
+        from:
+          kind: DockerImage
+          name: "{{ENV.COMMON.CONTAINER_IMAGE_EXTERNAL_REGISTRY}}/service-eventactivity:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+        generation: 2
+        importPolicy:
+          scheduled : true
+        name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+        referencePolicy:
+          type: Local

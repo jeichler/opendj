@@ -120,6 +120,35 @@
             lookupPolicy:
               local: false
 
+    - name: Create ImageStreamTag for external Registry
+      when: ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: ImageStream
+          apiVersion: image.openshift.io/v1
+          metadata:
+            labels:
+              app: frontend-web
+            name: frontend-web
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            lookupPolicy:
+              local: false
+            tags:
+              - annotations: null
+                from:
+                  kind: DockerImage
+                  name: "{{ENV.COMMON.CONTAINER_IMAGE_EXTERNAL_REGISTRY}}/frontend-web:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                generation: 2
+                importPolicy:
+                  scheduled : true
+                name: "{{ENV.COMMON.CONTAINER_IMAGE_TAG}}"
+                referencePolicy:
+                  type: Local
+
+
     - name: Create BuildConfig S2I artifact
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
@@ -239,7 +268,6 @@
         definition: "{{ lookup('template', 'cfgmap.j2') }}"
 
     - name: Create DeploymentConfig Runtime Image
-      when: ENV.FRONTEND_WEB.USE_RUNTIME_IMAGE
       k8s:
         state: present
         wait: true
@@ -319,91 +347,6 @@
                   from:
                     kind: ImageStreamTag
                     name: 'frontend-web:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
-                    namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
-                type: ImageChange
-              - type: ConfigChange
-
-    - name: Create DeploymentConfig Artifact Image
-      when: not ENV.FRONTEND_WEB.USE_RUNTIME_IMAGE
-      k8s:
-        state: present
-        wait: true
-        definition:
-          kind: DeploymentConfig
-          apiVersion: apps.openshift.io/v1
-          metadata:
-            annotations:
-              template.alpha.openshift.io/wait-for-ready: 'true'
-            labels:
-              app: frontend-web
-            name: frontend-web
-            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
-          spec:
-            replicas: 2
-            revisionHistoryLimit: 5
-            selector:
-              name: frontend-web
-            strategy:
-              activeDeadlineSeconds: 21600
-              resources: {}
-              rollingParams:
-                intervalSeconds: 1
-                maxSurge: 25%
-                maxUnavailable: 25%
-                timeoutSeconds: 600
-                updatePeriodSeconds: 1
-              type: Rolling
-            template:
-              metadata:
-                labels:
-                  name: frontend-web
-                name: frontend-web
-              spec:
-                containers:
-                  - env:
-                    imagePullPolicy: IfNotPresent
-                    name: frontend-web
-                    ports:
-                      - containerPort: 8080
-                        protocol: TCP
-                    readinessProbe:
-                      failureThreshold: 3
-                      httpGet:
-                        path: /api/frontend-web/v1/ready
-                        port: 8080
-                        scheme: HTTP
-                      initialDelaySeconds: 1
-                      periodSeconds: 10
-                      successThreshold: 1
-                      timeoutSeconds: 1
-                    resources:
-                      limits:
-                        memory: 128Mi
-                    terminationMessagePath: /dev/termination-log
-                    terminationMessagePolicy: File
-                    volumeMounts:
-                      - mountPath: /opt/app-root/output/conf/config.json
-                        name: volume-cfgmap
-                        subPath: config.json
-                dnsPolicy: ClusterFirst
-                restartPolicy: Always
-                schedulerName: default-scheduler
-                securityContext: {}
-                terminationGracePeriodSeconds: 30
-                volumes:
-                  - configMap:
-                      defaultMode: 438
-                      name: frontend-web-config-map
-                    name: volume-cfgmap
-            test: false
-            triggers:
-              - imageChangeParams:
-                  automatic: true
-                  containerNames:
-                    - frontend-web
-                  from:
-                    kind: ImageStreamTag
-                    name: 'frontend-web-artifact:{{ENV.COMMON.CONTAINER_IMAGE_TAG}}'
                     namespace: "{{ENV.COMMON.CONTAINER_IMAGE_FROM_NAMESPACE|mandatory}}"
                 type: ImageChange
               - type: ConfigChange
