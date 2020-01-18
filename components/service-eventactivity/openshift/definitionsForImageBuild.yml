@@ -177,7 +177,7 @@
     name: service-eventactivity
     namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
   spec:
-    replicas: "{{ENV.SERVICE_EVENTACTIVITY.REPLICAS | default('2')}}"
+    replicas: 1
     revisionHistoryLimit: 10
     selector:
       name: service-eventactivity

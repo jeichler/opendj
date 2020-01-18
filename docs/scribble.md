@@ -208,4 +208,27 @@ oc new-app service-eventactivity-minimal
 
 
 # Tag Quay Image: (Credentials in  ~/.docker/config.json)
- skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.io/opendj/service-eventactivity:prd
+
+oc create serviceaccount skopeo
+oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}' |tee skopeo-token
+TOKEN="$(cat skopeo-token)"
+ 
+ skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:tst
+
+ skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.io/opendj/service-eventactivity:tst
+
+skopeo inspect --tls-verify=false docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest
+
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
+

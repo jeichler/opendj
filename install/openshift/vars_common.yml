@@ -38,18 +38,15 @@ common:
 
   PROVIDER_SPOTIFY:
     DEPLOY: true
-    REPLICAS: 2
     SPOTIFY_CALLBACK_URL: "http://{{STAGE}}.opendj.io/api/provider-spotify/v1/auth_callback"
     SPOTIFY_CLIENT_ID: "{{VAULT_SPOTIFY_CLIENT_ID}}"
     SPOTIFY_CLIENT_SECRET: "{{VAULT_SPOTIFY_CLIENT_SECRET}}"
 
   SERVICE_PLAYLIST:
     DEPLOY: true
-    REPLICAS: 2
 
   SERVICE_WEB:
     DEPLOY: true
-    REPLICAS: 2
     THROTTLE_EMITTER_PLAYLIST: 5000
 
   SERVICE_HOUSEKEEPING:
@@ -58,13 +55,11 @@ common:
   SERVICE_EVENTACTIVITY:
     PROVIDER_URL: "http://service-eventactivity:8080/api/service-eventactivity/v1/"
     DEPLOY: true
-    REPLICAS: 1
     EMIT_ACTIVITY: true
 
     
   FRONTEND_WEB:
     DEPLOY: true
-    REPLICAS: 2
 # Do not specific host - use relative hostname to allow switch between http/https:  
     WEBSOCKET_HOST: ""
     API_HOST: ""

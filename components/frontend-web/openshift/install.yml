@@ -254,7 +254,7 @@
             name: frontend-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            replicas: "{{ENV.FRONTEND_WEB.REPLICAS | default('1')}}"
+            replicas: 2
             revisionHistoryLimit: 5
             selector:
               name: frontend-web
@@ -339,7 +339,7 @@
             name: frontend-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
-            replicas: "{{ENV.FRONTEND_WEB.REPLICAS | default('1')}}"
+            replicas: 2
             revisionHistoryLimit: 5
             selector:
               name: frontend-web

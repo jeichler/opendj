@@ -29,8 +29,6 @@
           spec:
             kafka:
               version: 2.3.0
-# WTF - Why is this not working? k8s is expected int, but cast does not work???
-#              replicas: "{{ ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS | int }}"
               replicas: 2
               listeners:
                 plain: {}

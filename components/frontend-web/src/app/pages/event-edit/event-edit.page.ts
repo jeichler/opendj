@@ -215,7 +215,7 @@ export class EventEditPage implements OnInit {
       passwordCurator: ['', Validators.compose([Validators.minLength(3), Validators.required])],
       passwordUser: [''],
       maxDurationInMinutes: [0, Validators.min(10)],
-      maxTracksInPlaylist: [0, Validators.min(2)],
+      maxTracksInPlaylist: [0, Validators.min(0)],
       maxContributionsPerUser: [0],
       eventStartsAt: [new Date().toISOString(), Validators.required],
       eventEndsAt: [{value: ''/*, disabled: true*/}, Validators.nullValidator],
