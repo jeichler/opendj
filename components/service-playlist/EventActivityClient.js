@@ -38,7 +38,9 @@ function publishActivity(activity, eventID, data, display) {
             timeout: 1000
         }, function(error, response, body) {
             if (error) {
-                log.warn('publishActivity failed - ignored', error, response, body);
+                //                log.info('publishActivity failed - ignored', error, response, body);
+                log.debug('publishActivity failed, this is ignored: ' + error);
+
             } else {
                 log.trace('publishActivity response statusCode', response.statusCode)
             }
@@ -46,7 +48,7 @@ function publishActivity(activity, eventID, data, display) {
 
         log.trace('end publishActivity');
     } catch (err) {
-        log.warn('publishActivity failed, this is ignored', err);
+        log.debug('publishActivity failed, this is ignored:' + err);
     }
 }
 

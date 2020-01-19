@@ -22,6 +22,7 @@ const ENV_CRONTAB = process.env.CRONTAB
 // ---------------------------------------------------------------------------
 const datagrid = require('infinispan');
 var gridEvents = null;
+var gridEventExt = null;
 var gridPlaylists = null;
 var gridProviderSpotify = null;
 
@@ -69,14 +70,12 @@ async function getPlaylistWithID(eventID, playlistID) {
     return playlist;
 }
 
-function fixEventEnd(event) {
-    log.trace("fixEventEnd start = ", event.eventStartsAt);
-    let start = Date.parse(event.eventStartsAt);
-    let end = new Date();
-    end.setTime(start + 0 * 60 * 1000);
-    event.eventEndsAt = end.toISOString();
+async function getEventExtForEventID(eventID) {
+    log.trace("begin getEventExtForEventID id=%s", eventID);
+    let eventExt = await getFromGrid(gridEventExt, eventID);
+    log.trace("end getEventForEventID id=%s", eventID);
 
-    log.trace("fixEventEnd end = ", event.eventEndsAt);
+    return eventExt;
 }
 
 
@@ -115,6 +114,9 @@ async function deleteEvent(event) {
         del = await gridPlaylists.remove(event.eventID + ':' + playlist.playlistID);
         log.trace("playlist with id=%s was deleted = %s", playlist.playlistID, del);
     }
+    del = await gridEventExt.remove(event.eventID);
+    log.trace("eventExt was deleted = %s", del);
+
     del = await gridEvents.remove(event.eventID);
     log.trace("event was deleted = %s", del);
 
@@ -135,8 +137,8 @@ async function checkEvent(event) {
             log.trace("event = ", JSON.stringify(event));
         }
 
-        //        await fixEventEnd(event);
         await retrievePlaylists(event);
+        event.ext = await getEventExtForEventID(event.eventID);
         await exportEvent(event);
         if (Date.now() > Date.parse(event.eventEndsAt)) {
             await deleteEvent(event);
@@ -186,6 +188,7 @@ async function main() {
     try {
         log.info("BEGIN HOUSEKEEPING");
         gridEvents = await connectToGrid("EVENTS");
+        gridEventExt = await connectToGrid("EVENTS_EXT");
         gridPlaylists = await connectToGrid("PLAYLISTS");
         gridProviderSpotify = await connectToGrid("PROVIDER_SPOTIFY_STATE");
 
@@ -194,10 +197,11 @@ async function main() {
 
         log.debug("Disconnecting from datagrid...");
         gridEvents.disconnect();
+        gridEventExt.disconnect();
         gridPlaylists.disconnect();
         gridProviderSpotify.disconnect();
 
-        log.info("END HOUSEKEEPING");
+        log.debug("END HOUSEKEEPING");
     } catch (err) {
         log.fatal("!!!!!!!!!!!!!!!");
         log.fatal("main failed with err %s", err);

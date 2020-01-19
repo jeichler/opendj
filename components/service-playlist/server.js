@@ -76,7 +76,7 @@ const EVENT_PROTOTYPE = {
     passwordUser: "",
     maxUsers: 100,
     maxDurationInMinutes: 2880, //48h
-    maxTracksInPlaylist: 100,
+    maxTracksInPlaylist: 50,
     eventStartsAt: "",
     eventEndsAt: "",
     allowDuplicateTracks: DEFAULT_ALLOW_DUPLICATE_TRACKS,
@@ -91,11 +91,19 @@ const EVENT_PROTOTYPE = {
     demoAutoskip: MOCKUP_AUTOSKIP,
     demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
+    demoAutoFillNumTracks: 5,
     providers: ["spotify"],
 
     activePlaylist: 0,
     playlists: [0],
-    effectivePlaylist: []
+    // Effective Playlist and other large stuff is in EVENT_EXT Object
+    // to avoid transfering it to all clients on every update:
+    //effectivePlaylist: []
+}
+const EVENT_EXT_PROTOTYPE = {
+    effectivePlaylist: [], // What has actually been played?
+    backgroundPLaylist: [], // When autofill is enabled, tracks are taken from this background playlist (Track IDS)
+    eventImage: '' // Custom Image for this Event, base64 encoded
 }
 
 // Key: EventID: Object: Timer
@@ -363,10 +371,11 @@ async function addTrack(event, playlist, provider, trackID, user) {
 
     if (!event.allowDuplicateTracks) {
         log.trace("duplicates not allowed, search for track in effective playlist");
-        pos = findTrackPositionInList(event.effectivePlaylist, provider, trackID);
+        let eventExt = await getEventExtForEventID(event.eventID);
+        pos = findTrackPositionInList(eventExt.effectivePlaylist, provider, trackID);
         if (pos >= 0) {
             log.debug("ADD rejected because not duplicated allowed and track is in effective playlist");
-            throw { code: "PLYLST-120", msg: "Sorry, this event does not allow duplicate tracks, and this track has already been played at " + event.effectivePlaylist[pos].started_at };
+            throw { code: "PLYLST-120", msg: "Sorry, this event does not allow duplicate tracks, and this track has already been played at " + eventExt.effectivePlaylist[pos].started_at };
         }
     }
 
@@ -672,7 +681,7 @@ async function play(event, playlist) {
                 "/play/" + playlist.currentTrack.id +
                 "?pos=" + playlist.currentTrack.progress_ms, { json: true });
         } catch (err) {
-            log.fatal("!!! PLAY FAILED err=" + err);
+            log.fatal("!!! PLAY FAILED err=", err);
             if (PAUSE_ON_PLAYERROR) {
                 log.debug("Pressing pause to avoid damage after play failed!");
                 await pause(event, playlist, err);
@@ -740,8 +749,17 @@ async function skip(event, playlist, user) {
         let progressPercentage = Math.round((playlist.currentTrack.progress_ms / playlist.currentTrack.duration_ms) * 100);
         if (progressPercentage >= event.progressPercentageRequiredForEffectivePlaylist) {
             log.debug("adding current track to effectivePlaylist")
-            event.effectivePlaylist.push(playlist.currentTrack);
-            fireEventChangedEvent(event);
+            let eventExt = await getEventExtForEventID(event.eventID);
+            eventExt.effectivePlaylist.push(playlist.currentTrack);
+            await putEventExt(event.eventID, eventExt);
+
+            // Dirty optimization Part #1 - autofill also needs ext, to avoid re-loading it from grid, we store it 
+            // at the event:
+            event.ext = eventExt;
+
+            // Fix #205 - do not push event on skip - effective playlist is now at event-ext, so we 
+            // dont need this anymore:
+            // fireEventChangedEvent(event);
         } else {
             log.debug("Track was skipped at %s\%, which is below required %s\% for effective playlist, so NOT adding it",
                 progressPercentage, event.progressPercentageRequiredForEffectivePlaylist);
@@ -858,10 +876,11 @@ async function autofillPlaylistIfNecessary(event, playlist) {
     if (event.demoAutoFillEmptyPlaylist) {
         log.trace("demoAutoFillEmptyPlaylist is active");
         if (event.demoAutoFillNumTracks == 0 && playlist.nextTracks.length == 0) {
-            // List is empty and we should add to max:
+            log.trace('List is empty and we should add to max', event.maxTracksInPlaylist);
             numTracksToAdd = event.maxTracksInPlaylist;
 
         } else if (event.demoAutoFillNumTracks > 0) {
+            log.trace('AutoFillNumTracks is greater zero');
             numTracksToAdd = event.demoAutoFillNumTracks - playlist.nextTracks.length;
             if (numTracksToAdd > event.maxTracksInPlaylist) {
                 numTracksToAdd = event.maxTracksInPlaylist;
@@ -873,6 +892,20 @@ async function autofillPlaylistIfNecessary(event, playlist) {
 
     if (numTracksToAdd > 0) {
         log.trace("need to add %s tracks", numTracksToAdd);
+
+        // we need effective playlist if duplicate tracks are not allowed
+        // or backround playlist is enabled:
+        let eventExt = null;
+        if (!event.allowDuplicateTracks) {
+            if (event.ext) {
+                // Dirty optimization Part #2 - skip() did load this already and stored it at the event
+                // for us:
+                eventExt = event.ext;
+            } else {
+                eventExt = await getEventExtForEventID(event.eventID);
+            }
+        }
+
 
         for (let i = 0; i < numTracksToAdd; i++) {
             // Try 10 times to pick a random ID from emergencyTrackIDs that is
@@ -887,7 +920,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
                 log.trace("autofill: trying to add track %s", trackID);
                 if (!isTrackInList(playlist.nextTracks, trackID) &&
                     (!playlist.currentTrack || ('' + playlist.currentTrack.provider + ':' + playlist.currentTrack.id) != trackID) &&
-                    (event.allowDuplicateTracks || !isTrackInList(event.effectivePlaylist, trackID))) {
+                    (event.allowDuplicateTracks || !isTrackInList(eventExt.effectivePlaylist, trackID))) {
 
                     let track = await getTrackDetailsForTrackID(event.eventID, trackID);
                     track.added_by = "OpenDJ";
@@ -902,7 +935,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
             }
 
             if (!added) {
-                log.warn("autofillPlaylistIfNecessary(): could not add random tracks with " + emergencyTrackIDs.length * 2 + " tries, maybe we have not enough tracks in emergency list, or we have already played all tracks from emergency list.");
+                log.debug("autofillPlaylistIfNecessary(): could not add random tracks with " + emergencyTrackIDs.length * 2 + " tries, maybe we have not enough tracks in emergency list, or we have already played all tracks from emergency list.");
                 break; // Outer Loop.
             }
         }
@@ -1018,6 +1051,28 @@ async function getEventForEventID(eventID) {
 
     return event;
 }
+
+async function getEventExtForEventID(eventID) {
+    log.trace("begin getEventExtForEventID id=%s", eventID);
+    let eventExt = await getFromGrid(gridEventExt, eventID);
+    if (eventExt == null) {
+        log.debug("getEventExtForEventID event is null for id=%s - returning prototype", eventID);
+        eventExt = JSON.parse(JSON.stringify(EVENT_EXT_PROTOTYPE));
+    } else {
+        if (log.isTraceEnabled())
+            log.trace("eventExt from grid = %s", JSON.stringify(eventExt));
+    }
+    log.trace("end getEventForEventID id=%s", eventID);
+
+    return eventExt;
+}
+
+async function putEventExt(eventID, eventExt) {
+    log.trace("begin putEventExt id=%s", eventID);
+    await putIntoGrid(gridEventExt, eventID, eventExt);
+    log.trace("end putEventExt id=%s", eventID);
+}
+
 
 async function getEventForRequest(req) {
     log.trace("begin getEventForRequest");
@@ -1452,6 +1507,7 @@ const datagrid = require('infinispan');
 var gridPlaylists = null;
 var gridEvents = null;
 var gridEventLck = null;
+var gridEventExt = null;
 
 async function connectToGrid(name) {
     let grid = null;
@@ -1593,6 +1649,7 @@ setImmediate(async function() {
     try {
         log.debug("Connecting to datagrid...");
         gridEvents = await connectToGrid("EVENTS");
+        gridEventExt = await connectToGrid("EVENT_EXT");
         gridEventLck = await connectToGrid("EVENT_LCK");
         gridPlaylists = await connectToGrid("PLAYLISTS");
 
