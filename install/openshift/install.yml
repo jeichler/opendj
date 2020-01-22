@@ -61,6 +61,17 @@
             .dockerconfigjson: "{{ENV.COMMON.QUAY_SECRET}}" 
           type: kubernetes.io/dockerconfigjson
 
+    - name: Create service account for skopeo
+      when:
+      tags: prj,skopeo
+      k8s:
+        state: present
+        definition:
+          kind: ServiceAccount
+          metadata:
+            name: skopeo
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+
     - name: Grant access to images from other namespace
       when: not ENV.COMMON.CONTAINER_IMAGE_BUILD and not ENV.COMMON.CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY
       tags: prj

@@ -170,9 +170,11 @@
                 kind: ImageStreamTag
                 name: frontend-web-artifact:latest
             postCommit: {}
-            resources: 
-              limits:
-                memory: 2048Mi
+# Was need to build on employee openshift due to quota constraints
+# but is not needed any more as we build on stormshift:
+#            resources: 
+#              limits:
+#                memory: 2048Mi
             runPolicy: Serial
             source:
               contextDir: components/frontend-web

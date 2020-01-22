@@ -216,17 +216,23 @@ oc create serviceaccount skopeo
 oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}' |tee skopeo-token
 TOKEN="$(cat skopeo-token)"
  
- TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}')
+TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}')
 
 
- skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:tst
+# --- copy from ocp4 to quay ---
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:latest
 
- skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.io/opendj/service-eventactivity:tst
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:latest
 
-skopeo inspect --tls-verify=false docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
+
+skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
 
 
-# Release local OpenShift LATEST to QUAY LATEST
+
+# Release OCP1 LATEST to QUAY LATEST
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
@@ -250,4 +256,26 @@ skopeo copy docker://quay.io/opendj/frontend-web:latest docker://quay.io/opendj/
 
 # Import PRD TAG from Quay to OpenShift:
 oc tag --source=docker quay.io/opendj/provider-spotify:prd provider-spotify:prd --reference-policy=local --scheduled=true
+
+#
+# Route53
+#
+aws --profile opendj-ops route53 list-hosted-zones
+             "Id": "/hostedzone/Z2L93D4HGFH9GO",
+            "Name": "opendj.io.",
+
+aws --profile opendj-ops route53 list-resource-record-sets
+    "ResourceRecordSets": [
+        {
+            "Name": "opendj.io.",
+            "Type": "A",
+            "TTL": 86400,
+            "ResourceRecords": [
+                {
+                    "Value": "174.129.25.170"
+                }
+            ]
+        },
+
+aws --profile opendj-ops route53 change-resource-record-sets
 

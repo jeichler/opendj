@@ -178,9 +178,8 @@
                 <distributed-cache name="default"/>
                 <distributed-cache name="TRACKS"  configuration="OPENDJ_CACHE_CONFIG"/>
                 <distributed-cache name="PLAYLISTS" configuration="OPENDJ_CACHE_CONFIG"/>
-                <distributed-cache name="EVENTS" configuration="OPENDJ_CACHE_CONFIG">
-                <distributed-cache name="EVENT_EXT" configuration="OPENDJ_CACHE_CONFIG">
-                </distributed-cache>
+                <distributed-cache name="EVENTS" configuration="OPENDJ_CACHE_CONFIG"/>
+                <distributed-cache name="EVENT_EXT" configuration="OPENDJ_CACHE_CONFIG"/>
                 <distributed-cache name="EVENT_LCK" configuration="OPENDJ_CACHE_CONFIG">
                     <transaction stop-timeout="1000" mode="NON_DURABLE_XA" locking="PESSIMISTIC"/>
                 </distributed-cache>

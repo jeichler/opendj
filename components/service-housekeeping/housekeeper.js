@@ -188,7 +188,7 @@ async function main() {
     try {
         log.info("BEGIN HOUSEKEEPING");
         gridEvents = await connectToGrid("EVENTS");
-        gridEventExt = await connectToGrid("EVENTS_EXT");
+        gridEventExt = await connectToGrid("EVENT_EXT");
         gridPlaylists = await connectToGrid("PLAYLISTS");
         gridProviderSpotify = await connectToGrid("PROVIDER_SPOTIFY_STATE");
 
