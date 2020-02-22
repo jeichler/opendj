@@ -179,8 +179,8 @@ oc tag frontend-web:latest frontend-web:tst
 NPM_MIRROR=https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org
 
 # Git Project Labeling:
-git tag -a 0.4.1 -m "Haloween Release for multi-event"
-git push origin 0.4.1
+git tag -a 0.5.0 -m "Large Event - Forum Darmstadt - Event View "
+git push origin 0.5.0
 
 
 
