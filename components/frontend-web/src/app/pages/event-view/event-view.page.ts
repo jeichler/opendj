@@ -44,10 +44,11 @@ export class EventViewPage implements OnInit, OnDestroy {
     'show-delay': 0
   };
   eventURLShortened: string;
-  autoScrollHandler = null;
+/* NO_AUTOSCROLL#264
+   autoScrollHandler = null;
   autoScrollPos = 0;
   autoScrollDirection = 1;
-
+*/
   constructor(
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
@@ -80,7 +81,8 @@ export class EventViewPage implements OnInit, OnDestroy {
     this.menu.open('app-menu');
   }
 
-  autoScroll() {
+/* NO_AUTOSCROLL#264
+   autoScroll() {
 
     if (this.currentEvent && this.currentEvent.eventViewAutoScrollEnable && this.currentPlaylist && this.currentPlaylist.nextTracks) {
       console.debug('platform width = ', this.platform.width());
@@ -103,27 +105,7 @@ export class EventViewPage implements OnInit, OnDestroy {
       }
     }
   }
-
-  addTrackToVisible() {
-    let numTracksAvailToAdd = this.currentPlaylist.nextTracks.length - this.visibleTracks.length;
-    const offset = this.visibleTracks.length;
-    if (numTracksAvailToAdd > 5) {
-      numTracksAvailToAdd = 5;
-    }
-
-    for (let i = 0; i < numTracksAvailToAdd; i++) {
-      this.visibleTracks.push(this.currentPlaylist.nextTracks[offset + i]);
-
-    }
-
-    return numTracksAvailToAdd > 0;
-  }
-
-  loadMoreData(event) {
-    const more = this.addTrackToVisible();
-    event.target.complete();
-    event.target.disabled = !more;
-  }
+*/
 
   computeETAForTracks() {
     const playlist = this.currentPlaylist;
@@ -143,13 +125,9 @@ export class EventViewPage implements OnInit, OnDestroy {
     }
   }
 
-
   trackElement(index: number, element: any) {
-    // return element ? element.id : null;
-    // tslint:disable-next-line:no-unused-expression
-    return index + ', ' + element.id;
+    return element ? element.id : null;
   }
-
 
   generateQrCode(text): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -249,6 +227,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     this.eventURLShortened = this.shortenEventUrl(this.currentEvent.url);
     this.qrImageSrc = await this.generateQrCode(this.currentEvent.url);
 
+ /* NO_AUTOSCROLL#264
     if (this.autoScrollHandler) {
       clearInterval(this.autoScrollHandler);
     }
@@ -258,7 +237,8 @@ export class EventViewPage implements OnInit, OnDestroy {
         this.autoScroll();
       }, this.currentEvent.eventViewAutoScrollInterval * 1000);
     }
-  }
+*/
+}
 
 
 
@@ -278,13 +258,15 @@ export class EventViewPage implements OnInit, OnDestroy {
     console.debug('handlePlaylistUpdate()');
     this.currentPlaylist = newPlaylist;
     this.computeETAForTracks();
+ /* NO_AUTOSCROLL#264
     if (this.currentEvent && this.currentEvent.eventViewAutoScrollTopOnNext) {
       this.autoScrollPos = 0;
     }
-    if (this.visibleTracks.length === 0 ) {
-      this.addTrackToVisible();
+ */
 
-    }
+    // No need to create widgets for the whole list, as we have no scroll bars:
+    this.visibleTracks = this.currentPlaylist.nextTracks.slice(0, 10);
+
   }
   handleActivity(activity) {
 
@@ -374,7 +356,9 @@ export class EventViewPage implements OnInit, OnDestroy {
     });
     this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
+/* NO_AUTOSCROLL#264
     clearInterval(this.autoScrollHandler);
+*/
   }
 
 }

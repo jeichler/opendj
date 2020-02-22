@@ -381,9 +381,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
   }
 
   trackElement(index: number, element: any) {
-    // return element ? element.id : null;
-    // tslint:disable-next-line:no-unused-expression
-    return index + ', ' + element.id;
+    return element ? element.id : null;
   }
 
   checkEverybodyIsCuratorStateChange() {

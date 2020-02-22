@@ -45,7 +45,7 @@ specific:
     REPLICAS: 2
 
   SERVICE_EVENTACTIVITY:
-    LOG_LEVEL: "error"
+    LOG_LEVEL: "ERROR"
 
   FRONTEND_WEB:
     REPLICAS: 1

@@ -266,13 +266,11 @@
     - name: Create ConfigMap
       k8s:
         state: present
-        wait: true
         definition: "{{ lookup('template', 'cfgmap.j2') }}"
 
     - name: Create DeploymentConfig Runtime Image
       k8s:
         state: present
-        wait: true
         definition:
           kind: DeploymentConfig
           apiVersion: apps.openshift.io/v1
@@ -356,7 +354,6 @@
     - name: Create Service
       k8s:
         state: present
-        wait: true
         definition:
           kind: Service
           apiVersion: v1
@@ -380,7 +377,6 @@
       when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
-        wait: true
         definition:
           kind: Route
           apiVersion: route.openshift.io/v1
@@ -410,7 +406,6 @@
       when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
         state: present
-        wait: true
         definition:
           kind: Route
           apiVersion: route.openshift.io/v1

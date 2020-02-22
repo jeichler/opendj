@@ -31,6 +31,8 @@
                 value: "{{ENV.SERVICE_EVENTACTIVITY.LOG_LEVEL | default('ALL')}}"
               - name: "mp_messaging_outgoing_event_activity_bootstrap_servers"
                 value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST}}"
+              - name: "quarkus.http.port"
+                value: 8080
             imagePullPolicy: IfNotPresent
             name: service-eventactivity-minimal
             resources:

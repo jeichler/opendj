@@ -35,10 +35,12 @@ export class MusicEvent {
 
     eventViewEnable: boolean;
     eventViewPassword: string;
+ /*   NO_AUTOSCROLL#264
     eventViewAutoScrollEnable: boolean;
     eventViewAutoScrollInterval: number;
     eventViewAutoScrollSpeed: number;
     eventViewAutoScrollTopOnNext: boolean;
+*/
     eventViewShowMetaBars: boolean;
     eventViewShowActivityFeed: boolean;
 
