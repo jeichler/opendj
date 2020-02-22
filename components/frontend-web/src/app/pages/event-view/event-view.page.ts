@@ -265,7 +265,7 @@ export class EventViewPage implements OnInit, OnDestroy {
  */
 
     // No need to create widgets for the whole list, as we have no scroll bars:
-    this.visibleTracks = this.currentPlaylist.nextTracks.slice(0, 10);
+    this.visibleTracks = this.currentPlaylist.nextTracks.slice(0, 15);
 
   }
   handleActivity(activity) {

@@ -8,7 +8,9 @@ import { CurrentTrackComponent } from 'src/app/components/current-track/current-
 import { SharedModule } from 'src/app/components/shared.module';
 import { TooltipModule } from 'ng2-tooltip-directive';
 
+/* remove twitter feed #259
 import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
+*/
 
 @NgModule({
   imports: [
@@ -17,7 +19,7 @@ import { NgxTwitterTimelineModule } from 'ngx-twitter-timeline';
     IonicModule,
     TooltipModule,
     SharedModule,
-    NgxTwitterTimelineModule,
+//    NgxTwitterTimelineModule,
     RouterModule.forChild([
       {
         path: '',
