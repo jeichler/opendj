@@ -180,8 +180,8 @@ oc tag frontend-web:latest frontend-web:tst
 NPM_MIRROR=https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org
 
 # Git Project Labeling:
-git tag -a 0.5.0 -m "Large Event - Forum Darmstadt - Event View "
-git push origin 0.5.0
+git tag -a 0.5.1 -m "Large Event - Event View Stats"
+git push origin 0.5.1
 
 
 
@@ -257,6 +257,12 @@ skopeo copy docker://quay.io/opendj/frontend-web:latest docker://quay.io/opendj/
 
 # Import PRD TAG from Quay to OpenShift:
 oc tag --source=docker quay.io/opendj/provider-spotify:prd provider-spotify:prd --reference-policy=local --scheduled=true
+oc tag --source=docker quay.io/opendj/service-playlist:prd service-playlist:prd --reference-policy=local --scheduled=true
+oc tag --source=docker quay.io/opendj/service-housekeeping:prd service-housekeeping:prd --reference-policy=local --scheduled=true
+oc tag --source=docker quay.io/opendj/service-eventactivity:prd service-eventactivity:prd --reference-policy=local --scheduled=true
+oc tag --source=docker quay.io/opendj/service-web:prd service-web:prd --reference-policy=local --scheduled=true
+oc tag --source=docker quay.io/opendj/frontend-web:prd frontend-web:prd --reference-policy=local --scheduled=true
+
 
 #
 # Route53

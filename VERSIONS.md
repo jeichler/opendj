@@ -6,6 +6,7 @@ In this repo:
 
 Version | Date       | Description
 ------- | ---------- | ------------
+V0.5.1  | 23.02.2020 | Large Event - Event View Stats
 V0.5.0  | 22.02.2020 | Large Event - Forum Darmstadt - Event View 
 V0.4.2  | 12.11.2019 | Close to End of Sprint 04 - Multi-Event 
 V0.4.1  | 02.10.2019 | Lots of minor fixes for Multi-Event 
