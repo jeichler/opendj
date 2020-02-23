@@ -93,7 +93,7 @@ function updateEventStatsFromActivity(activity) {
             break;
 
         case 'USER_LOGOUT':
-            userState = activity.data.fromClient.userState;
+            userState = activity.data.userState;
             username = userState.username;
             stats.userSet.delete(username);
             stats.numUsers = stats.userSet.size;
@@ -122,6 +122,11 @@ function updateEventStatsFromActivity(activity) {
             if (stats.curatorSet.has(username)) {
                 stats.numCuratorsOnline--;
             }
+            updated = true;
+            break;
+
+        case 'TRACK_PLAY':
+            stats.numTracksPlayed++;
             updated = true;
             break;
 
