@@ -173,6 +173,18 @@
                     <ion-label class="legend-energy">Energy</ion-label><br>
                     <ion-label class="legend-happiness">Happiness</ion-label>
                 </div>
+
+                <div *ngIf="currentEvent.eventViewShowStats" class="stats-div">
+                    <ion-label class="event-stats">Users Registered: {{this.currentEventStats.numUsers}}</ion-label><br>
+                    <ion-label class="event-stats">Users Online: {{this.currentEventStats.numUsersOnline}}</ion-label><br>
+                    <ion-label class="event-stats">Max Users Registered: {{this.currentEventStats.maxUsers}}</ion-label><br>
+                    <ion-label class="event-stats">Max Users Online: {{this.currentEventStats.maxUsersOnline}}</ion-label><br>
+                    <ion-label class="event-stats">Curators Registered: {{this.currentEventStats.numCurators}}</ion-label><br>
+                    <ion-label class="event-stats">Curators Online: {{this.currentEventStats.numCuratorsOnline}}</ion-label><br>
+                    <ion-label class="event-stats">Tracks in playlist: {{this.currentPlaylist.nextTracks.length}}</ion-label><br>
+                    <ion-label class="event-stats">Tracks played: {{this.currentEventStats.numTracksPlayed}}</ion-label><br>
+                </div>
+
             </ion-col>
         </ion-row>
 

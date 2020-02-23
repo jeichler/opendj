@@ -1,7 +1,4 @@
 
-# Container Registry
-Use Quay as registry to transport components between environments
-
 ## Install kafka on mac:
 ```bash
 # Install:
@@ -24,12 +21,16 @@ kafka-server-start /usr/local/etc/kafka/server1.properties
 # Delete topics:
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.playlist
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.event.activity
 
 
 # Create topics for dual brokers:
 kafka-topics --bootstrap-server localhost:9092  --create --topic  opendj.state.provider-spotify --partitions 3 --replication-factor 2 --config retention.ms=43200000
 kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.data.event --partitions 3 --replication-factor 2 --config retention.ms=43200000
 kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.playlist --partitions 3 --replication-factor 2 --config retention.ms=43200000
+
+kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.activity --partitions 1 --replication-factor 1 
+
 
 # Delete Topics:
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify 

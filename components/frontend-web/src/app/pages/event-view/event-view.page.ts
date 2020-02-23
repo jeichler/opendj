@@ -5,7 +5,7 @@ import { ModalController, ActionSheetController, ToastController, Platform, Menu
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from '../../providers/fes.service';
-import { MusicEvent } from 'src/app/models/music-event';
+import { MusicEvent, EventStats } from 'src/app/models/music-event';
 import { Track } from 'src/app/models/track';
 import { Playlist } from 'src/app/models/playlist';
 import { Subscription } from 'rxjs';
@@ -24,6 +24,7 @@ export class EventViewPage implements OnInit, OnDestroy {
   public selectedItem: any;
 
   currentEvent: MusicEvent = null;
+  currentEventStats: EventStats = new EventStats();
   currentPlaylist: Playlist = null;
   subscriptions: Subscription[] = [];
   userState: UserSessionState;
@@ -266,19 +267,21 @@ export class EventViewPage implements OnInit, OnDestroy {
 
     // No need to create widgets for the whole list, as we have no scroll bars:
     this.visibleTracks = this.currentPlaylist.nextTracks.slice(0, 15);
-
   }
-  handleActivity(activity) {
 
+  handleActivity(activity) {
     const ts = new Date(activity.timestamp);
     activity.timestamp = this.date2hhmmss(ts);
-    console.debug('ts=' + activity.timestamp);
 
     this.activityList.unshift(activity);
     while (this.activityList.length > 40) {
       this.activityList.pop();
     }
 
+    if (activity.stats) {
+      this.currentEventStats = activity.stats;
+    }
+    this.currentEventStats.numUsers = 42;
 
   }
 

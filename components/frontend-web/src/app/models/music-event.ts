@@ -43,6 +43,17 @@ export class MusicEvent {
 */
     eventViewShowMetaBars: boolean;
     eventViewShowActivityFeed: boolean;
+    eventViewShowStats: boolean;
 
     eventViewTwitterURL: string;
+}
+
+export class EventStats {
+    numUsers: number;
+    numUsersOnline: number;
+    maxUsers: number;
+    maxUsersOnline: number;
+    numCurators: number;
+    numCuratorsOnline: number;
+    numTracksPlayed: number;
 }

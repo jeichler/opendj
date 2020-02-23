@@ -349,6 +349,13 @@
                         <ion-icon tooltip="Show timeline feed of event activities (people joining, leaving, contributing tracks etc)" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Show Statistics</ion-label>
+                        <ion-toggle id="eventViewShowStats" color="primary" formControlName="eventViewShowStats"></ion-toggle>
+                        <ion-icon tooltip="Show statistics like number of users, online users etc." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
                     <!-- remove twitter feed #259
                     <ion-item>
                         <ion-label class="ion-text-wrap">Twitter URL</ion-label>

@@ -242,6 +242,7 @@ export class EventEditPage implements OnInit {
       eventViewAutoScrollTopOnNext: [true],
       eventViewShowMetaBars: [true],
       eventViewShowActivityFeed:[true],
+      eventViewShowStats:[true],
       eventViewTwitterURL: [''],
     });
   }

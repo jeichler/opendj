@@ -32,9 +32,116 @@ var readyState = {
     lastError: ""
 };
 
+var EVENT_INFO_PROTOTYPE = {
+    activityHistory: [],
+    userSet: {},
+    curatorSet: {},
+
+    numUsers: 0,
+    numUsersOnline: 0,
+    maxUsers: 0,
+    maxUsersOnline: 0,
+    numCurators: 0,
+    numCuratorsOnline: 0,
+    numTracksPlayed: 0,
+}
+
+var mapOfEventStats = new Map();
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// ------------------------------ kafka stuff -----------------------------
+// ------------------------------- logic stuff -------------------------------
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
+function updateEventStatsFromActivity(activity) {
+    log.trace("begin updateEventStatsFromActivity");
+
+    let stats = mapOfEventStats.get(activity.eventID);
+    let updated = false;
+    let result = null;
+    let userState = null;
+    let username = null;
+
+    if (!stats) {
+        stats = Object.assign({}, EVENT_INFO_PROTOTYPE);;
+        stats.userSet = new Set();
+        stats.curatorSet = new Set();
+        stats.activityHistory = new Array();
+        mapOfEventStats.set(activity.eventID, stats);
+    }
+
+    stats.activityHistory.push(activity);
+    if (stats.activityHistory.length > 20) {
+        stats.activityHistory.shift();
+    }
+
+    switch (activity.activity) {
+        case 'USER_LOGIN':
+            userState = activity.data.fromClient.userState;
+            username = userState.username;
+            stats.userSet.add(username);
+            stats.numUsers = stats.userSet.size;
+            if (userState.isCurator) {
+                stats.curatorSet.add(username);
+                stats.numCurators = stats.curatorSet.size;
+            }
+            if (stats.numUsers > stats.maxUsers) {
+                stats.maxUsers = stats.numUsers;
+            }
+            updated = true;
+            break;
+
+        case 'USER_LOGOUT':
+            userState = activity.data.fromClient.userState;
+            username = userState.username;
+            stats.userSet.delete(username);
+            stats.numUsers = stats.userSet.size;
+            if (userState.isCurator) {
+                stats.curatorSet.delete(username);
+                stats.numCurators = stats.curatorSet.size;
+            }
+            updated = true;
+            break;
+
+        case 'USER_CONNECT':
+            username = activity.data.user;
+            stats.numUsersOnline++;
+            if (stats.curatorSet.has(username)) {
+                stats.numCuratorsOnline++;
+            }
+            if (stats.numUsersOnline > stats.maxUsersOnline) {
+                stats.maxUsersOnline = stats.numUsersOnline;
+            }
+            updated = true;
+            break;
+
+        case 'USER_DISCONNECT':
+            username = activity.data.user;
+            stats.numUsersOnline--;
+            if (stats.curatorSet.has(username)) {
+                stats.numCuratorsOnline--;
+            }
+            updated = true;
+            break;
+
+        case 'EVENT_CREATE':
+            break;
+
+        case 'EVENT_DELETE':
+            break;
+    }
+
+    if (updated) {
+        result = stats;
+    }
+    log.trace("end updateEventStatsFromActivity result=", result);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// ------------------------------- kafka stuff -------------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
@@ -83,20 +190,18 @@ function startKafkaConsumer() {
         log.trace("begin kafkaConsumer.onMessage");
 
         try {
+            let activity = JSON.parse(message.value);
+            let eventID = activity.eventID;
+            let stats = updateEventStatsFromActivity(activity);
 
             //            var msg = JSON.parse(JSON.stringify(message));
             if (message.offset == message.highWaterOffset - 1) {
                 log.trace("High Water Message received - payload = %s", message.value);
-                let activity = JSON.parse(message.value);
-                let eventID = activity.eventID;
                 let namespace = getNameSpaceForEventID(eventID);
-                emitEventActivity(namespace, activity);
-
-            } else {
-                log.trace("Ignoring old message");
+                emitEventActivity(namespace, activity, stats);
             }
         } catch (e) {
-            log.error("kafkaConsumer Exception %s while processing message - ignored", e);
+            log.error("kafkaConsumer Exception  while processing message - ignored", e);
         }
         log.trace("end kafkaConsumer.onMessage");
     });
@@ -331,7 +436,7 @@ function emitEvent(socketOrNamespace, event) {
     log.trace("end emitEvent");
 }
 
-function emitEventActivity(socket, activity) {
+function emitEventActivity(socket, activity, stats) {
     log.trace("begin emitEventActivity");
     if (ENV_EMIT_ACTIVITY) {
         // We broadcast only a striped down version to save bandwidth:
@@ -340,8 +445,16 @@ function emitEventActivity(socket, activity) {
             display: activity.display,
             timestamp: activity.timestamp
         };
+        if (stats) {
+            let statsClone = Object.assign({}, stats);
+            delete statsClone.activityHistory;
+            delete statsClone.userSet;
+            delete statsClone.curatorSet;
+            simpleActivity.stats = statsClone;
+        }
+
         socket.emit("event-activity", simpleActivity);
-        log.debug("event activity emitted successfully %s", JSON.stringify(simpleActivity));
+        log.debug("event activity emitted successfully: ", simpleActivity);
     } else {
         log.debug("event activity emitter is disabled");
     }
