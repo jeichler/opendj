@@ -281,8 +281,6 @@ export class EventViewPage implements OnInit, OnDestroy {
     if (activity.stats) {
       this.currentEventStats = activity.stats;
     }
-    this.currentEventStats.numUsers = 42;
-
   }
 
 
