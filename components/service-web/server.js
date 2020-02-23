@@ -140,7 +140,7 @@ function updateEventStatsFromActivity(activity) {
     if (updated) {
         result = stats;
     }
-    log.trace("end updateEventStatsFromActivity result=", result);
+    log.trace("end updateEventStatsFromActivity");
     return result;
 }
 
