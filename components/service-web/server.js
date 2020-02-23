@@ -199,8 +199,8 @@ function startKafkaConsumer() {
             let eventID = activity.eventID;
             let stats = updateEventStatsFromActivity(activity);
 
-            //            var msg = JSON.parse(JSON.stringify(message));
-            if (message.offset == message.highWaterOffset - 1) {
+            // Broadcast last 10 Messages:
+            if (message.offset > message.highWaterOffset - 10) {
                 log.trace("High Water Message received - payload = %s", message.value);
                 let namespace = getNameSpaceForEventID(eventID);
                 emitEventActivity(namespace, activity, stats);
