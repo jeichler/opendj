@@ -21,11 +21,14 @@
         state: present
         wait: true
         definition:
-          apiVersion: kafka.strimzi.io/v1alpha1
+          apiVersion: kafka.strimzi.io/v1beta1
           kind: Kafka
           metadata:
             name: backend-eventstore
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+            labels:
+              app.kubernetes.io/part-of: backend
+              app: backend
           spec:
             kafka:
               version: 2.3.0

@@ -16,10 +16,11 @@ specific:
 
 
 
-  BACKEND_EVENTSTORE:
-    KAFKA:
-      OPERATOR_AVAILABLE: false
-      TOPIC_CMD:  oc --namespace dfroehli-opendj-prd rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+#  BACKEND_EVENTSTORE:
+#    KAFKA:
+#      OPERATOR_AVAILABLE: false
+#      TOPIC_CMD:  oc --namespace dfroehli-opendj-prd rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+ 
 
   PROVIDER_SPOTIFY:
     LOG_LEVEL: "error"

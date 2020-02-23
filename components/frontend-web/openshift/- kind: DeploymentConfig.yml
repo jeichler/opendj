@@ -2,8 +2,7 @@
   apiVersion: apps.openshift.io/v1
   metadata:
     labels:
-      app: service
-      app.kubernetes.io/part-of: service
+      app: service-eventactivity
     name: service-eventactivity
     namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
   spec:
@@ -21,10 +20,7 @@
       metadata:
         labels:
           name: service-eventactivity
-          app: service
         name: service-eventactivity
-        annotations:
-          app.openshift.io/connects-to: 'backend-eventstore-kafka'
       spec:
         containers:
           - env:
@@ -33,7 +29,7 @@
               - name: "mp_messaging_outgoing_event_activity_bootstrap_servers"
                 value: "{{ENV.BACKEND_EVENTSTORE.KAFKA.HOST}}"
               - name: "quarkus.http.port"
-                value: "8080"
+                value: 8080
             imagePullPolicy: IfNotPresent
             name: service-eventactivity-minimal
             resources:

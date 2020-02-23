@@ -115,9 +115,10 @@
           apiVersion: apps.openshift.io/v1
           metadata:
             annotations:
-              template.alpha.openshift.io/wait-for-ready: 'true'
+              app.openshift.io/connects-to: 'provider-spotify,service-eventactivity,backend-datagrid'
             labels:
-              app: service-playlist
+              app: service
+              app.kubernetes.io/part-of: service
             name: service-playlist
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:

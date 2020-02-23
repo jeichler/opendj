@@ -15,10 +15,11 @@ specific:
             GIT:
                   REF: "master"
 
-      BACKEND_EVENTSTORE:
-            KAFKA:
-                  NUM_BROKERS: 2
-                  NUM_ZOOKEPERS: 1
+#      BACKEND_EVENTSTORE:
+#            KAFKA:
+#                  NUM_BROKERS: 2
+#                  NUM_ZOOKEPERS: 1
+
       PROVIDER_SPOTIFY:
             REPLICAS: 2
 

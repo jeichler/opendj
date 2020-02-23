@@ -81,6 +81,8 @@
   metadata:
     labels:
       application: backend-datagrid
+      app: backend
+      app.kubernetes.io/part-of: backend
     name: backend-datagrid
     namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
   spec:

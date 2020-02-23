@@ -123,8 +123,10 @@
           apiVersion: apps.openshift.io/v1
           metadata:
             labels:
-              app: service-web
-              template: opendj-nodejs-service-web
+              app: service
+              app.kubernetes.io/part-of: service
+            annotations:
+              app.openshift.io/connects-to: 'service-eventactivity,service-playlist'
             name: service-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:

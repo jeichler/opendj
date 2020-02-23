@@ -135,10 +135,10 @@
           apiVersion: apps.openshift.io/v1
           metadata:
             annotations:
-              template.alpha.openshift.io/wait-for-ready: 'true'
+              app.openshift.io/connects-to: 'backend-datagrid'
             labels:
-              app: service-housekeeping
-              template: opendj-nodejs-service-housekeeping
+              app: service
+              app.kubernetes.io/part-of: service
             name: service-housekeeping
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:
