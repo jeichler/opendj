@@ -23,6 +23,7 @@ export class MusicEvent {
     emojiTrackLike: string;
     emojiTrackHate: string;
     enableTrackHating: boolean;
+    enableTrackAutoMove: boolean;
     enableTrackAI: boolean;
     demoAutoskip: number;
     demoNoActualPlaying: boolean;
@@ -50,6 +51,9 @@ export class MusicEvent {
     fitTrackWeightBPM: number;
     fitTrackWeightYear: number;
     fitTrackWeightGenre: number;
+
+    autoMoveWeightLike: number;
+    autoMoveWeightHate: number;
 }
 
 export class EventStats {

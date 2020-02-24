@@ -246,16 +246,6 @@
                     </ion-item>
 
                     <ion-item>
-                        <ion-label>Pause on play error</ion-label>
-                        <ion-toggle id="pauseOnPlayError" color="primary" formControlName="pauseOnPlayError"></ion-toggle>
-                        <ion-icon tooltip="If the playing of a track fails for whatever reasons (e.g. your device hast lost internet connection), 
-                        what shall we do? If you turn this on, we pause the list and you need to manually press play again, 
-                        after the problem is fixed. If you turn it off, we try to play the next song. This might fix the problem, 
-                        but faces the risk of trying to rapidly try to play all songs until your list is empty. We recommend to turn it on." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-
-                    <ion-item>
                         <ion-label>Like tracks</ion-label>
                         <ion-input name="emojiTrackLike" type="text" formControlName="emojiTrackLike" class="ion-text-right"></ion-input>
                         <ion-toggle id="enableTrackLiking" color="primary" formControlName="enableTrackLiking"></ion-toggle>
@@ -273,14 +263,11 @@
                         </ion-icon>
                     </ion-item>
 
+
                     <ion-item>
-                        <ion-label>Track progress required</ion-label>
-                        <ion-input name="progressPercentageRequiredForEffectivePlaylist" type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" class="ion-text-right"></ion-input>
-                        <ion-label>%</ion-label>
-                        <ion-icon tooltip="We keep track of which music has been actually played at your event. 
-                        But what counts as 'actually beeing played'? If a track as been skipped after 5 seconds, 
-                        do you want it to be added or not? Define this as percentage of the total duration of the track. 
-                        Recommended value is 75%" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-label>Auto move tracks</ion-label>
+                        <ion-toggle id="enableTrackAutoMove" color="primary" formControlName="enableTrackAutoMove"></ion-toggle>
+                        <ion-icon tooltip="Move tracks up/down in the playlist according to likes and hates." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
                 </ion-item-group>
@@ -420,9 +407,30 @@
                     <ion-item-divider mode="md">
                         <ion-label>Advanced and Experimental</ion-label>
                     </ion-item-divider>
+                    <ion-item>
+                        <ion-label>Pause on play error</ion-label>
+                        <ion-toggle id="pauseOnPlayError" color="primary" formControlName="pauseOnPlayError"></ion-toggle>
+                        <ion-icon tooltip="If the playing of a track fails for whatever reasons (e.g. your device hast lost internet connection), 
+                        what shall we do? If you turn this on, we pause the list and you need to manually press play again, 
+                        after the problem is fixed. If you turn it off, we try to play the next song. This might fix the problem, 
+                        but faces the risk of trying to rapidly try to play all songs until your list is empty. We recommend to turn it on." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label>Track progress required</ion-label>
+                        <ion-input name="progressPercentageRequiredForEffectivePlaylist" type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" class="ion-text-right"></ion-input>
+                        <ion-label>%</ion-label>
+                        <ion-icon tooltip="We keep track of which music has been actually played at your event. 
+                        But what counts as 'actually beeing played'? If a track as been skipped after 5 seconds, 
+                        do you want it to be added or not? Define this as percentage of the total duration of the track. 
+                        Recommended value is 75%" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
 
                     <ion-item>
                         <ion-label class="ion-text-wrap">Fit Track Weights &nbsp;</ion-label>
+
                         <ion-label>&nbsp;&nbsp;&nbsp;BPM:</ion-label>
                         <ion-input name="fitTrackWeightBPM" type="number" formControlName="fitTrackWeightBPM" class="ion-text-left fitTrackWidthNumber"></ion-input>
 
@@ -435,6 +443,23 @@
                         <ion-icon tooltip="When searching for a best fitting position of a track, how much should BPM,year and genre count? Defaults are BPM=0.2, Year=0.3, Genre=0.5." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Automove Track Weights &nbsp;</ion-label>
+
+                        <ion-label>&nbsp;&nbsp;&nbsp;Like:</ion-label>
+                        <ion-input name="autoMoveWeightLike" type="number" formControlName="autoMoveWeightLike" class="ion-text-left fitTrackWidthNumber"></ion-input>
+
+                        <ion-label>&nbsp;&nbsp;&nbsp;Hate:</ion-label>
+                        <ion-input name="autoMoveWeightHate" type="number" formControlName="autoMoveWeightHate" class="ion-text-left fitTrackWidthNumber"></ion-input>
+
+                        <ion-icon tooltip="When auto moving tracks based on user feedback, how much does a like or a hate count? Default: like=1, hate=-1" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+
+
+
                 </ion-item-group>
 
             </ion-list>

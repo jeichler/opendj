@@ -210,7 +210,18 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] = newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe();
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe(
+      updatedPlaylist => {
+        if (updatedPlaylist) {
+          console.debug('Received updated playlist from feedback', updatedPlaylist);
+          this.currentPlaylist = updatedPlaylist;
+          this.computeETAForTracks();
+        } else {
+          console.debug('No updated');
+        }
+
+      }
+    );
     this.presentToast(message);
   }
 

@@ -216,7 +216,7 @@ export class EventEditPage implements OnInit {
       passwordUser: [''],
       maxDurationInMinutes: [0, Validators.min(10)],
       maxTracksInPlaylist: [0, Validators.min(0)],
-      maxContributionsPerUser: [0],
+      maxContributionsPerUser: [10],
       eventStartsAt: [new Date().toISOString(), Validators.required],
       eventEndsAt: [{value: '', disabled: true}, Validators.nullValidator],
       allowDuplicateTracks: [false],
@@ -229,6 +229,7 @@ export class EventEditPage implements OnInit {
       emojiTrackHate: ['🤮', Validators.compose([Validators.minLength(1), Validators.maxLength(2), Validators.required])],
       enableTrackHating: [false],
       enableTrackAI: [false],
+      enableTrackAutoMove: [true],
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],
@@ -241,12 +242,16 @@ export class EventEditPage implements OnInit {
       eventViewAutoScrollInterval: [10, Validators.min(1)],
       eventViewAutoScrollTopOnNext: [true],
       eventViewShowMetaBars: [true],
-      eventViewShowActivityFeed:[true],
-      eventViewShowStats:[true],
+      eventViewShowActivityFeed: [true],
+      eventViewShowStats: [true],
       eventViewTwitterURL: [''],
       fitTrackWeightBPM: [0.2],
       fitTrackWeightYear: [0.3],
       fitTrackWeightGenre: [0.5],
+
+      autoMoveWeightLike: [1],
+      autoMoveWeightHate: [-1],
+
     });
   }
 

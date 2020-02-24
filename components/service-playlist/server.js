@@ -77,6 +77,7 @@ const EVENT_PROTOTYPE = {
     maxUsers: 100,
     maxDurationInMinutes: 7200, // 5d
     maxTracksInPlaylist: 50,
+    maxContributionsPerUser: 10,
     eventStartsAt: "",
     eventEndsAt: "",
     allowDuplicateTracks: DEFAULT_ALLOW_DUPLICATE_TRACKS,
@@ -86,6 +87,7 @@ const EVENT_PROTOTYPE = {
     pauseOnPlayError: true,
     enableTrackLiking: true,
     enableTrackHating: true,
+    enableTrackAutoMove: true,
     emojiTrackLike: '🥰',
     emojiTrackHate: '🤮',
     demoAutoskip: MOCKUP_AUTOSKIP,
@@ -103,6 +105,8 @@ const EVENT_PROTOTYPE = {
     fitTrackWeightBPM: 0.2,
     fitTrackWeightYear: 0.3,
     fitTrackWeightGenre: 0.5,
+    autoMoveWeightLike: 1,
+    autoMoveWeightHate: -1,
 
 }
 const EVENT_EXT_PROTOTYPE = {
@@ -531,13 +535,22 @@ function trackFeedbackSanityCheck(track) {
     }
 }
 
+function computeTrackFeedbackScore(event, track) {
+    let result = 0;
+    if (event && track) {
+        result = event.autoMoveWeightLike * track.numLikes + event.autoMoveWeightHate * track.numHates;
+    }
+    return result;
+}
 
 
-function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, user) {
+
+function provideTrackFeedback(event, playlist, provider, trackID, feedback, user) {
     log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", eventID, playlist.playlistID, provider, trackID);
 
     let track = findTrackInList(playlist.nextTracks, provider, trackID);
     let stateChanged = false;
+    let eventID = event.eventID;
 
     if (track) {
         let activityMsg = '?';
@@ -545,35 +558,43 @@ function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, us
         ensureFeedbackAttributes(track);
         let oldFeedback = feedback.old ? feedback.old : '';
         let newFeedback = feedback.new ? feedback.new : '';
+        let feedbackIsPositive = false;
+        let feedbackIsNegative = false;
         log.debug("trackFeedback before: old=%s new=%s, likes=%s, hates=%s", oldFeedback, newFeedback, track.numLikes, track.numHates);
 
         if (oldFeedback === 'H' && newFeedback === 'L') {
             log.trace("User changed her mind from hate to like, thus we need to reduce hate counter.");
+            feedbackIsPositive = true;
             track.numHates--;
             activityMsg = '' + user + ' changed mind from hate to like regarding ' + track.name;
         }
         if (oldFeedback === 'L' && newFeedback === 'H') {
             log.trace("User changed her mind from like to hate, thus we need to reduce hate counter");
+            feedbackIsNegative = true;
             track.numLikes--;
             activityMsg = '' + user + ' changed mind from like to hate regarding ' + track.name;
         }
 
         if (oldFeedback === 'L' && newFeedback === '') {
             log.trace("User liked in the past and now clicked like again, meaning to remove the like");
+            feedbackIsNegative = true;
             track.numLikes--;
             activityMsg = '' + user + ' does not like anymore ' + track.name;
         } else if (newFeedback === 'L') {
             log.trace("User liked new");
+            feedbackIsPositive = true;
             track.numLikes++;
             activityMsg = '' + user + ' liked ' + track.name;
         }
 
         if (oldFeedback === 'H' && newFeedback === '') {
-            log.trace("User liked in the past and now clicked like again, meaning to remove the like");
+            log.trace("User hated in the past and now clicked like again, meaning to remove the hate");
+            feedbackIsPositive = true;
             track.numHates--;
             activityMsg = 'User ' + user + ' does not hate anymore ' + track.name;
         } else if (newFeedback === 'H') {
             log.trace("User hates new");
+            feedbackIsNegative = true;
             track.numHates++;
             activityMsg = '' + user + ' hated ' + track.name;
         }
@@ -587,6 +608,27 @@ function provideTrackFeedback(eventID, playlist, provider, trackID, feedback, us
             eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, feedback: feedback, track: track },
             activityMsg
         );
+
+        // Implement #189: Auto move track up/down in the list:
+        if (event.enableTrackAutoMove) {
+            log.trace("track automove is enabled");
+            let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
+            let currentScore = computeTrackFeedbackScore(event, track);
+            if (feedbackIsPositive) {
+                log.trace("Move up until track with better score found");
+                let newPos = currentPos;
+                while (newPos >= 0) {
+                    newPos--;
+                    if (newPos >= 0 && currentScore <= computeTrackFeedbackScore(event, playlist.nextTracks[newPos])) {
+                        break;
+                    }
+                }
+                log.trace("currentPos=%s, newPos=%s, currenScore=%s", currentPos, newPos, currentScore);
+                playlist.nextTracks.splice(currentPos, 1); // Remove
+                playlist.nextTracks.splite(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
+            }
+        }
+
 
 
     } else {
@@ -1469,14 +1511,17 @@ router.post('/events/:eventID/playlists/:listID/tracks/:track/feedback', async f
     log.trace("body=%s", JSON.stringify(req.body));
 
     try {
+        let event = await getEventForRequest(req);
         let playlist = await getPlaylistForRequest(req);
         let [provider, trackID] = splitTrackIDIntoProviderAndTrack(req.params.track);;
         let feedback = req.body;
         let user = req.body.user;
 
-        let stateChanged = provideTrackFeedback(req.params.eventID, playlist, provider, trackID, feedback, user);
-        if (stateChanged)
-            firePlaylistChangedEvent(req.params.eventID, playlist);
+        let stateChanged = provideTrackFeedback(event, playlist, provider, trackID, feedback, user);
+        if (stateChanged) {
+            firePlaylistChangedEvent(event.eventID, playlist);
+            res.status(200).send(playlist);
+        }
         res.status(200).send();
     } catch (error) {
         log.debug(error);
