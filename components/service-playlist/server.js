@@ -625,7 +625,7 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                 }
                 log.trace("currentPos=%s, newPos=%s, currenScore=%s", currentPos, newPos, currentScore);
                 playlist.nextTracks.splice(currentPos, 1); // Remove
-                playlist.nextTracks.splite(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
+                playlist.nextTracks.splice(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
             }
         }
 
