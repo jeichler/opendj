@@ -546,7 +546,7 @@ function computeTrackFeedbackScore(event, track) {
 
 
 function provideTrackFeedback(event, playlist, provider, trackID, feedback, user) {
-    log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", eventID, playlist.playlistID, provider, trackID);
+    log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", event.eventID, playlist.playlistID, provider, trackID);
 
     let track = findTrackInList(playlist.nextTracks, provider, trackID);
     let stateChanged = false;
