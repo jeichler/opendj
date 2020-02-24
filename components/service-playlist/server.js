@@ -633,7 +633,7 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                     log.trace('Move track up:');
                     playlist.nextTracks.splice(currentPos, 1); // Remove
                     playlist.nextTracks.splice(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
-                    activityMsg = "OpenDJ auto moved " + track.name + " up from pos " + currentPos + " to " + (newPos + 1);
+                    activityMsg = "OpenDJ auto moved up " + currentPos + "->" (newPos + 1) + ": " + track.name;
                 }
             } else if (feedbackIsNegative) {
                 log.trace("Move down until track with worse score found");
@@ -650,14 +650,14 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                     log.trace('Move track down:');
                     playlist.nextTracks.splice(newPos, 0, track); // Insert BEFORE new pos 
                     playlist.nextTracks.splice(currentPos, 1); // Remove at old pos
-                    activityMsg = "OpenDJ auto moved " + track.name + " down from pos " + currentPos + " to " + newPos;
+                    activityMsg = "OpenDJ auto moved down " + currentPos + "->" + (newPos - 1) + ": " + track.name;
                 }
             }
 
             if (activityMsg) {
                 eventActivityClient.publishActivity(
                     'TRACK_AUTOMOVE',
-                    eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, feedback: feedback, track: track, currentPos: currentPos, newPos: newPos, feedbackIsPositive: feedbackIsPositive, feedbackIsNegative: feedbackIsNegative },
+                    eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, feedback: feedback, track: track, currentPos: currentPos, newPos: newPos, feedbackIsPositive: feedbackIsPositive, feedbackIsNegative: feedbackIsNegative, currentScore: currentScore, newScore: newScore },
                     activityMsg
                 );
 
