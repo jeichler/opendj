@@ -422,7 +422,20 @@ async function addTrack(event, playlist, provider, trackID, user) {
             playlist.nextTracks.splice(pos, 0, track);
         } else {
             log.trace("TrackAI disabled, adding to the end of the list");
-            playlist.nextTracks.push(track);
+
+            // Starting from the back, find the first track that was not
+            // added by "OpenDJ" (autofill) and add the new track behind that track.
+            // In an autofilled playlist, user added tracks have precendence and might
+            // be played instantaneously (See #252):
+            let pos = playlist.nextTracks.length;
+            while (pos > 0) {
+                pos--;
+                if (playlist.nextTracks[pos].added_by !== "OpenDJ") {
+                    break;
+                }
+            }
+            playlist.nextTracks.splice(pos, 0, track);
+            //          playlist.nextTracks.push(track);
 
             eventActivityClient.publishActivity(
                 'TRACK_ADDED',
