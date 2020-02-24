@@ -290,10 +290,18 @@
                     <ion-item-divider mode="md">
                         <ion-label>Event View</ion-label>
                     </ion-item-divider>
+
                     <ion-item>
                         <ion-label class="ion-text-wrap">Enabled</ion-label>
                         <ion-toggle id="eventViewEnable" color="primary" formControlName="eventViewEnable"></ion-toggle>
                         <ion-icon tooltip="Master Switch to enable or disable the event view" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Event View direct URL</ion-label>
+                        <a href="https://{{this.event.url}}/view" target="_blank">{{this.event.url}}/view</a>
+                        <ion-icon tooltip="Use this URL to invoke the event view, e.g. from a google chromecast or amazon alexa device to display it on your TV" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
