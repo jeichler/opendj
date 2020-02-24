@@ -633,9 +633,12 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
             } else if (feedbackIsNegative) {
                 log.trace("Move down until track with worse score found");
                 let newPos = currentPos;
+                let newScore = 0;
                 while (newPos < playlist.nextTracks.length) {
                     newPos++;
-                    if (currentScore >= computeTrackFeedbackScore(event, playlist.nextTracks[newPos])) {
+                    newScore = computeTrackFeedbackScore(event, playlist.nextTracks[newPos]);
+                    log.trace("newPos=%s, newScore=%s", newPos, newScore);
+                    if (newPos < playlist.nextTracks.length && currentScore >= newScore) {
                         break;
                     }
                 }
