@@ -49,7 +49,7 @@
 -->
             <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">
                 <!-- Album Cover-->
-                <ion-col *ngIf="platform.width()>375" size="auto" class="ion-align-self-center">
+                <ion-col *ngIf="platform.width()>420" size="auto" class="ion-align-self-center">
                     <a href="{{item.image_url_ref}}" target="_blank">
                         <img class="track-cover-pic" src="{{item.image_url}}">
                     </a>
