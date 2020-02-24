@@ -129,16 +129,26 @@ ion-fab-button {
 
 .track-provider-col {
     //    background: #FF00FF;
-    min-height: 50px;
+    min-height: 10px;
+    padding: 0px;
+    margin: 0px;
+    //    background: #00FFFF;
+}
+
+.track-provider-button {
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 0px;
+    //    background: #FF00FF;
 }
 
 .track-provider-logo {
     width: 26px;
     height: 26px;
-    margin-top: 7px;
+    margin-top: 0px;
     // Spotify-Rules dictate exclusion zone  of half the height around their logo:
-    margin-left: 10px;
-    margin-right: 10px;
+    //    margin-left: 10px;
+    //    margin-right: 10px;
     //margin-bottom: 10px; //required to align with re-order button
 }
 

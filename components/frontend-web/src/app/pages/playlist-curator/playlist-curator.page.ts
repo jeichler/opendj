@@ -281,7 +281,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const from = event.detail.from;
     const to = event.detail.to;
     this.moveTrack(from, from < to ? to + 1 : to);
-    event.detail.complete();
+    event.detail.complete(true);
   }
 
   toggleOptions() {
@@ -292,7 +292,8 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     }
   }
 
-  moveTop(item, index, slidingItem) {
+  moveTop(item, index) {
+    console.log('------MOVE TOP TEST------');
     if (this.isCurator) {
       this.feService.reorderTrack(this.currentEvent, item.id, index, 0, this.userState).subscribe(
         data => {
@@ -302,6 +303,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
         err => console.error(err)
       );
     }
+  }
+  preview(item, index) {
+    console.log('------PREVIEW TEST------');
   }
 
   async searchAndAddTrack() {
