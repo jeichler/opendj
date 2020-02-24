@@ -218,7 +218,7 @@ export class EventEditPage implements OnInit {
       maxTracksInPlaylist: [0, Validators.min(0)],
       maxContributionsPerUser: [0],
       eventStartsAt: [new Date().toISOString(), Validators.required],
-      eventEndsAt: [{value: ''/*, disabled: true*/}, Validators.nullValidator],
+      eventEndsAt: [{value: '', disabled: true}, Validators.nullValidator],
       allowDuplicateTracks: [false],
       progressPercentageRequiredForEffectivePlaylist: [false],
       beginPlaybackAtEventStart: [false],
