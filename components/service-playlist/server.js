@@ -633,7 +633,7 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                     log.trace('Move track up:');
                     playlist.nextTracks.splice(currentPos, 1); // Remove
                     playlist.nextTracks.splice(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
-                    activityMsg = "OpenDJ auto moved up " + currentPos + "->" (newPos + 1) + ": " + track.name;
+                    activityMsg = "OpenDJ auto moved up " + currentPos + "->" + (newPos + 1) + ": " + track.name;
                 }
             } else if (feedbackIsNegative) {
                 log.trace("Move down until track with worse score found");
