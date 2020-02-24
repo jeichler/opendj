@@ -428,13 +428,13 @@ async function addTrack(event, playlist, provider, trackID, user) {
             // In an autofilled playlist, user added tracks have precendence and might
             // be played instantaneously (See #252):
             let pos = playlist.nextTracks.length;
-            while (pos > 0) {
+            while (pos >= 0) {
                 pos--;
-                if (playlist.nextTracks[pos].added_by !== "OpenDJ") {
+                if (pos >= 0 && playlist.nextTracks[pos].added_by !== "OpenDJ") {
                     break;
                 }
             }
-            playlist.nextTracks.splice(pos, 0, track);
+            playlist.nextTracks.splice(pos + 1, 0, track);
             //          playlist.nextTracks.push(track);
 
             eventActivityClient.publishActivity(
