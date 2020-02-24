@@ -538,6 +538,7 @@ function trackFeedbackSanityCheck(track) {
 function computeTrackFeedbackScore(event, track) {
     let result = 0;
     if (event && track) {
+        ensureFeedbackAttributes(track);
         result = event.autoMoveWeightLike * track.numLikes + event.autoMoveWeightHate * track.numHates;
     }
     return result;
@@ -614,11 +615,12 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
             log.trace("track automove is enabled");
             let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
             let currentScore = computeTrackFeedbackScore(event, track);
+            let newPos = currentPos;
+            let newScore = 0;
             if (feedbackIsPositive) {
                 log.trace("Move up until track with better score found");
-                let newPos = currentPos;
-                let newScore = 0;
                 while (newPos >= 0) {
+                    newPos--;
                     newScore = computeTrackFeedbackScore(event, playlist.nextTracks[newPos]);
                     log.trace("newPos=%s, newScore=%s, currentScore=%s", newPos, newScore, currentScore);
                     if (newPos >= 0 && currentScore <= newScore) {
@@ -634,8 +636,6 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                 }
             } else if (feedbackIsNegative) {
                 log.trace("Move down until track with worse score found");
-                let newPos = currentPos;
-                let newScore = 0;
                 while (newPos < playlist.nextTracks.length) {
                     newPos++;
                     newScore = computeTrackFeedbackScore(event, playlist.nextTracks[newPos]);
