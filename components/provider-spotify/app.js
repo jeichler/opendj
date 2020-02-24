@@ -944,7 +944,7 @@ function handleError(err, response) {
         response.status(500).send(err);
     } else {
         response.status(500).send({
-            "msg": err,
+            "msg": "Call to Spotify failed?! Did the event owner provide credentials? Is the playback device active? Spotify says:" + err,
             "code": "SPTY-542"
         });
 
