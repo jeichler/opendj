@@ -89,9 +89,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const genre1 = t1.genreMap;
     const genre2 = t2.genreMap;
     // TODO: #195 Make Weight configurable at event (advanced options)
-    const weightBPM   = 0.20;
-    const weightYear  = 0.30;
-    const weightGenre = 0.50;
+    const weightBPM   = this.currentEvent.fitTrackWeightBPM;
+    const weightYear  = this.currentEvent.fitTrackWeightYear;
+    const weightGenre = this.currentEvent.fitTrackWeightGenre;
 
     return Math.sqrt(
       weightBPM * this.square(bpm2 - bpm1)

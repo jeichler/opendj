@@ -46,6 +46,10 @@ export class MusicEvent {
     eventViewShowStats: boolean;
 
     eventViewTwitterURL: string;
+
+    fitTrackWeightBPM: number;
+    fitTrackWeightYear: number;
+    fitTrackWeightGenre: number;
 }
 
 export class EventStats {

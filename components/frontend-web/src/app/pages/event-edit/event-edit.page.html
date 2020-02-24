@@ -407,6 +407,28 @@
 
                 </ion-item-group>
 
+                <!-- ------------------------------------------ Advanced and Experimental ------------------------------------------ -->
+                <ion-item-group>
+                    <ion-item-divider mode="md">
+                        <ion-label>Advanced and Experimental</ion-label>
+                    </ion-item-divider>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Fit Track Weights &nbsp;</ion-label>
+                        <ion-label>&nbsp;&nbsp;&nbsp;BPM:</ion-label>
+                        <ion-input name="fitTrackWeightBPM" type="number" formControlName="fitTrackWeightBPM" class="ion-text-left fitTrackWidthNumber"></ion-input>
+
+                        <ion-label>&nbsp;&nbsp;&nbsp;Year:</ion-label>
+                        <ion-input name="fitTrackWeightYear" type="number" formControlName="fitTrackWeightYear" class="ion-text-left fitTrackWidthNumber"></ion-input>
+
+                        <ion-label>&nbsp;&nbsp;&nbsp;Genre:</ion-label>
+                        <ion-input name="fitTrackWeightGenre" type="number" formControlName="fitTrackWeightGenre" class="ion-text-left fitTrackWidthNumber"></ion-input>
+
+                        <ion-icon tooltip="When searching for a best fitting position of a track, how much should BPM,year and genre count? Defaults are BPM=0.2, Year=0.3, Genre=0.5." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+                </ion-item-group>
+
             </ion-list>
 
         </form>

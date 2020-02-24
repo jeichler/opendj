@@ -99,6 +99,11 @@ const EVENT_PROTOTYPE = {
     // Effective Playlist and other large stuff is in EVENT_EXT Object
     // to avoid transfering it to all clients on every update:
     //effectivePlaylist: []
+
+    fitTrackWeightBPM: 0.2,
+    fitTrackWeightYear: 0.3,
+    fitTrackWeightGenre: 0.5,
+
 }
 const EVENT_EXT_PROTOTYPE = {
     effectivePlaylist: [], // What has actually been played?

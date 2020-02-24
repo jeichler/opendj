@@ -244,6 +244,9 @@ export class EventEditPage implements OnInit {
       eventViewShowActivityFeed:[true],
       eventViewShowStats:[true],
       eventViewTwitterURL: [''],
+      fitTrackWeightBPM: [0.2],
+      fitTrackWeightYear: [0.3],
+      fitTrackWeightGenre: [0.5],
     });
   }
 
