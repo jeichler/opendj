@@ -47,7 +47,7 @@ function publishActivity(activity, eventID, data, display) {
 
         log.trace('end publishActivity');
     } catch (err) {
-        log.debug('publishActivity failed, this is ignored: ' + err);
+        log.info('publishActivity failed, this is ignored: ' + err);
     }
 }
 

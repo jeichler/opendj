@@ -617,6 +617,7 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
             let currentScore = computeTrackFeedbackScore(event, track);
             let newPos = currentPos;
             let newScore = 0;
+            activityMsg = null;
             if (feedbackIsPositive) {
                 log.trace("Move up until track with better score found");
                 while (newPos >= 0) {
@@ -651,6 +652,15 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                     playlist.nextTracks.splice(currentPos, 1); // Remove at old pos
                     activityMsg = "OpenDJ auto moved " + track.name + " down from pos " + currentPos + " to " + newPos;
                 }
+            }
+
+            if (activityMsg) {
+                eventActivityClient.publishActivity(
+                    'TRACK_AUTOMOVE',
+                    eventID, { userID: user, trackID: provider + ':' + trackID, playlistID: playlist.playlistID, feedback: feedback, track: track, currentPos: currentPos, newPos: newPos, feedbackIsPositive: feedbackIsPositive, feedbackIsNegative: feedbackIsNegative },
+                    activityMsg
+                );
+
             }
         }
 

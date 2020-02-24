@@ -176,7 +176,11 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.trackFeedbackSanityCheck(track);
     this.trackFeedback[track.id] =  newFeedback;
     this.updateUserStateWithTrackFeedback();
-    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe();
+    this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe(
+      updatedPlaylist => {
+        this.handlePlaylistUpdate(updatedPlaylist);
+      }
+    );
     this.presentToast(message);
     }
 
@@ -212,14 +216,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.updateUserStateWithTrackFeedback();
     this.feService.provideTrackFeedback(this.currentEvent, track, oldFeedback, newFeedback, this.userState).subscribe(
       updatedPlaylist => {
-        if (updatedPlaylist) {
-          console.debug('Received updated playlist from feedback', updatedPlaylist);
-          this.currentPlaylist = updatedPlaylist;
-          this.computeETAForTracks();
-        } else {
-          console.debug('No updated');
-        }
-
+        this.handlePlaylistUpdate(updatedPlaylist);
       }
     );
     this.presentToast(message);
@@ -325,10 +322,19 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       console.debug('getCurrentPlaylist() from server');
       const newList = await this.feService.getCurrentPlaylist(this.currentEvent).toPromise();
       console.debug('refreshPlaylist(): received new Playlist');
-      this.currentPlaylist = newList;
-      this.computeETAForTracks();
+      this.handlePlaylistUpdate(newList);
     } else {
       console.warn('refreshPlaylist() without currentEvent?!');
+    }
+  }
+
+  handlePlaylistUpdate(newPlaylist) {
+    if (newPlaylist) {
+      console.debug('handlePlaylistUpdate')
+      this.currentPlaylist = newPlaylist;
+      this.computeETAForTracks();
+    } else {
+      console.debug('handlePlaylistUpdate - no new list - ignored');
     }
   }
 
@@ -375,9 +381,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');
-      this.currentPlaylist = data as Playlist;
-      this.computeETAForTracks();
-      console.debug(`playlist subscription: `, this.currentPlaylist);
+      this.handlePlaylistUpdate(data as Playlist);
     });
     this.subscriptions.push(sub);
 
