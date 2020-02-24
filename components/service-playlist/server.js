@@ -624,8 +624,28 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
                     }
                 }
                 log.trace("currentPos=%s, newPos=%s, currenScore=%s", currentPos, newPos, currentScore);
-                playlist.nextTracks.splice(currentPos, 1); // Remove
-                playlist.nextTracks.splice(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
+                if (newPos + 1 != currentPos) {
+                    log.trace('Move track up:');
+                    playlist.nextTracks.splice(currentPos, 1); // Remove
+                    playlist.nextTracks.splice(newPos + 1, 0, track); // Insert BEHIND new pos (thus + 1)
+                    activityMsg = "OpenDJ auto moved " + track.name + " up from pos " + currentPos + " to " + (newPos + 1);
+                }
+            } else if (feedbackIsNegative) {
+                log.trace("Move down until track with worse score found");
+                let newPos = currentPos;
+                while (newPos < playlist.nextTracks.length) {
+                    newPos++;
+                    if (currentScore >= computeTrackFeedbackScore(event, playlist.nextTracks[newPos])) {
+                        break;
+                    }
+                }
+                log.trace("currentPos=%s, newPos=%s, currenScore=%s", currentPos, newPos, currentScore);
+                if (newPos - 1 != currentPos) {
+                    log.trace('Move track down:');
+                    playlist.nextTracks.splice(newPos, 0, track); // Insert BEFORE new pos 
+                    playlist.nextTracks.splice(currentPos, 1); // Remove at old pos
+                    activityMsg = "OpenDJ auto moved " + track.name + " down from pos " + currentPos + " to " + newPos;
+                }
             }
         }
 
