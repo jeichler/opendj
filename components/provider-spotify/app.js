@@ -150,7 +150,7 @@ const SpotifyWebApi = require('spotify-web-api-node');
 const spotifyClientID = process.env.SPOTIFY_CLIENT_ID || "-unknown-";
 const spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET || "-unknown-";
 const spotifyRedirectUri = process.env.SPOTIFY_CALLBACK_URL || "-unknown-";
-const spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private', 'user-read-email'];
+const spotifyScopes = ['user-read-playback-state', 'user-modify-playback-state', 'user-read-currently-playing', 'playlist-modify-private', 'user-read-email', 'playlist-read-private', 'playlist-read-collaborative'];
 
 // Interval we check for expired tokens:
 const SPOTIFY_REFRESH_TOKEN_INTERVAL = process.env.SPOTIFY_REFRESH_TOKEN_INTERVAL || "60000";
@@ -667,6 +667,15 @@ function mapSpotifyTrackResultsToOpenDJTrack(trackResult, albumResult, artistRes
     return result;
 }
 
+function mapSpotifyPlaylistToOpenDJPlaylist(playlist) {
+    return {
+        id: playlist.id,
+        name: playlist.name,
+        numTracks: playlist.tracks.total,
+        desc: playlist.description
+    };
+}
+
 async function getTrackDetails(event, trackID) {
     log.trace("begin getTrackDetails eventID=%s, trackID=%s", event.eventID, trackID);
 
@@ -1018,8 +1027,6 @@ router.get('/events/:eventID/providers/spotify/tracks/:trackID', async function(
     log.trace("end route get tracks");
 });
 
-
-// TODO - REFACTOR THIS TO ABOVE BUSINESS LOGIC, to be reused by async API
 router.get('/events/:eventID/providers/spotify/pause', async function(req, res) {
     log.trace("begin pause route");
 
@@ -1051,6 +1058,48 @@ router.get('/events/:eventID/providers/spotify/play/:trackID', async function(re
     log.trace("end play route");
 });
 
+router.get('/events/:eventID/providers/spotify/playlists', async function(req, res) {
+    log.trace("begin get playlists");
+
+    try {
+        let eventID = req.params.eventID;
+        let event = await getEventStateForEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
+        let data = await api.getUserPlaylists({ limit: "50" });
+        let result = new Array();
+
+        if (data.body.items) {
+            data.body.items.forEach(element => result.push(mapSpotifyPlaylistToOpenDJPlaylist(element)));
+        }
+
+        res.send(result);
+    } catch (err) {
+        handleError(err, res);
+    }
+});
+
+router.get('/events/:eventID/providers/spotify/playlist/:playlistID', async function(req, res) {
+    log.trace("begin begin get playlist");
+
+    try {
+        let eventID = req.params.eventID;
+        let playlistID = req.params.playlistID;
+        let event = await getEventStateForEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
+        let result = new Array();
+
+        let data = await api.getPlaylist(playlistID, { limit: 200, offset: 0 });
+        if (data.body.tracks.items) {
+            data.body.tracks.items.forEach(i => result.push("spotify:" + i.track.id));
+        }
+
+        res.send(result);
+
+    } catch (err) {
+        handleError(err, res);
+    }
+});
+
 async function readyAndHealthCheck(req, res) {
     log.trace("begin readyAndHealthCheck");
     // Default: not ready:
@@ -1080,7 +1129,7 @@ router.get('/internal/searchPlaylist', async function(req, res) {
 
     try {
         let query = req.query.q;
-        let event = await getEventStateForEvent('0');
+        let event = await getEventStateForEvent('demo');
         let api = getSpotifyApiForEvent(event);
 
         let data = await api.searchPlaylists(query);
@@ -1096,7 +1145,7 @@ router.get('/internal/exportPlaylist', async function(req, res) {
     try {
         let id = req.query.id;
         let delay = req.query.delay;
-        let event = await getEventStateForEvent('0');
+        let event = await getEventStateForEvent('demo');
         let api = getSpotifyApiForEvent(event);
         let trackDetails = new Array;
 
@@ -1132,6 +1181,23 @@ router.get('/internal/exportPlaylist', async function(req, res) {
         handleError(err, res);
     }
 });
+
+
+router.get('/internal/playlists', async function(req, res) {
+    log.trace("begin export_playlist");
+
+    try {
+        let event = await getEventStateForEvent('demo');
+        let api = getSpotifyApiForEvent(event);
+
+        let data = await api.getUserPlaylists('dfroehli42');
+        res.send(data.body);
+    } catch (err) {
+        handleError(err, res);
+    }
+});
+
+
 
 app.use("/api/provider-spotify/v1", router);
 

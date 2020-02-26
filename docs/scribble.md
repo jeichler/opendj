@@ -217,10 +217,10 @@ oc create serviceaccount skopeo
 oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}' |tee skopeo-token
 TOKEN="$(cat skopeo-token)"
  
-TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}')
 
 
 # --- copy from ocp4 to quay ---
+TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}')
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:latest
@@ -245,6 +245,7 @@ skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-reg
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
+
 
 # Label QUAY LATEST to PRD:
 skopeo copy docker://quay.io/opendj/provider-spotify:latest docker://quay.io/opendj/provider-spotify:prd
