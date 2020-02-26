@@ -93,6 +93,7 @@ const EVENT_PROTOTYPE = {
     demoAutoskip: MOCKUP_AUTOSKIP,
     demoNoActualPlaying: MOCKUP_NO_ACTUAL_PLAYING,
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
+    demoAutoFillFromPlaylist: "",
     demoAutoFillNumTracks: 5,
     providers: ["spotify"],
 
@@ -111,7 +112,8 @@ const EVENT_PROTOTYPE = {
 }
 const EVENT_EXT_PROTOTYPE = {
     effectivePlaylist: [], // What has actually been played?
-    backgroundPLaylist: [], // When autofill is enabled, tracks are taken from this background playlist (Track IDS)
+    backgroundPlaylist: [], // When autofill is enabled, tracks are taken from this background playlist (Track IDS)
+    backgroundPlaylistID: '',
     eventImage: '' // Custom Image for this Event, base64 encoded
 }
 
@@ -991,7 +993,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
         // we need effective playlist if duplicate tracks are not allowed
         // or backround playlist is enabled:
         let eventExt = null;
-        if (!event.allowDuplicateTracks) {
+        if (!event.allowDuplicateTracks || event.demoAutoFillFromPlaylist) {
             if (event.ext) {
                 // Dirty optimization Part #2 - skip() did load this already and stored it at the event
                 // for us:
@@ -1002,6 +1004,17 @@ async function autofillPlaylistIfNecessary(event, playlist) {
         }
 
 
+        let playlistToAutofillFrom = null;
+        log.trace("backgroundPlaylist=", eventExt.backgroundPlaylist);
+        if (event.demoAutoFillFromPlaylist && eventExt.backgroundPlaylist) {
+            log.trace("Autofilling from user provided background playlist");
+            playlistToAutofillFrom = eventExt.backgroundPlaylist;
+        } else {
+            log.trace("Autofilling from internal emergency playlist");
+            playlistToAutofillFrom = emergencyTrackIDs;
+        }
+
+
         for (let i = 0; i < numTracksToAdd; i++) {
             // Try 10 times to pick a random ID from emergencyTrackIDs that is
             // not already in the list (or in effective Playlist if duplicates are not allowed)
@@ -1009,9 +1022,9 @@ async function autofillPlaylistIfNecessary(event, playlist) {
             let trackNum = 0;
             let added = false;
 
-            for (let j = 0; j < emergencyTrackIDs.length * 2; j++) {
-                trackNum = Math.floor(Math.random() * emergencyTrackIDs.length);
-                trackID = emergencyTrackIDs[trackNum];
+            for (let j = 0; j < playlistToAutofillFrom.length * 2; j++) {
+                trackNum = Math.floor(Math.random() * playlistToAutofillFrom.length);
+                trackID = playlistToAutofillFrom[trackNum];
                 log.trace("autofill: trying to add track %s", trackID);
                 if (!isTrackInList(playlist.nextTracks, trackID) &&
                     (!playlist.currentTrack || ('' + playlist.currentTrack.provider + ':' + playlist.currentTrack.id) != trackID) &&
@@ -1030,7 +1043,7 @@ async function autofillPlaylistIfNecessary(event, playlist) {
             }
 
             if (!added) {
-                log.debug("autofillPlaylistIfNecessary(): could not add random tracks with " + emergencyTrackIDs.length * 2 + " tries, maybe we have not enough tracks in emergency list, or we have already played all tracks from emergency list.");
+                log.debug("autofillPlaylistIfNecessary(): could not add random tracks with " + playlistToAutofillFrom.length * 2 + " tries, maybe we have not enough tracks in emergency list, or we have already played all tracks from emergency list.");
                 break; // Outer Loop.
             }
         }
@@ -1211,9 +1224,33 @@ async function createEvent(event) {
 
     log.trace("end createEvent");
 }
+
 async function updateEvent(event) {
     log.trace("begin updateEvent");
     event = await validateEvent(event, false);
+
+    if (event.demoAutoFillEmptyPlaylist) {
+        log.trace("demoAutoFillEmptyPlaylist is active - need to fetch event ext for background playlist");
+        let eventExt = await getEventExtForEventID(event.eventID);
+        eventExt.backgroundPlaylist = [];
+        if (event.demoAutoFillFromPlaylist != eventExt.backgroundPlaylistID) {
+            log.trace("Background playlist changed");
+            eventExt.backgroundPlaylistID = event.demoAutoFillFromPlaylist;
+
+            if (event.demoAutoFillFromPlaylist) {
+                log.trace("Get background playlist tracks from Spotify...");
+                let url = SPOTIFY_PROVIDER_URL + "events/" + event.eventID + "/providers/spotify/playlist/" + event.demoAutoFillFromPlaylist;
+                eventExt.backgroundPlaylist = await request(url, { json: true });
+                log.trace("Get background playlist tracks from Spotify...DONE len=%s", eventExt.backgroundPlaylist.length);
+
+            } else {
+                eventExt.backgroundPlaylist = [];
+            }
+
+            await putEventExt(event.eventID, eventExt);
+        }
+    }
+
     fireEventChangedEvent(event);
 
     eventActivityClient.publishActivity(
