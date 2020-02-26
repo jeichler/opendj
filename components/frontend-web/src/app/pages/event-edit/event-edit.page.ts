@@ -28,6 +28,9 @@ export class EventEditPage implements OnInit {
     'max-width': 300,
     'show-delay': 0
   };
+  spotifyPlaylists = [
+    {id: '', name: '---none---', numTracks: 0, desc: ''},
+  ];
 
   constructor(
     public router: Router,
@@ -102,7 +105,7 @@ export class EventEditPage implements OnInit {
   }
 
   public async update({ value, valid }: { value: any, valid: boolean }) {
-    console.debug('update');
+    console.debug('update', value);
     if (valid) {
       Object.assign(this.event, value);
 
@@ -189,10 +192,26 @@ export class EventEditPage implements OnInit {
       }
       this.ensureTrackFeedbackEmojis();
       this.mapEventToForm(this.eventForm, this.event);
+      this.refreshSpotifyPlaylists();
+
     } catch (err) {
       console.error('refreshState failed', err);
       this.router.navigateByUrl('ui/landing');
     }
+}
+
+private refreshSpotifyPlaylists() {
+  console.debug('refreshSpotifyPlaylists');
+  if (this.event && this.event.eventID) {
+    this.feService.getSpotifyPlaylists(this.event).subscribe(
+      result => {
+        console.debug('Got spotify playlists!');
+        this.spotifyPlaylists = result;
+        this.spotifyPlaylists.unshift({id: '', name: '---none---', numTracks: 0, desc: ''}
+        );
+      }
+    );
+  }
 }
 
   async ionViewDidEnter() {
@@ -233,6 +252,7 @@ export class EventEditPage implements OnInit {
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],
+      demoAutoFillFromPlaylist: [''],
       demoAutoFillNumTracks: [0],
 
       eventViewEnable: [true],

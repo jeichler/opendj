@@ -29,6 +29,7 @@ export class MusicEvent {
     demoNoActualPlaying: boolean;
     demoAutoFillEmptyPlaylist: boolean;
     demoAutoFillNumTracks: number;
+    demoAutoFillFromPlaylist: string;
     providers: Array<string>;
     activePlaylist = 0;
     playlists: [0];

@@ -212,7 +212,7 @@
                 <!-- ------------------------------------------ DETAILS ------------------------------------------ -->
                 <ion-item-group>
                     <ion-item-divider mode="md">
-                        <ion-label>Details</ion-label>
+                        <ion-label>Playlist settings</ion-label>
                     </ion-item-divider>
 
                     <ion-item>
@@ -270,6 +270,32 @@
                         <ion-icon tooltip="Move tracks up/down in the playlist according to likes and hates." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Fill Empty Playlist</ion-label>
+                        <ion-toggle id="demoAutoFillEmptyPlaylist" color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
+                        <ion-icon tooltip="If you enable this, OpenDJ will add some tracks when the playlist is empty." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Fill from Spotify Playlist</ion-label>
+                        <ion-select value="{{event.demoAutoFillFromPlaylist}}" formControlName="demoAutoFillFromPlaylist">
+                            <ion-select-option *ngFor="let p of spotifyPlaylists" value="{{p.id}}">{{p.name}} ({{p.numTracks}} tracks)</ion-select-option>
+                        </ion-select>
+                        <ion-icon tooltip="Here you can select one of your spotify playlists from which tracks are added if the OpenDJ playlist needs filling. If none is selected, an OpenDJ internal emergeny playlist is used for filling." [options]="tooltipOptions" color="primary"
+                            *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Minimum list length to maintain</ion-label>
+                        <ion-input id="demoAutoFillNumTracks" type="number" formControlName="demoAutoFillNumTracks" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="Minimum number of tracks the list should have. If number of tracks falls below this limit, tracks are added. 0 means to let the list run empty, then fill it up to the max length. Set to 1 to always have at least one track in the list."
+                            [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
                 </ion-item-group>
 
                 <!-- ------------------------------------------ EVENT VIEW ------------------------------------------ -->
@@ -386,19 +412,6 @@
                         </ion-icon>
                     </ion-item>
 
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Fill Empty Playlist</ion-label>
-                        <ion-toggle id="demoAutoFillEmptyPlaylist" color="primary" formControlName="demoAutoFillEmptyPlaylist"></ion-toggle>
-                        <ion-icon tooltip="If you enable this, OpenDJ will add some tracks when the playlist is empty." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Minimum list length to maintain</ion-label>
-                        <ion-input id="demoAutoFillNumTracks" type="number" formControlName="demoAutoFillNumTracks" class="ion-text-right"></ion-input>
-                        <ion-icon tooltip="Minimum number of tracks the list should have. If number of tracks falls below this limit, tracks are added. 0 means to let the list run empty, then fill it up to the max length. Set to 1 to always have at least one track in the list."
-                            [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
 
                 </ion-item-group>
 

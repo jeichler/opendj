@@ -2,7 +2,7 @@
 import { Track } from './../models/track';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { ConfigService } from './config.service';
 import { retry, catchError, timeout } from 'rxjs/operators';
 import { MusicEvent } from '../models/music-event';
@@ -53,7 +53,7 @@ export class FEService {
         return throwError(errorMessage);
       }
 
-      getCurrentPlaylist(event: MusicEvent): Observable<any> {
+    getCurrentPlaylist(event: MusicEvent): Observable<any> {
         if (!event || !event.eventID) {
             this.handleError('getCurrentPlaylist(): no event?!');
         }
@@ -187,6 +187,18 @@ export class FEService {
             catchError(this.handleError)
             );
     }
+
+    getSpotifyPlaylists(event: MusicEvent): Observable<any> {
+
+        return this.http.get<any>(this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/spotify/playlists').pipe(
+            timeout(this.SERVER_TIMEOUT),
+            catchError( (error) => {
+                console.error('error while getting spotify playlists is ignored - probably spotify credentials not yet activated', error);
+                return [];
+            } )
+          );
+    }
+
 
     /* ------------------------------------------------------------------------ */
     /* ------------------------------------------------------------------------ */
