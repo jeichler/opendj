@@ -521,11 +521,13 @@ async function deleteTrack(event, playlist, provider, trackID, user) {
 }
 
 function ensureFeedbackAttributes(track) {
-    if (!track.numLikes) {
-        track.numLikes = 0;
-    }
-    if (!track.numHates) {
-        track.numHates = 0;
+    if (track) {
+        if (!track.numLikes) {
+            track.numLikes = 0;
+        }
+        if (!track.numHates) {
+            track.numHates = 0;
+        }
     }
 }
 
@@ -869,14 +871,32 @@ async function skip(event, playlist, user) {
         eventActivityClient.publishActivity(
             'TRACK_SKIP',
             event.eventID, { trackID: playlist.currentTrack.provider + ':' + playlist.currentTrack.id, playlistID: playlist.playlistID, track: playlist.currentTrack },
-            '' + playlist.currentTrack.name + ' was skipped by ' + user
+            user + ' skipped ' + playlist.currentTrack.name
         );
     }
 
     let lastTrack = playlist.currentTrack;
 
 
-    playlist.currentTrack = playlist.nextTracks.shift();
+    if (event.enableTrackHateSkip) {
+        log.trace('TrackHateSkip is enabled - check if we need to skip more tracks:');
+        playlist.currentTrack = playlist.nextTracks.shift();
+        ensureFeedbackAttributes(playlist.currentTrack);
+        while (playlist.currentTrack && playlist.currentTrack.numHates > playlist.currentTrack.numLikes) {
+            log.debug("hate skipped ", playlist.currentTrack);
+            eventActivityClient.publishActivity(
+                'TRACK_SKIP_DUE2HATE',
+                event.eventID, { track: playlist.currentTrack },
+                'Due to more hates then likes, OpenDJ skiped ' + playlist.currentTrack.name
+            );
+
+            playlist.currentTrack = playlist.nextTracks.shift();
+            ensureFeedbackAttributes(playlist.currentTrack);
+        }
+    } else {
+        log.trace('TrackHateSkip is disabled - simple vanilla skiping:');
+        playlist.currentTrack = playlist.nextTracks.shift();
+    }
 
     if (playlist.currentTrack) {
         log.debug("SKIP to next track");
