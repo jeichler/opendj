@@ -209,7 +209,7 @@
                 </ion-item-group>
 
 
-                <!-- ------------------------------------------ DETAILS ------------------------------------------ -->
+                <!-- ------------------------------------------ Playlist settings ------------------------------------------ -->
                 <ion-item-group>
                     <ion-item-divider mode="md">
                         <ion-label>Playlist settings</ion-label>
@@ -263,6 +263,12 @@
                         </ion-icon>
                     </ion-item>
 
+                    <ion-item>
+                        <ion-label>Skip tracks with more hates then likes</ion-label>
+                        <ion-toggle id="enableTrackHateSkip" color="primary" formControlName="enableTrackHateSkip"></ion-toggle>
+                        <ion-icon tooltip="When a track with more hates then likes reaches the top of the list, it is skipped automatically." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
 
                     <ion-item>
                         <ion-label>Auto move tracks</ion-label>
@@ -295,6 +301,9 @@
                             [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+
+
 
                 </ion-item-group>
 

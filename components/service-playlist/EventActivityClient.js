@@ -35,14 +35,13 @@ function publishActivity(activity, eventID, data, display) {
             uri: EVENTACTIVITY_PROVIDER_URL + 'events/' + eventID + '/activity',
             body: body,
             json: true,
-            timeout: 1000
+            timeout: 5000
         }, function(error, response, body) {
             if (error) {
                 //                log.info('publishActivity failed - ignored', error, response, body);
-                log.debug('publishActivity failed, this is ignored: ' + error);
-
+                log.debug('publishActivity failed, this is ignored: ', error);
             } else {
-                log.trace('publishActivity response statusCode', response.statusCode)
+                log.debug('publishActivity response statusCode=%s, activity=%s, display=%s', response.statusCode, activity, display);
             }
         });
 

@@ -88,6 +88,7 @@ const EVENT_PROTOTYPE = {
     enableTrackLiking: true,
     enableTrackHating: true,
     enableTrackAutoMove: true,
+    enableTrackHateSkip: true,
     emojiTrackLike: '🥰',
     emojiTrackHate: '🤮',
     demoAutoskip: MOCKUP_AUTOSKIP,
@@ -876,6 +877,7 @@ async function skip(event, playlist, user) {
 
 
     playlist.currentTrack = playlist.nextTracks.shift();
+
     if (playlist.currentTrack) {
         log.debug("SKIP to next track");
         playlist.currentTrack.progress_ms = 0;

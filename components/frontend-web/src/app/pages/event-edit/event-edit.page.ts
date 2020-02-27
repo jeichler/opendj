@@ -249,6 +249,7 @@ private refreshSpotifyPlaylists() {
       enableTrackHating: [false],
       enableTrackAI: [false],
       enableTrackAutoMove: [true],
+      enableTrackHateSkip: [true],
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],

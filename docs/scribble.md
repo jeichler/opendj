@@ -224,7 +224,6 @@ TOKEN=$(oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kuber
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:latest
-
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:latest
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
