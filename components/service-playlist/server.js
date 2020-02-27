@@ -883,7 +883,7 @@ async function skip(event, playlist, user) {
         playlist.currentTrack = playlist.nextTracks.shift();
         ensureFeedbackAttributes(playlist.currentTrack);
         while (playlist.currentTrack && playlist.currentTrack.numHates > playlist.currentTrack.numLikes) {
-            log.debug("hate skipped ", playlist.currentTrack);
+            log.debug("yes - hate skipped ", playlist.currentTrack.name);
             eventActivityClient.publishActivity(
                 'TRACK_SKIP_DUE2HATE',
                 event.eventID, { track: playlist.currentTrack },
@@ -1027,9 +1027,8 @@ async function autofillPlaylistIfNecessary(event, playlist) {
 
 
         let playlistToAutofillFrom = null;
-        log.trace("backgroundPlaylist=", eventExt.backgroundPlaylist);
         if (event.demoAutoFillFromPlaylist && eventExt.backgroundPlaylist) {
-            log.trace("Autofilling from user provided background playlist");
+            log.trace("Autofilling from user provided background playlist with len=", eventExt.backgroundPlaylist.length);
             playlistToAutofillFrom = eventExt.backgroundPlaylist;
         } else {
             log.trace("Autofilling from internal emergency playlist");
