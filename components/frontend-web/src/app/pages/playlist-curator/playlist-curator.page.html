@@ -119,16 +119,13 @@
 
                 <!-- Provider Logo // Preview Button (Must be always displayed due to legal reasons -->
                 <ion-col size="auto" class="track-provider-col ion-align-self-center workaroundTransparency">
-                    <ion-button href="{{item.preview}} " target="_blank" id="action-top-{{item.id}}" size="small" class="track-provider-button" expand="block" fill="clear" shape="round" color="primary " (click)="preview(item, item.pos)" tappable>
+                    <ion-button *ngIf="item.preview" href="{{item.preview}} " target="_blank" id="action-preview-{{item.id}}" size="small" class="track-provider-button" expand="block" fill="clear" shape="round" color="primary " tappable>
                         <ion-img slot="icon-only" src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo"></ion-img>
                     </ion-button>
 
-                    <!-- 
-                    <a href="{{item.preview}} "target="_blank">
-                        <ion-img src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png " class="track-provider-logo">
-                        </ion-img>
-                    </a>
-                -->
+                    <ion-button *ngIf="!item.preview" href="{{item.previewViaApp}} " target="_blank" id="action-previewApp-{{item.id}}" size="small" class="track-provider-button" expand="block" fill="clear" shape="round" color="primary " tappable>
+                        <ion-img slot="icon-only" src="assets/img/spotify/Spotify_Icon_RGB_White_64.png " class="track-provider-logo"></ion-img>
+                    </ion-button>
                 </ion-col>
 
                 <!-- Last not least: the most important feature: the re-order button! -->

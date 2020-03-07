@@ -127,6 +127,10 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     }
   }
 
+  noPreview() {
+    this.presentToast('Sorry, Spotify does not provide a preview for this track.');
+  }
+
   ensureTrackFeedbackEmojis() {
     if (!this.currentEvent.emojiTrackLike) {
       this.currentEvent.emojiTrackLike = '🥰';
@@ -451,9 +455,15 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
         <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
       </ion-label>
 
-      <a *ngIf="item.previewViaApp" href="{{item.previewViaApp}}" target="_blank">
+      <a *ngIf="item.preview" href="{{item.preview}}" target="_blank">
         <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
+
+      <a *ngIf="!item.preview" href="{{item.previewViaApp}}" target="_blank">
+        <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Black.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
+      </a>
+
+
       <ion-button id="add-result-{{item.id}}" float-right (click)="dismiss(item)" tappable>Add</ion-button>
 
       </ion-item>

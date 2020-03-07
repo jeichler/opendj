@@ -61,11 +61,24 @@ ion-fab-button {
     line-height: 0px;
 }
 
+.track-provider-col {
+    padding: 0px;
+    margin: 0px;
+    //background: #00FFFF;
+}
+
+.track-provider-button {
+    min-height: 42px;
+    margin: 0px;
+    padding: 0px;
+    //background: #FF00FF;
+}
+
 .track-provider-logo {
     width: 21px;
     height: 21px;
     margin-top: 0px;
-    margin-bottom: 22px; //required to align with feedback emoticons
+    margin-bottom: 20px; //required to align with feedback emoticons
 }
 
 .track-feedback {

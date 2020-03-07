@@ -304,8 +304,9 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       );
     }
   }
-  preview(item, index) {
-    console.log('------PREVIEW TEST------');
+
+  noPreview() {
+    this.presentToast('Sorry, Spotify does not provide a preview for this track.');
   }
 
   async searchAndAddTrack() {
@@ -540,9 +541,14 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
         <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
       </ion-label>
 
-      <a *ngIf="item.previewViaApp" href="{{item.previewViaApp}}" target="_blank">
+      <a *ngIf="item.preview" href="{{item.preview}}" target="_blank">
         <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
+
+      <a *ngIf="!item.preview" href="{{item.previewViaApp}}" target="_blank">
+        <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Black.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
+      </a>
+
       <ion-button id="add-result-{{item.id}}" float-right (click)="dismiss(item)" tappable>Add</ion-button>
 
       </ion-item>
