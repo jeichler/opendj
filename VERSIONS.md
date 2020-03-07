@@ -1,9 +1,7 @@
+# Current Version
+V0.6.0  | 28.02.202  | Feature Enhancements - Background Playlist, AutoMoveTrack, SkipHatedTracks, ...
 
 # Version history
-
-For each version, there should be a git tag.
-In this repo:
-
 Version | Date       | Description
 ------- | ---------- | ------------
 V0.5.1  | 23.02.2020 | Large Event - Event View Stats

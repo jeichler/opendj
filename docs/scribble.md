@@ -104,6 +104,7 @@ http://dev.opendj.io/api/provider-spotify/v1/events/0/providers/spotify/login
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/login
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 
+https://www.opendj.io/api/provider-spotify/v1/events/rhffm/providers/spotify/devices
 
 
 
@@ -230,20 +231,6 @@ skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-ro
 
 skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://default-route-openshift-image-registry.apps.ocp4.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
 
-
-
-# Release OCP1 LATEST to QUAY LATEST
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/provider-spotify:latest docker://quay.io/opendj/provider-spotify:latest
-
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-playlist:latest docker://quay.io/opendj/service-playlist:latest
-
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-housekeeping:latest docker://quay.io/opendj/service-housekeeping:latest
-
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-eventactivity-minimal:latest docker://quay.io/opendj/service-eventactivity:latest
-
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/service-web:latest docker://quay.io/opendj/service-web:latest
-
-skopeo copy --src-tls-verify=false --src-creds skopeo:$TOKEN docker://docker-registry-default.apps.ocp1.stormshift.coe.muc.redhat.com/dfroehli-opendj-dev/frontend-web:latest docker://quay.io/opendj/frontend-web:latest
 
 
 # Label QUAY LATEST to PRD:
