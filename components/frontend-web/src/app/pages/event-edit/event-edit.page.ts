@@ -236,7 +236,7 @@ private refreshSpotifyDevices() {
   }
 }
 
-private onSpotifyDeviceChanged(event) {
+ onSpotifyDeviceChanged(event) {
   console.debug('onSpotifyDeviceChanged');
   const newDevice = event.target.value;
   if (newDevice != this.spotifyDevice.currentDevice) {
