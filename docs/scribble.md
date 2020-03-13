@@ -104,7 +104,13 @@ http://dev.opendj.io/api/provider-spotify/v1/events/0/providers/spotify/login
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/login
 http://dev.opendj.io/api/provider-spotify/v1/events/dan/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 
-https://www.opendj.io/api/provider-spotify/v1/events/rhffm/providers/spotify/devices
+https://www.opendj.io/api/provider-spotify/v1/events/demo/providers/spotify/devices
+
+#
+curl -d '{ "currentDevice": "52e43fe15bf7fecf03e401ebe7af9519f0252d35"}' -H "Content-Type: application/json" -X POST  http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/devices
+
+curl -d '{ "currentDevice": "25a633bd01646cabbd4a3df8ea239837e14bfb05"}' -H "Content-Type: application/json" -X POST  http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/devices
+
 
 
 

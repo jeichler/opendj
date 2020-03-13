@@ -941,6 +941,7 @@ if (COMPRESS_RESULT == 'true') {
 }
 
 app.use(cors());
+app.use(express.json());
 
 
 function handleFatalError() {
@@ -973,25 +974,75 @@ router.get('/events/:eventID/providers/spotify/currentTrack', async function(req
     }, function(err) {
         handleError(err, res);
     });
-
 });
+
+
+async function getAvailableDevices(event, api) {
+    let data = await api.getMyDevices();
+
+    let result = {
+        availableDevices: [],
+        currentDevice: event.currentDevice
+    };
+
+    data.body.devices.forEach(device => {
+        result.availableDevices.push({
+            id: device.id,
+            desc: device.type + " " + device.name + (device.is_active ? " - active" : " - passive"),
+        });
+    });
+
+    return result;
+}
 
 router.get('/events/:eventID/providers/spotify/devices', async function(req, res) {
     log.trace("getAvailableDevices begin");
 
-    let eventID = req.params.eventID;
-    let event = await getEventStateForEvent(eventID);
-    let api = getSpotifyApiForEvent(event);
-
-    api.getMyDevices().then(function(data) {
-        log.debug("getAvailableDevices:", data.body);
-        res.send(data.body);
-    }, function(err) {
-        handleError(err, res);
-    });
+    try {
+        let eventID = req.params.eventID;
+        let event = await getEventStateForEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
+        let result = await getAvailableDevices(event, api);
+        res.send(result);
+    } catch (error) {
+        handleError(error, res);
+    }
 
     log.trace("getAvailableDevices end");
 });
+
+router.post('/events/:eventID/providers/spotify/devices', async function(req, res) {
+    log.trace("begin route post device");
+
+    try {
+        log.trace("route post device body=%s", req.body);
+
+        let eventID = req.params.eventID;
+        let event = await getEventStateForEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
+        event.currentDevice = req.body.currentDevice;
+
+        let currentState = await api.getMyCurrentPlaybackState();
+        log.debug("currentState=", currentState);
+        if (currentState.body.device.id != event.currentDevice) {
+            log.debug("transfer playback");
+            await api.transferMyPlayback({ deviceIds: [event.currentDevice], play: currentState.body.is_playing })
+        } else {
+            log.debug("transfer not necessary, device is already current");
+        }
+        let result = await getAvailableDevices(event, api);
+
+        fireEventStateChange(event);
+
+        res.status(200).send(result);
+        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
+    } catch (error) {
+        log.error("route post device err = %s", error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route post device");
+});
+
 
 
 router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
@@ -1077,6 +1128,9 @@ router.get('/events/:eventID/providers/spotify/playlists', async function(req, r
         handleError(err, res);
     }
 });
+
+
+
 
 router.get('/events/:eventID/providers/spotify/playlist/:playlistID', async function(req, res) {
     log.trace("begin begin get playlist");
