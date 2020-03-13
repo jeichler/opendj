@@ -31,6 +31,15 @@ export class EventEditPage implements OnInit {
   spotifyPlaylists = [
     {id: '', name: '---none---', numTracks: 0, desc: ''},
   ];
+  spotifyDevice = {
+    currentDevice: 'none',
+    availableDevices: [
+      {
+        id: 'none',
+        desc: 'You need to add your spotify account first'
+      }
+    ]
+  };
 
   constructor(
     public router: Router,
@@ -193,6 +202,7 @@ export class EventEditPage implements OnInit {
       this.ensureTrackFeedbackEmojis();
       this.mapEventToForm(this.eventForm, this.event);
       this.refreshSpotifyPlaylists();
+      this.refreshSpotifyDevices();
 
     } catch (err) {
       console.error('refreshState failed', err);
@@ -209,6 +219,31 @@ private refreshSpotifyPlaylists() {
         this.spotifyPlaylists = result;
         this.spotifyPlaylists.unshift({id: '', name: '---none---', numTracks: 0, desc: ''}
         );
+      }
+    );
+  }
+}
+
+private refreshSpotifyDevices() {
+  console.debug('refreshSpotifyDevices');
+  if (this.event && this.event.eventID) {
+    this.feService.getSpotifyDevices(this.event).subscribe(
+      result => {
+        console.debug('Got spotify devices');
+        this.spotifyDevice = result;
+      }
+    );
+  }
+}
+
+private onSpotifyDeviceChanged(event) {
+  console.debug('onSpotifyDeviceChanged');
+  const newDevice = event.target.value;
+  if (newDevice != this.spotifyDevice.currentDevice) {
+    this.feService.setSpotifyDevice(this.event, newDevice).subscribe(
+      result => {
+        console.debug('onSpotifyDeviceChanged Got spotify devices');
+        this.spotifyDevice = result;
       }
     );
   }

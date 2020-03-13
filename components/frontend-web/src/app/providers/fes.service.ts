@@ -199,6 +199,28 @@ export class FEService {
           );
     }
 
+    getSpotifyDevices(event: MusicEvent): Observable<any> {
+        return this.http.get<any>(this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/spotify/devices').pipe(
+            timeout(this.SERVER_TIMEOUT),
+            catchError( (error) => {
+                console.error('error while getting spotify devices is ignored - probably spotify credentials not yet activated', error);
+                return [];
+            } )
+          );
+
+    }
+
+    setSpotifyDevice(event: MusicEvent, device: string): Observable<any> {
+        return this.http.post<any>(
+            this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/spotify/devices',
+            { currentDevice: device}
+            ).pipe(
+            timeout(this.SERVER_TIMEOUT),
+            catchError(this.handleError)
+          );
+
+    }
+
 
     /* ------------------------------------------------------------------------ */
     /* ------------------------------------------------------------------------ */

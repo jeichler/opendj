@@ -164,6 +164,16 @@
                             *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Spotify Device</ion-label>
+                        <ion-select value="{{spotifyDevice.currentDevice}}" (ionChange)="onSpotifyDeviceChanged($event)">
+                            <ion-select-option *ngFor="let d of spotifyDevice.availableDevices" value="{{d.id}}">{{d.desc}}</ion-select-option>
+                        </ion-select>
+                        <ion-icon tooltip="Select spotify playback device here" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
                 </ion-item-group>
 
                 <!-- ------------------------------------------ TIMING AND LIMITS ------------------------------------------ -->
