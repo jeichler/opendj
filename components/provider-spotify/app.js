@@ -1043,6 +1043,44 @@ router.post('/events/:eventID/providers/spotify/devices', async function(req, re
     log.trace("end route post device");
 });
 
+router.post('/events/:eventID/providers/spotify/volume', async function(req, res) {
+    log.trace("begin route post volume");
+
+    try {
+        log.trace("route post volume body=%s", req.body);
+
+        let eventID = req.params.eventID;
+        let event = await getEventStateForEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
+        event.currentDevice = req.body.currentDevice;
+
+        let currentState = await api.getMyCurrentPlaybackState();
+        let oldVolume = currentState.body.device.volume_percent;
+        let newVolume = oldVolume;
+        if (req.body.action == 'inc') {
+            newVolume += 5;
+        } else if (req.body.action == 'dec') {
+            newVolume -= 5;
+        } else {
+            log.warn("Unknown volume action " + req.body.action);
+        }
+        if (newVolume > 100) newVolume = 100;
+        if (newVolume < 0) newVolume = 0;
+
+        if (newVolume != oldVolume) {
+            log.debug("Change volume to ", newVolume);
+            await api.setVolume(newVolume, { device_id: event.currentDevice });
+        }
+
+        res.status(200).send({ oldVolume: oldVolume, newVolume: newVolume });
+        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
+    } catch (error) {
+        log.error("route post device err = %s", error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route post device");
+});
+
 
 
 router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
