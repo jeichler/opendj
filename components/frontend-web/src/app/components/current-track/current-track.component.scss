@@ -144,25 +144,37 @@
     vertical-align: middle;
     margin-left: 0px;
     margin-right: 0px;
+    --padding-start: 19px;
+    --padding-end: 19px;
 }
 
 .track-button-skip {
     //    font-size: 8px;
     max-height: 26px;
     vertical-align: middle;
-    margin-left: 25px;
-    margin-right: 47px;
+    margin-left: 11px;
+    margin-right: 11px;
+    --padding-start: 19px;
+    --padding-end: 19px;
+}
+
+.track-button-volume {
+    --padding-start: 5px;
+    --padding-end: 5px;
 }
 
 .track-provider-col {
+    min-width: 44px;
     padding: 0px;
+    //    background: #FF00FF;
 }
 
 .track-provider-logo {
     width: 21px;
     height: 21px;
     margin-top: 1px;
-    margin-right: 5px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 0px 0px 0px 0x;
     //margin-bottom: 10px; //required to align with re-order button
 }

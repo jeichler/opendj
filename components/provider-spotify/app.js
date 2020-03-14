@@ -1061,8 +1061,6 @@ router.post('/events/:eventID/providers/spotify/volume', async function(req, res
             newVolume += 5;
         } else if (req.body.action == 'dec') {
             newVolume -= 5;
-        } else {
-            log.warn("Unknown volume action " + req.body.action);
         }
         if (newVolume > 100) newVolume = 100;
         if (newVolume < 0) newVolume = 0;

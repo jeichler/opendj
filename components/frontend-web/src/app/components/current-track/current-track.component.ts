@@ -160,6 +160,19 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     });
   }
 
+  volumeDown() {
+    console.debug('vol down');
+    this.feService.decreaseSpotifyVolume(this.currentEvent).subscribe(data => {
+      console.debug('vol down ok');
+    });
+  }
+  volumeUp() {
+    console.debug('vol up');
+    this.feService.increaseSpotifyVolume(this.currentEvent).subscribe(data => {
+      console.debug('vol up ok');
+    });
+  }
+
   ngOnInit() {
 //    console.debug('current-track-componentn-ngOnInit', this.track);
   }

@@ -221,6 +221,23 @@ export class FEService {
 
     }
 
+    increaseSpotifyVolume(event: MusicEvent): Observable<any> {
+        return this.modifySpotifyVolume(event, 'inc');
+    }
+    decreaseSpotifyVolume(event: MusicEvent): Observable<any> {
+        return this.modifySpotifyVolume(event, 'dec');
+    }
+
+    private modifySpotifyVolume(event: MusicEvent, act: string): Observable<any> {
+        return this.http.post<any>(
+            this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/spotify/volume',
+            { action: act}
+            ).pipe(
+            timeout(this.SERVER_TIMEOUT),
+            catchError(this.handleError)
+          );
+    }
+
 
     /* ------------------------------------------------------------------------ */
     /* ------------------------------------------------------------------------ */
