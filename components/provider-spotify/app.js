@@ -1073,8 +1073,15 @@ router.post('/events/:eventID/providers/spotify/volume', async function(req, res
         res.status(200).send({ oldVolume: oldVolume, newVolume: newVolume });
         log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
     } catch (error) {
-        log.error("route post device err = %s", error);
-        res.status(500).send(JSON.stringify(error));
+        if (error.statusCode == 403) {
+            res.status(403).send(JSON.stringify({
+                "msg": "Sorry, the active spotify device does not allow volume control",
+                "code": "SPTY-642"
+            }));
+        } else {
+            log.error("route post device err = %s", error);
+            res.status(500).send(JSON.stringify(error));
+        }
     }
     log.trace("end route post device");
 });
