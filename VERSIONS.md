@@ -1,9 +1,10 @@
 # Current Version
-V0.6.0  | 28.02.202  | Feature Enhancements - Background Playlist, AutoMoveTrack, SkipHatedTracks, ...
+V0.6.1  | 14.03.202  | Feature Enhancements - Volume Control, Spotify Device Select
 
 # Version history
 Version | Date       | Description
 ------- | ---------- | ------------
+V0.6.0  | 28.02.202  | Feature Enhancements - Background Playlist, AutoMoveTrack, SkipHatedTracks, ...
 V0.5.1  | 23.02.2020 | Large Event - Event View Stats
 V0.5.0  | 22.02.2020 | Large Event - Forum Darmstadt - Event View 
 V0.4.2  | 12.11.2019 | Close to End of Sprint 04 - Multi-Event 
