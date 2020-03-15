@@ -47,7 +47,7 @@ function handleError(err, response) {
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
 
-const PORT = process.env.PORT || 8090;
+const PORT = process.env.PORT || 8082;
 
 // Interval we check for expired tokens:
 const SPOTIFY_PROVIDER_URL = process.env.SPOTIFY_PROVIDER_URL || "http://localhost:8081/api/provider-spotify/v1/";
@@ -96,7 +96,10 @@ const EVENT_PROTOTYPE = {
     demoAutoFillEmptyPlaylist: DEFAULT_AUTOFILL_EMPTY_PLAYLIST,
     demoAutoFillFromPlaylist: "",
     demoAutoFillNumTracks: 5,
-    providers: ["spotify"],
+    // Unique set of registered provider types, e.g. spotify, deezer etc. will be used for parallel searches:
+    providerTypes: [],
+    // List of available providers, could be several of same type:
+    providers: [],
 
     activePlaylist: 0,
     playlists: [0],
@@ -1229,13 +1232,13 @@ async function getPlaylistForRequest(req) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// ---------------------------     Event CRUD   ------------------------------
+// ----------------------------     Event Stuff   ----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 async function createEvent(event) {
     log.trace("begin createEvent");
     event = await validateEvent(event, true);
-    fireEventChangedEvent(event);
+    await fireEventChangedEvent(event);
 
     eventActivityClient.publishActivity(
         'EVENT_CREATE',
@@ -1272,7 +1275,7 @@ async function updateEvent(event) {
         }
     }
 
-    fireEventChangedEvent(event);
+    await fireEventChangedEvent(event);
 
     eventActivityClient.publishActivity(
         'EVENT_UPDATE',
@@ -1293,7 +1296,7 @@ async function deleteEvent(eventID) {
         // We delete the event by setting the end date to now.
         // This will cause the housekeeper to perform the actual delete:
         event.eventEndsAt = new Date().toISOString();
-        fireEventChangedEvent(event);
+        await fireEventChangedEvent(event);
         log.info("EVENT MARKED FOR DELETION %s", eventID);
 
         eventActivityClient.publishActivity(
@@ -1334,6 +1337,47 @@ async function validateEvent(event, isCreate) {
     return event;
 }
 
+function rebuildProviderTypes(event) {
+    let set = new Set();
+    event.providers.forEach(provider => {
+        set.add(provider.type);
+    });
+    event.providerTypes = Array.from(set);
+}
+
+async function addProvider(event, newProvider) {
+    log.trace("begin addProvider ", newProvider);
+
+    newProvider.id = event.providers.length;
+    event.providers.push(newProvider);
+    rebuildProviderTypes(event);
+    await fireEventChangedEvent(event);
+    eventActivityClient.publishActivity(
+        'PROVIDER_ADD',
+        event.eventID, { newProvider: newProvider },
+        'Music provider' + newProvider.type + ' added'
+    );
+
+    log.trace("end addProvider");
+}
+
+async function deleteProvider(event, provider) {
+    log.trace("begin deleteProvider", provider);
+
+    event.providers = event.providers.filter(i => (i.id != provider.id));
+    rebuildProviderTypes(event);
+
+    await fireEventChangedEvent(event);
+    eventActivityClient.publishActivity(
+        'PROVIDER_DEL',
+        event.eventID, { provider: provider },
+        'Music provider' + provider.type + ' removed'
+    );
+
+    log.trace("end delProvider");
+}
+
+
 
 
 // ---------------------------------------------------------------------------
@@ -1372,7 +1416,7 @@ router.post('/events/:eventID', async function(req, res) {
     log.trace("begin route updateEvent");
 
     try {
-        if (log.isTraceEnabled()) log.trace("route updateEvent body=%s", JSON.stringify(req.body));
+        log.trace("route updateEvent body=", req.body);
         let event = req.body;
         await updateEvent(event);
         res.status(200).send(event);
@@ -1405,7 +1449,7 @@ router.post('/events/:eventID/validate', async function(req, res) {
     log.trace("begin route validateEvent");
 
     try {
-        if (log.isTraceEnabled()) log.trace("route validateEvent body=%s", JSON.stringify(req.body));
+        log.trace("route validateEvent body=", req.body);
         let event = req.body;
 
         event = await validateEvent(event, true);
@@ -1416,6 +1460,40 @@ router.post('/events/:eventID/validate', async function(req, res) {
         res.status(500).send(JSON.stringify(error));
     }
     log.trace("end route validateEvent");
+});
+
+// addProvider
+router.post('/events/:eventID/providers', async function(req, res) {
+    log.trace("begin route addProvider");
+
+    try {
+        log.trace("route addProvider body ", req.body);
+        let event = await getEventForRequest(req);
+        await addProvider(event, req.body);
+        res.status(200).send(event);
+
+    } catch (error) {
+        log.warn("addProvider route failed", error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route addProvider");
+});
+
+// delProvider
+router.delete('/events/:eventID/providers', async function(req, res) {
+    log.trace("begin route delProvider");
+
+    try {
+        log.trace("route delProvider body ", req.body);
+        let event = await getEventForRequest(req);
+        await deleteProvider(event, req.body);
+        res.status(200).send(event.providers);
+
+    } catch (error) {
+        log.warn("delProvider route failed", error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route delProvider");
 });
 
 
@@ -1811,6 +1889,7 @@ setImmediate(async function() {
 
         if (TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(TEST_EVENT_ID);
+            testEvent = null;
             if (testEvent) {
                 log.debug("Test event already present");
             } else {

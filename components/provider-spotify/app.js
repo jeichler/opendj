@@ -7,6 +7,7 @@ const express = require('express');
 const app = express();
 const router = new express.Router();
 const cors = require('cors');
+const request = require('request-promise');
 const promiseRetry = require('promise-retry');
 const log4js = require('log4js')
 const log = log4js.getLogger();
@@ -19,6 +20,9 @@ const readyState = {
     refreshExpiredTokens: false,
     lastError: ""
 };
+
+const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://localhost:8082/api/service-playlist/v1/";
+
 
 
 // ---------------------------------------------------------------------------
@@ -294,7 +298,7 @@ router.get('/events/:eventID/providers/spotify/login', async function(req, res) 
 );
 
 // This is Step 2 of the Authorization Code Flow: 
-// Redirected from Spotiy AccountsService after user Consent.
+// Redirected from Spotify AccountsService after user Consent.
 // We receive a code and need to trade that token into tokens:
 router.get('/auth_callback', async function(req, res) {
     log.trace("auth_callback start req=%s", JSON.stringify(req.query));
@@ -303,58 +307,78 @@ router.get('/auth_callback', async function(req, res) {
     let eventID = state;
     log.debug("code = %s, state=%s", code, state);
 
-    // TODO: Check on STATE!
+    try {
+        // Trade CODE into TOKENS:
+        let eventState = await getEventStateForEvent(eventID);
+        let spotifyApi = getSpotifyApiForEvent(eventState);
+        log.debug("authorizationCodeGrant with code=%s", code);
+        let data = await spotifyApi.authorizationCodeGrant(code);
 
-    // Trade CODE into TOKENS:
-    log.debug("authorizationCodeGrant with code=%s", code);
-    let eventState = await getEventStateForEvent(eventID);
-    let spotifyApi = getSpotifyApiForEvent(eventState);
-    spotifyApi.authorizationCodeGrant(code).then(
-        async function(data) {
-            try {
+        log.debug("authorization code granted for eventID=%s!", eventID);
 
+        // Set tokens on the Event Object to use it in later spotify API calls:                
+        updateEventTokensFromSpotifyBody(eventState, data.body);
+        fireEventStateChange(eventState);
 
-                log.debug("authorization code granted for eventID=%s!", eventID);
+        // Make sure we have the new tokens at the API set:
+        spotifyApi = getSpotifyApiForEvent(eventState);
 
-                // Set tokens on the Event Object to use it in later spotify API calls:                
-                updateEventTokensFromSpotifyBody(eventState, data.body);
-                fireEventStateChange(eventState);
-
-                // Make sure we have the new tokens at the API set:
-                spotifyApi = getSpotifyApiForEvent(eventState);
-
-                // Which Page to continue with after succesfull spotify login?
-
-                // To the event login page:
-                // let continueWith = "/" + eventID;
-
-                // To the create/edit event page:
-                // let continueWith = "/ui/event-edit";
-
-                // To the curator page:
-                let continueWith = "/ui/playlist-curator";
-
-                // Let's try to start bohemian rhapsody:
-                autoSelectDevice(spotifyApi, eventState)
-                    .then(function() {
-                        spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
-                    }).then(function() {
-                        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
-                        setTimeout(function() {
-                            spotifyApi.pause({ device_id: eventState.currentDevice });
-                        }, 10000);
-                    }).catch(function(err) {
-                        res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
-                    });
-            } catch (err) {
-                log.error("authorizationCodeGrant processing failed for event %s with err %s", eventID, err);
-            }
-        },
-        function(err) {
-            log.debug('authorization code granted  err=%s', err);
-            handleError(err, res);
+        log.debug("Get information about user from spotify");
+        let spotifyUser = await spotifyApi.getMe();
+        spotifyUser = spotifyUser.body;
+        log.debug("spotifyUser", spotifyUser);
+        let provider = {
+            type: 'spotify',
+            display: spotifyUser.display_name,
+            email: spotifyUser.email,
         }
-    );
+
+        if (spotifyUser.images && spotifyUser.images[0] && spotifyUser.images[0].url) {
+            provider.image_url = spotifyUser.images[0].url;
+        } else {
+            provider.image_url = 'assets/img/user_unknown.png';
+        }
+
+        log.debug("Register new provider with event");
+        provider = await request({
+            method: 'POST',
+            uri: PLAYLIST_PROVIDER_URL + 'events/' + eventID + '/providers',
+            body: provider,
+            json: true,
+            timeout: 1000
+        });
+        log.debug("Register new provider with event success!", provider);
+
+
+        // Which Page to continue with after succesfull spotify login?
+
+        // To the event login page:
+        // let continueWith = "/" + eventID;
+
+        // To the create/edit event page:
+        let continueWith = "/ui/event-edit";
+
+        // To the curator page:
+        // let continueWith = "/ui/playlist-curator";
+
+        // Let's try to start bohemian rhapsody:
+        autoSelectDevice(spotifyApi, eventState)
+            .then(function() {
+                spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
+            }).then(function() {
+                res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
+                setTimeout(function() {
+                    spotifyApi.pause({ device_id: eventState.currentDevice });
+                }, 10000);
+            }).catch(function(err) {
+                res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
+            });
+    } catch (err) {
+        log.error("authorizationCodeGrant processing failed for event %s with err", eventID, err);
+        handleError(err, res);
+    }
+
+
 });
 
 // Step 3 is using the access_token - omitted here for obvious reasons.
@@ -403,7 +427,7 @@ function refreshAccessToken(event) {
             }
         );
     } else {
-        log.debug("refreshAccessToken: toking for eventID=%s  is still valid", event.eventID);
+        log.debug("refreshAccessToken: token for eventID=%s  is still valid", event.eventID);
     }
     log.trace("refreshAccessToken end eventID=%s", event.eventID);
 }
@@ -1055,35 +1079,47 @@ router.post('/events/:eventID/providers/spotify/volume', async function(req, res
         event.currentDevice = req.body.currentDevice;
 
         let currentState = await api.getMyCurrentPlaybackState();
-        let oldVolume = currentState.body.device.volume_percent;
-        let newVolume = oldVolume;
-        if (req.body.action == 'inc') {
-            newVolume += 5;
-        } else if (req.body.action == 'dec') {
-            newVolume -= 5;
-        }
-        if (newVolume > 100) newVolume = 100;
-        if (newVolume < 0) newVolume = 0;
+        if (currentState && currentState.body && currentState.body.device && currentState.body.device.volume_percent) {
+            let oldVolume = currentState.body.device.volume_percent;
+            let newVolume = oldVolume;
+            if (req.body.action == 'inc') {
+                newVolume += 5;
+            } else if (req.body.action == 'dec') {
+                newVolume -= 5;
+            }
+            if (newVolume > 100) newVolume = 100;
+            if (newVolume < 0) newVolume = 0;
 
-        if (newVolume != oldVolume) {
-            log.debug("Change volume to ", newVolume);
-            await api.setVolume(newVolume, { device_id: event.currentDevice });
-        }
+            if (newVolume != oldVolume) {
+                log.debug("Change volume to ", newVolume);
+                await api.setVolume(newVolume, { device_id: event.currentDevice });
+            }
 
-        res.status(200).send({ oldVolume: oldVolume, newVolume: newVolume });
-        log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
+            res.status(200).send({ oldVolume: oldVolume, newVolume: newVolume });
+            log.debug("Event UPDATED eventId=%s, URL=%s", event.eventID, event.url);
+        } else {
+            res.status(404).send(JSON.stringify({
+                "msg": "Can't get current volume from spotify. Is the device active? Press play in spotify app on that device to activate it, or select a different device in event settings.",
+                "code": "SPTY-641"
+            }));
+        }
     } catch (error) {
         if (error.statusCode == 403) {
             res.status(403).send(JSON.stringify({
                 "msg": "Sorry, the active spotify device does not allow volume control",
                 "code": "SPTY-642"
             }));
+        } else if (error.statusCode == 404) {
+            res.status(404).send(JSON.stringify({
+                "msg": "Spotify Device not found - is it still active? You could select a different device in event settings, or press play to let OpenDJ auto select device.",
+                "code": "SPTY-643"
+            }));
         } else {
-            log.error("route post device err = %s", error);
+            log.error("route post volume err = %s", error);
             res.status(500).send(JSON.stringify(error));
         }
     }
-    log.trace("end route post device");
+    log.trace("end route post volume");
 });
 
 

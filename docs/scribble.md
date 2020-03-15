@@ -112,11 +112,14 @@ curl -d '{ "currentDevice": "52e43fe15bf7fecf03e401ebe7af9519f0252d35"}' -H "Con
 curl -d '{ "currentDevice": "25a633bd01646cabbd4a3df8ea239837e14bfb05"}' -H "Content-Type: application/json" -X POST  http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/devices
 
 
+# Add Provider
+curl -d '{ "type": "spotify", "display":"tst", "email":"a@b.c", "image_url":"none"}' -H "Content-Type: application/json" -X POST  http://localhost:8082/api/service-playlist/v1/events/demo/providers/
+
 
 
 
 # Access Playlist
-http://localhost:8081/api/service-playlist/v1/events/0/
+http://localhost:8082/api/service-playlist/v1/events/demo/
 http://localhost:8081/api/service-playlist/v1/events/0/playlists/0
 
 

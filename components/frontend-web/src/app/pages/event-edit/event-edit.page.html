@@ -153,7 +153,7 @@
                     <ion-item>
                         <ion-label>MusicProvider</ion-label>
                         <ion-note slot="end">
-                            <ion-button id="addSpotify" [disabled]="!userState?.isLoggedIn" color="primary" size="small" href="/api/provider-spotify/v1/events/{{event.eventID}}/providers/spotify/login">
+                            <ion-button id="addSpotify" [disabled]="!userState?.isLoggedIn" color="primary" size="small" href="{{configService.SPOTIFY_PROVIDER_API}}/events/{{event.eventID}}/providers/spotify/login">
                                 Add Spotify
                             </ion-button>
                         </ion-note>

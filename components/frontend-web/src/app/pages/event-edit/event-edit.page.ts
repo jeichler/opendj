@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators, FormControl, ValidatorFn, AbstractC
 import { MusicEvent } from 'src/app/models/music-event';
 import { FEService } from 'src/app/providers/fes.service';
 import { UserSessionState } from 'src/app/models/usersessionstate';
+import { ConfigService } from '../../providers/config.service';
 
 @Component({
   selector: 'app-event-edit',
@@ -49,6 +50,7 @@ export class EventEditPage implements OnInit {
     public formBuilder: FormBuilder,
     public toastController: ToastController,
     public alertController: AlertController,
+    public configService: ConfigService,
   ) { }
 
   private async presentToast(data) {
