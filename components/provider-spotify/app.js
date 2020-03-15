@@ -329,6 +329,7 @@ router.get('/auth_callback', async function(req, res) {
         log.debug("spotifyUser", spotifyUser);
         let provider = {
             type: 'spotify',
+            id: spotifyUser.id,
             display: spotifyUser.display_name,
             email: spotifyUser.email,
         }
@@ -1122,7 +1123,30 @@ router.post('/events/:eventID/providers/spotify/volume', async function(req, res
     log.trace("end route post volume");
 });
 
+router.delete('/events/:eventID/providers/spotify/:providerID', async function(req, res) {
+    log.trace("begin route delete provider");
 
+    try {
+        log.debug("delete provider with event", req.params);
+        let eventID = req.params.eventID;
+        let providerID = req.params.providerID;
+
+        let newListOfProviders = await request({
+            method: 'DELETE',
+            uri: PLAYLIST_PROVIDER_URL + 'events/' + eventID + '/providers',
+            body: { id: providerID },
+            json: true,
+            timeout: 1000
+        });
+        log.debug('newListOfProviders', newListOfProviders);
+
+        res.status(200).send(newListOfProviders);
+    } catch (error) {
+        log.error("route delete provider", error);
+        res.status(500).send(JSON.stringify(error));
+    }
+    log.trace("end route delete provider");
+});
 
 router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
     log.trace("searchTrack begin");

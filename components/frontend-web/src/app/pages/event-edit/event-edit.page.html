@@ -149,32 +149,44 @@
                         If your are more the paranoid person, set a password. Just be sure to communicate it your guests." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+                </ion-item-group>
 
-                    <ion-item>
-                        <ion-label>MusicProvider</ion-label>
-                        <ion-note slot="end">
-                            <ion-button id="addSpotify" [disabled]="!userState?.isLoggedIn" color="primary" size="small" href="{{configService.SPOTIFY_PROVIDER_API}}/events/{{event.eventID}}/providers/spotify/login">
-                                Add Spotify
-                            </ion-button>
-                        </ion-note>
-                        <ion-icon tooltip="Important! After creating this event, allow OpenDJ to access your Spotify Account. 
-                        Otherwise search/play of tracks will no work. Be sure to have your spotify credentials at hand. 
-                        Your will be redirected to a spotify page. Accept the consent page spotify will show you. 
-                        After that procedure, you will be returned to this page. OpenDJ does not see your spotify credentials or stores them. You can revoke the privileges at any time on the spotify account page." [options]="tooltipOptions" color="primary"
-                            *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                <ion-item-group>
+                    <ion-item-divider mode="md">
+                        <ion-label>Music Provider</ion-label>
+                    </ion-item-divider>
+                    <ion-item class="provider-item">
+                        <ion-label slot="start">Press to add:</ion-label>
+                        <ion-button slot="start" id="addSpotify" [disabled]="!userState?.isLoggedIn" color="none" href="{{configService.SPOTIFY_PROVIDER_API}}/events/{{event.eventID}}/providers/spotify/login" class="provider-button">
+                            <ion-img slot="icon-only" src="assets/img/provider/spotify_logo.png" class="provider-img"></ion-img>
+                        </ion-button>
+                        <ion-button slot="start" id="addGoogle" [disabled]="!userState?.isLoggedIn" color="primary" size="small" (click)="addProviderDeezer()" tappable>
+                            Deezer
+                        </ion-button>
+                        <ion-button slot="start" id="addGoogle" [disabled]="!userState?.isLoggedIn" color="primary" size="small" (click)="addProviderGoogle()" tappable>
+                            Google
+                        </ion-button>
+                        <ion-icon tooltip="Press the logo of your streaming provider to add your account to the event. A consent screen will pop up where you have to allow OpenDJ to access your devices." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end"
+                            name="ios-help-circle-outline">
                         </ion-icon>
+
                     </ion-item>
 
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Spotify Device</ion-label>
+                    <ion-item *ngFor="let provider of event.providers; index as i">
+                        <ion-label>#{{i}}</ion-label>
+                        <ion-img src="assets/img/provider/{{provider.type}}_icon_active_64.png" class="provider-icon"></ion-img>
+                        <ion-label>{{provider.display}}</ion-label>
+                        <!-- 
                         <ion-select value="{{spotifyDevice.currentDevice}}" (ionChange)="onSpotifyDeviceChanged($event)">
                             <ion-select-option *ngFor="let d of spotifyDevice.availableDevices" value="{{d.id}}">{{d.desc}}</ion-select-option>
                         </ion-select>
-                        <ion-icon tooltip="Select spotify playback device here" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
+-->
+                        <ion-button slot="end" id="removeProvider" color="danger" (click)="removeProvider(provider)" tappable>Remove</ion-button>
 
+                    </ion-item>
                 </ion-item-group>
+
+
 
                 <!-- ------------------------------------------ TIMING AND LIMITS ------------------------------------------ -->
                 <ion-item-group>

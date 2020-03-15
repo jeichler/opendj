@@ -36,3 +36,27 @@ ion-item-divider {
 .fitTrackWidthNumber {
     max-width: 52px;
 }
+
+.provider-item {
+    --padding-top: 0px;
+    --padding-bottom: 0px;
+}
+
+.provider-button {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    /*    
+    min-height: 80px;
+*/
+    height: 30px;
+}
+
+.provider-img {
+    max-width: 100px;
+}
+
+.provider-icon {
+    height: 21px;
+    margin-left: 10px;
+    margin-right: 10px;
+}

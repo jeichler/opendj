@@ -1348,7 +1348,9 @@ function rebuildProviderTypes(event) {
 async function addProvider(event, newProvider) {
     log.trace("begin addProvider ", newProvider);
 
-    newProvider.id = event.providers.length;
+    if (!newProvider.id) {
+        newProvider.id = event.providers.length;
+    }
     event.providers.push(newProvider);
     rebuildProviderTypes(event);
     await fireEventChangedEvent(event);
@@ -1889,7 +1891,7 @@ setImmediate(async function() {
 
         if (TEST_EVENT_CREATE) {
             let testEvent = await getEventForEventID(TEST_EVENT_ID);
-            testEvent = null;
+            //            testEvent = null;
             if (testEvent) {
                 log.debug("Test event already present");
             } else {

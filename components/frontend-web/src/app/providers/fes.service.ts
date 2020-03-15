@@ -228,6 +228,16 @@ export class FEService {
         return this.modifySpotifyVolume(event, 'dec');
     }
 
+    deleteProvider(event: MusicEvent, provider: any): Observable<any> {
+        return this.http.delete<any>(
+            this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/' + provider.type + '/' + provider.id,
+            ).pipe(
+            timeout(this.SERVER_TIMEOUT),
+            catchError(this.handleError)
+          );
+
+    }
+
     private modifySpotifyVolume(event: MusicEvent, act: string): Observable<any> {
         return this.http.post<any>(
             this.SPOTIFY_PROVIDER_API + '/events/' + event.eventID + '/providers/spotify/volume',

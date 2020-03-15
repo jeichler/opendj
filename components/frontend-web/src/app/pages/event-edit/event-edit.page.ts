@@ -210,7 +210,24 @@ export class EventEditPage implements OnInit {
       console.error('refreshState failed', err);
       this.router.navigateByUrl('ui/landing');
     }
-}
+  }
+
+  public addProviderGoogle() {
+    this.presentToast('Sorry, not yet implemented. Google support is coming soon.');
+  }
+  public addProviderDeezer() {
+    this.presentToast('Sorry, not yet implemented. Deezer support is coming soon.');
+  }
+
+  public removeProvider(provider) {
+    console.debug('begin removeProvider', provider);
+    this.feService.deleteProvider(this.event, provider).subscribe(
+      result => {
+        console.debug('Got new list of providers!');
+        this.event.providers = result;
+      }
+    );
+  }
 
 private refreshSpotifyPlaylists() {
   console.debug('refreshSpotifyPlaylists');
