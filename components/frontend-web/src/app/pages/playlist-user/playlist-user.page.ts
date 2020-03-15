@@ -456,11 +456,11 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
       </ion-label>
 
       <a *ngIf="item.preview" href="{{item.preview}}" target="_blank">
-        <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Green_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
+        <ion-img float-right src="assets/img/provider/spotify_icon_active_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
 
       <a *ngIf="!item.preview" href="{{item.previewViaApp}}" target="_blank">
-        <ion-img float-right src="assets/img/spotify/Spotify_Icon_RGB_Black.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
+        <ion-img float-right src="assets/img/provider/spotify_icon_passive_dark_64.png" style="width: 21px; height: 21px; margin-right:10px; margin-left:10px"></ion-img>
       </a>
 
 
