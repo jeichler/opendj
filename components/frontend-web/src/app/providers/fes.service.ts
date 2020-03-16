@@ -36,7 +36,7 @@ export class FEService {
         } else {
             // server-side error
             if (error.error && error.error.code && error.error.msg) {
-                errorMessage = `Error Code: ${error.error.code}\nMessage: ${error.error.msg}`;
+                errorMessage = `${error.error.msg} (${error.error.code})`;
             } else {
                 if (error.error instanceof Array) {
 

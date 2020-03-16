@@ -784,7 +784,7 @@ async function play(event, playlist) {
                 "/play/" + playlist.currentTrack.id +
                 "?pos=" + playlist.currentTrack.progress_ms, { json: true });
         } catch (err) {
-            log.fatal("!!! PLAY FAILED err=", err);
+            log.fatal("!!! PLAY FAILED err=%s", err);
             if (PAUSE_ON_PLAYERROR) {
                 log.debug("Pressing pause to avoid damage after play failed!");
                 await pause(event, playlist, err);
@@ -792,7 +792,12 @@ async function play(event, playlist) {
                 // Make sure to persist this state change:
                 firePlaylistChangedEvent(event.eventID, playlist);
             }
-            throw { code: "PLYLST-300", msg: "Could not play track. Err=" + err };
+            if ('code' in err.error) {
+                // Seems that we did receive a detail message already, re-throw that:
+                throw { code: err.error.code, msg: err.error.msg };
+            } else {
+                throw { code: "PLYLST-300", msg: "Could not play track. Err=" + err };
+            }
         }
     }
 
