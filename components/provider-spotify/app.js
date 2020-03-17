@@ -226,7 +226,7 @@ async function ensureNewEventVersionWithAccounts(event) {
         log.debug("spotifyUser", spotifyUser.body);
         event.accounts = {};
         updateAccountFromSpotifyUser(account, spotifyUser.body);
-        await addAccountToEvent(event, account);
+        await addAccountToEvent(event, account, spotifyUser);
         fireEventStateChange(eventState);
     } catch (err) {
         log.error('converting event to new structure failed, removing it from cache');
@@ -236,7 +236,7 @@ async function ensureNewEventVersionWithAccounts(event) {
 
 
 function getTemporarySpotifyApi() {
-    log.trace("clientId=>%s<, clientSecret=>%s<, redirectUri=>%s<", spotifyClientID, spotifyClientSecret, spotifyRedirectUri);
+    log.trace("begin getTemporarySpotifyApi clientId=>%s<, clientSecret=>%s<, redirectUri=>%s<", spotifyClientID, spotifyClientSecret, spotifyRedirectUri);
     return new SpotifyWebApi({
         clientId: spotifyClientID,
         clientSecret: spotifyClientSecret,
@@ -348,15 +348,15 @@ function createProviderFromAccountAndUser(account, user) {
         display: user.display_name,
         email: user.email,
     };
-    if (spotifyUser.images && spotifyUser.images[0] && spotifyUser.images[0].url) {
-        provider.image_url = spotifyUser.images[0].url;
+    if (user.images && user.images[0] && user.images[0].url) {
+        provider.image_url = user.images[0].url;
     } else {
         provider.image_url = 'assets/img/user_unknown.png';
     }
     return provider;
 }
 
-async function addAccountToEvent(event, account) {
+async function addAccountToEvent(event, account, spotifyUser) {
     log.trace('begin addAccountToEvent');
 
     if (Object.values(event.accounts).length > MAX_ACCOUNTS_PER_EVENT) {
@@ -367,19 +367,15 @@ async function addAccountToEvent(event, account) {
 
     }
 
-    if (event.accounts[account.accountID]) {
-        log.debug("account id already in the event, seems to be an update");
-    } else {
-        log.debug("Register new account/provider with event service");
-        let provider = createProviderFromAccountAndUser(account, spotifyUser);
-        provider = await request({
-            method: 'POST',
-            uri: PLAYLIST_PROVIDER_URL + 'events/' + eventID + '/providers',
-            body: provider,
-            json: true,
-            timeout: 1000
-        });
-    }
+    log.debug("Register new account/provider with event service");
+    let provider = createProviderFromAccountAndUser(account, spotifyUser);
+    provider = await request({
+        method: 'POST',
+        uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
+        body: provider,
+        json: true,
+        timeout: 1000
+    });
     event.accounts[account.accountID] = account;
 
     log.trace('end addAccountToEvent');
@@ -390,13 +386,13 @@ async function removeAccountFromEvent(event, account) {
     delete event.accounts[account.accountID];
     let newListOfProviders = await request({
         method: 'DELETE',
-        uri: PLAYLIST_PROVIDER_URL + 'events/' + eventID + '/providers',
+        uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
         body: { id: account.accountID },
         json: true,
         timeout: 1000
     });
     log.debug('newListOfProviders', newListOfProviders);
-    log.end('begin removeAccountFromEvent');
+    log.trace('begin removeAccountFromEvent');
     return newListOfProviders;
 }
 
@@ -434,7 +430,7 @@ router.get('/auth_callback', async function(req, res) {
         let spotifyApi = getTemporarySpotifyApi();
         let tokenData = await spotifyApi.authorizationCodeGrant(code);
 
-        log.debug('Before we can use the API, we need to update tokens');
+        log.debug('Before we can use the API, we need to set access_token=%s', tokenData.body.access_token);
         spotifyApi.setAccessToken(tokenData.body.access_token);
 
         log.debug("Get information about user from spotify, thereby verifying that the token is actually working");
@@ -451,7 +447,7 @@ router.get('/auth_callback', async function(req, res) {
 
         fireEventStateChange(event);
 
-        await addAccountToEvent(event, account);
+        await addAccountToEvent(event, account, spotifyUser.body);
 
 
         // Which Page to continue with after successful spotify login?
@@ -469,7 +465,7 @@ router.get('/auth_callback', async function(req, res) {
             }).then(function() {
                 res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
                 setTimeout(function() {
-                    spotifyApi.pause({ device_id: eventState.currentDevice });
+                    spotifyApi.pause({ device_id: account.currentDevice });
                 }, 10000);
             }).catch(function(err) {
                 res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
@@ -478,8 +474,6 @@ router.get('/auth_callback', async function(req, res) {
         log.error("authorizationCodeGrant processing failed for event %s with err", eventID, err);
         handleError(err, res);
     }
-
-
 });
 
 // Step 3 is using the access_token - omitted here for obvious reasons.
@@ -993,7 +987,7 @@ async function play(event, account, trackID, pos) {
             return api.play(options).catch(retry);
         }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
 
-        log.debug("play was successful for %s-%s", account.eventID, account.display);
+        log.info("PLAY ok for %s-%s", account.eventID, account.display);
     } catch (err) {
         log.debug("play failed with err=%s - will try to handle this", err);
         try {
@@ -1004,7 +998,7 @@ async function play(event, account, trackID, pos) {
             log.debug("play failed after handling initial error with new error=%s", err2);
             let message = "Play failed for Spotify account " + account.display + ".";
             if (("" + err).includes("Not Found")) {
-                message += " Spotify could not find the device. Ensure that it is active by pressing play on the device, then press play in OpenDJ again.";
+                message += " Spotify could not find the device. Ensure that it is active by pressing play on the device, then press play in OpenDJ again. Or remove this account using the edit event page.";
             } else {
                 message += " Initial Error was " + err;
             }
@@ -1023,10 +1017,18 @@ async function playEvent(eventID, trackID, pos) {
     log.trace("begin playEvent");
 
     let event = await getEvent(eventID);
+    let accounts = Object.values(event.accounts);
+
+    if (!accounts || accounts.length == 0) {
+        throw {
+            code: "SPTFY-513",
+            msg: "No Spotify Accounts registered with event, can't play Spotify track. Please select 'Edit Event' from the menu and add Spotify",
+        };
+    }
 
     // Fan out calls for every account in parallel:
     let parallelCalls = [];
-    for (const account of Object.values(event.accounts)) {
+    for (const account of accounts) {
         parallelCalls.push(play(event, account, trackID, pos));
     }
     await Promise.all(parallelCalls);

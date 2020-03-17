@@ -1356,7 +1356,19 @@ async function addProvider(event, newProvider) {
     if (!newProvider.id) {
         newProvider.id = event.providers.length;
     }
-    event.providers.push(newProvider);
+    // Check if we know this provider already:
+    let existing = false;
+    event.providers.forEach(p => {
+        if (p.id == newProvider.id) {
+            log.trace("provider is already known");
+            Object.assign(p, newProvider);
+            existing = true;
+        }
+    });
+    if (!existing) {
+        log.trace("provider is new");
+        event.providers.push(newProvider);
+    }
     rebuildProviderTypes(event);
     await fireEventChangedEvent(event);
     eventActivityClient.publishActivity(

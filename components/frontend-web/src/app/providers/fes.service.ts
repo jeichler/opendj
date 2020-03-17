@@ -42,7 +42,7 @@ export class FEService {
 
                     errorMessage = 'Sorry:\n';
                     error.error.forEach(err => {
-                        errorMessage = errorMessage + err.msg + '\n';
+                        errorMessage = errorMessage + `${error.error.msg} (${error.error.code})\n`;
                     });
                 } else {
                     errorMessage = 'Unexpected shit happened - Sorry for that!\n' + JSON.stringify(error);
