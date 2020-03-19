@@ -172,8 +172,8 @@
                     name: service-housekeeping
                     resources:
                       limits:
-                        cpu: 100m
-                        memory: 80Mi
+                        cpu: 500m
+                        memory: 128Mi
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                     volumeMounts:

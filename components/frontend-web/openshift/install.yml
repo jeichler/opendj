@@ -323,6 +323,7 @@
                     resources:
                       limits:
                         memory: 128Mi
+                        cpu: 1000m
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                     volumeMounts:

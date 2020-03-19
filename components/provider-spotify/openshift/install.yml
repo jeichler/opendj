@@ -186,6 +186,11 @@
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MIN | default('1000')}}" 
                       - name:  SPOTIFY_RETRY_TIMEOUT_MAX
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MAX | default('1000')}}"
+                      - name:  PLAYLIST_PROVIDER_URL
+                        value: "{{ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8081/api/service-playlist/v1/')}}"
+
+                        
+
                     envFrom:
                       - prefix: SPOTIFY_
                         secretRef:
@@ -217,7 +222,8 @@
                       timeoutSeconds: 1
                     resources:
                       limits:
-                        memory: 80Mi
+                        memory: 128Mi
+                        cpu: 1000m
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                 dnsPolicy: ClusterFirst
