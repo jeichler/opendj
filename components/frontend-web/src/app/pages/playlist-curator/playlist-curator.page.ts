@@ -1,7 +1,7 @@
 import { ConfigService } from '../../providers/config.service';
 import { UserDataService } from '../../providers/user-data.service';
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar } from '@ionic/angular';
+import { ModalController, ActionSheetController, ToastController, Platform, IonSearchbar, Events } from '@ionic/angular';
 import { WebsocketService } from 'src/app/providers/websocket.service';
 import { MockService } from 'src/app/providers/mock.service';
 import { FEService } from '../../providers/fes.service';
@@ -41,6 +41,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     public modalController: ModalController,
     public actionSheetController: ActionSheetController,
     public toastController: ToastController,
+    private events: Events,
     public websocketService: WebsocketService,
     public mockService: MockService,
     public feService: FEService,
@@ -417,7 +418,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       this.router.navigate([`ui/login`]);
       return;
     }
-
+    this.events.publish('event:modified', this.currentEvent);
     this.checkEverybodyIsCuratorStateChange();
   }
 
@@ -481,6 +482,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
       if (this.currentEvent) {
         console.info(`event update: `, this.currentEvent);
         this.checkEverybodyIsCuratorStateChange();
+        this.events.publish('event:modified', this.currentEvent);
       } else {
         console.warn('Event has been deleted - navigating to landing page');
         this.router.navigate([`ui/landing`]);

@@ -225,7 +225,7 @@ async function ensureNewEventVersionWithAccounts(event) {
         let spotifyUser = await api.getMe();
         log.debug("spotifyUser", spotifyUser.body);
         event.accounts = {};
-        updateAccountFromSpotifyUser(account, spotifyUser.body);
+        updateAccountFromSpotifyUser(account, spotifyUser.body, event.owner);
         await addAccountToEvent(event, account, spotifyUser);
         fireEventStateChange(eventState);
     } catch (err) {
@@ -295,7 +295,6 @@ function getAccountForEvent(event, accountID) {
         account = Object.assign({}, accountPrototype);
         account.accountID = accountID;
         account.eventID = event.eventID;
-        event.accounts[accountID] = account;
     }
     return account;
 }
@@ -335,17 +334,19 @@ function updateTokensFromSpotifyBody(account, body) {
     account.token_expires = new Date(now.getTime() + 1000 * body['expires_in']).toISOString();
 }
 
-function updateAccountFromSpotifyUser(account, user) {
-    account.accountID = user.id;
-    account.display = user.display_name;
-    account.email = user.email;
+function updateAccountFromSpotifyUser(account, spotifyUser, openDJUser) {
+    account.accountID = spotifyUser.id;
+    account.email = spotifyUser.email;
+    account.user = openDJUser;
+    account.display = openDJUser + "/" + spotifyUser.display_name;
 }
 
 function createProviderFromAccountAndUser(account, user) {
     let provider = {
         type: 'spotify',
         id: user.id,
-        display: user.display_name,
+        display: account.display,
+        user: account.user,
         email: user.email,
     };
     if (user.images && user.images[0] && user.images[0].url) {
@@ -361,22 +362,30 @@ async function addAccountToEvent(event, account, spotifyUser) {
 
     if (Object.values(event.accounts).length > MAX_ACCOUNTS_PER_EVENT) {
         throw {
-            "msg": "Sorry, max " + MAX_ACCOUNTS_PER_EVENT + "accounts per event allowed",
-            "code": "SPTY-578"
+            msg: "Sorry, max " + MAX_ACCOUNTS_PER_EVENT + "accounts per event allowed",
+            code: "SPTY-578"
         }
 
     }
 
     log.debug("Register new account/provider with event service");
     let provider = createProviderFromAccountAndUser(account, spotifyUser);
-    provider = await request({
-        method: 'POST',
-        uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
-        body: provider,
-        json: true,
-        timeout: 1000
-    });
-    event.accounts[account.accountID] = account;
+    try {
+        provider = await request({
+            method: 'POST',
+            uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
+            body: provider,
+            json: true,
+            timeout: 1000
+        });
+        event.accounts[account.accountID] = account;
+    } catch (err) {
+        log.error("addAccountToEvent register with event failed ?!", err);
+        throw {
+            msg: "addAccountToEvent register with event failed?!",
+            code: "SPTY-579"
+        }
+    }
 
     log.trace('end addAccountToEvent');
 }
@@ -407,7 +416,9 @@ router.get('/events/:eventID/providers/spotify/login', async function(req, res) 
     log.debug("getSpotifyLoginURL");
     let eventID = req.params.eventID;
     let spotifyApi = getTemporarySpotifyApi();
-    let authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, eventID);
+    let user = req.query.user;
+    let state = eventID + '-' + (user ? user : '???');
+    let authorizeURL = spotifyApi.createAuthorizeURL(spotifyScopes, state);
     log.debug("authorizeURL=%s", authorizeURL);
 
     // redirect to spotify auth/consent page flow:
@@ -421,8 +432,10 @@ router.get('/auth_callback', async function(req, res) {
     log.trace("auth_callback start req=%s", JSON.stringify(req.query));
     let code = req.query.code;
     let state = req.query.state;
-    let eventID = state;
-    log.debug("code = %s, state=%s", code, state);
+    let splitter = req.query.state.split("-");
+    let eventID = splitter[0];
+    let user = splitter[1];
+    log.debug("code = %s, state=%s, event=%s, user=%s", code, state, eventID, user);
 
     try {
         // Trade CODE into TOKENS:
@@ -433,46 +446,62 @@ router.get('/auth_callback', async function(req, res) {
         log.debug('Before we can use the API, we need to set access_token=%s', tokenData.body.access_token);
         spotifyApi.setAccessToken(tokenData.body.access_token);
 
-        log.debug("Get information about user from spotify, thereby verifying that the token is actually working");
+        log.debug("Get information about user from spotify");
         let spotifyUser = await spotifyApi.getMe();
-        log.debug("spotifyUser", spotifyUser.body);
+        log.trace("spotifyUser", spotifyUser.body);
 
-        log.debug("Hooray! Code is valid and we have valid tokes for event=%s, so lets store the stuff", eventID);
+        log.debug("Build account object with spotify user:");
         let event = await getEvent(eventID);
-
         let accountID = spotifyUser.body.id;
         let account = getAccountForEvent(event, accountID);
         updateTokensFromSpotifyBody(account, tokenData.body);
-        updateAccountFromSpotifyUser(account, spotifyUser.body);
+        updateAccountFromSpotifyUser(account, spotifyUser.body, user);
 
+        log.debug("Auto select device for new account");
+        await autoSelectDevice(spotifyApi, account, event);
+
+        log.debug("Test play bohemian rhapsody to ensure it really works on device ", account.currentDevice);
+        await spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"], device_id: account.currentDevice });
+
+        log.debug("Don't forget to stop it after 10seconds")
+        setTimeout(async function() {
+            try {
+                await spotifyApi.pause({ device_id: account.currentDevice });
+            } catch (err) {
+                log.trace("pause failed after auth callback test play - ignored", err);
+            }
+
+        }, 10000);
+
+        log.debug('Hooray, all worked out! Now store the new account.');
+        await addAccountToEvent(event, account, spotifyUser.body);
         fireEventStateChange(event);
 
-        await addAccountToEvent(event, account, spotifyUser.body);
-
-
-        // Which Page to continue with after successful spotify login?
-        // To the event login page:
-        // let continueWith = "/" + eventID;
-        // To the curator page:
-        // let continueWith = "/ui/playlist-curator";
+        log.debug("All done - redirect user to next page");
+        // TODO: Depends on role owner->edit, user->playlist
+        // Which Page to continue with after successful spotify login
+        // To the event login page: let continueWith = "/" + eventID;
+        // To the curator page: let continueWith = "/ui/playlist-curator";
         // To the create/edit event page:
         let continueWith = "/ui/event-edit";
 
-        // Let's try to start bohemian rhapsody:
-        autoSelectDevice(spotifyApi, account, event)
-            .then(function() {
-                spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"] });
-            }).then(function() {
-                res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify App should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
-                setTimeout(function() {
-                    spotifyApi.pause({ device_id: account.currentDevice });
-                }, 10000);
-            }).catch(function(err) {
-                res.send("Spotify Authorization was successful, but test playback failed.<br>Make sure Spotify App is active on the desired device by start/stopping a track using spotify on that device!<br/>Error from Spotify was:" + JSON.stringify(err) + "<br><a href=\"" + continueWith + "\">Press here to continue!</a><br>");
-            });
+        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify Device should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
     } catch (err) {
-        log.error("authorizationCodeGrant processing failed for event %s with err", eventID, err);
-        handleError(err, res);
+        log.trace("auth shit happened!", err)
+        let errTxt = '' + JSON.stringify(err);
+        let msg = '';
+        if (errTxt.includes('Forbidden')) {
+            log.trace('forbidden');
+            msg = 'Spotify Login was successful, but playing a song failed (forbidden).<br>Probably you have a Spotify Free account. Sorry, that does not work.<br>Please upgrade to Spotify Premium! The free trial period is sufficient for OpenDJ!<br>(SPTY-333)';
+        } else if (errTxt.includes('Not Found') || errTxt.includes('SPTFY-100')) {
+            log.trace('not found');
+            msg = 'Spotify Login was successful, but playing a song failed due to no device available.<br>On the device you want to listen to the playlist, press play on the desired device to ensure the device is active.<br>Then try again.<br>(SPTY-334)';
+        } else {
+            log.error("authorizationCodeGrant processing failed for event %s with err", eventID, err);
+            msg = "Something unexpected went wrong!<br><br>" + errTxt;
+        }
+        msg = msg + '<br><br><a href="/' + eventID + '">Return to OpenDJ</>'
+        res.send(msg);
     }
 });
 
@@ -1042,6 +1071,8 @@ async function handlePlayError(err, options, event, account, api) {
         log.debug("expected shit happend - device not found - try autoselect a device");
         let deviceChanged = await autoSelectDevice(api, account, event);
         if (deviceChanged) {
+            fireEventStateChange(event);
+
             log.debug("AutoSelect did change device setting, so play it again, same!");
             options.device_id = event.currentDevice;
             await promiseRetry(function(retry, number) {
@@ -1086,7 +1117,6 @@ async function autoSelectDevice(api, account, event) {
     if (deviceId != event.currentDevice) {
         log.info("AUTOSELECT device %s for %s-%s", device.name, event.eventID, account.display);
         account.currentDevice = deviceId;
-        fireEventStateChange(event);
         result = true;
     } else {
         log.info("AUTOSELECT: no (new) device found");

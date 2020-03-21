@@ -102,6 +102,7 @@ export class EventEditPage implements OnInit {
         this.userState.isCurator = true;
         this.userState.isLoggedIn = true;
         this.events.publish('sessionState:modified', this.userState);
+        this.events.publish('event:modified', this.event);
         this.presentToast('You have successfully created this event. You have been also logged in as owner to this event.');
         this.content.scrollToTop();
       },
@@ -123,6 +124,7 @@ export class EventEditPage implements OnInit {
       await this.feService.updateEvent(this.event).subscribe((event) => {
         console.debug('updateEvent -> SUCCESS');
         this.event = event;
+        this.events.publish('event:modified', this.event);
         this.mapEventToForm(this.eventForm, this.event);
         this.presentToast('You have successfully updated this event.');
         this.content.scrollToTop();
@@ -168,6 +170,7 @@ export class EventEditPage implements OnInit {
       this.presentToast('You have successfully DELETED this event.');
       this.userState = new UserSessionState();
       this.events.publish('sessionState:modified', this.userState);
+      this.events.publish('event:modified', null);
       this.event = await this.feService.readEvent(null).toPromise();
       this.mapEventToForm(this.eventForm, this.event);
       this.content.scrollToTop();
@@ -200,6 +203,7 @@ export class EventEditPage implements OnInit {
       // if the user is the owner, load the event data
       if (this.userState.isLoggedIn && this.userState.isEventOwner) {
         this.event = await this.feService.readEvent(this.userState.currentEventID).toPromise();
+        this.events.publish('event:modified', this.event);
       }
       this.ensureTrackFeedbackEmojis();
       this.mapEventToForm(this.eventForm, this.event);
@@ -210,6 +214,33 @@ export class EventEditPage implements OnInit {
       console.error('refreshState failed', err);
       this.router.navigateByUrl('ui/landing');
     }
+  }
+
+  public async addProviderSpotify() {
+    const alert = await this.alertController.create({
+      header: 'Add Spotify',
+      message: 'To add Spotify as music provider for your event, you need:<br>1. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>2. On the device you want OpenDJ to play music, <b>play any song now</b> to ensure it is connected and active.<br>3. Then press okay.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary seleniumCancel',
+          handler: (data) => {
+
+          }
+        }, {
+          text: 'Okay',
+          cssClass: 'seleniumOkay',
+          handler: () => {
+            const href = `${this.configService.SPOTIFY_PROVIDER_API}/events/${this.event.eventID}/providers/spotify/login`;
+            console.debug('window open', href);
+
+            window.open(href, '_blank');
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
   public addProviderGoogle() {
@@ -293,6 +324,7 @@ private refreshSpotifyDevices() {
       eventStartsAt: [new Date().toISOString(), Validators.required],
       eventEndsAt: [{value: '', disabled: true}, Validators.nullValidator],
       allowDuplicateTracks: [false],
+      usersCanAddProvider: [true],
       progressPercentageRequiredForEffectivePlaylist: [false],
       beginPlaybackAtEventStart: [false],
       everybodyIsCurator: [false],

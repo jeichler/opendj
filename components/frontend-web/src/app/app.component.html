@@ -31,7 +31,6 @@
                     </ion-item>
 
                     <ion-item *ngIf="userState?.isCurator" [routerDirection]="'root'" routerLink="/ui/event-view" color="opendj">
-                        <!-- compass, desktop, expand, eye -->
                         <ion-icon id="app-menu-eventview-icon" slot="start" name="desktop"></ion-icon>
                         <ion-label id="app-menu-eventview-label">Event View</ion-label>
                     </ion-item>
@@ -39,6 +38,11 @@
                     <ion-item *ngIf="userState?.isEventOwner" [routerDirection]="'root'" routerLink="/ui/event-edit" color="opendj">
                         <ion-icon id="app-menu-editevent-icon" slot="start" name="options"></ion-icon>
                         <ion-label id="app-menu-editevent-label">Edit Event</ion-label>
+                    </ion-item>
+
+                    <ion-item *ngIf="event?.usersCanAddProvider" button (click)="addSpotify()" color="opendj" color="opendj">
+                        <ion-img slot="start" src="assets/img/provider/spotify_icon_passive_light_64.png" class="spotify-logo"></ion-img>
+                        <ion-label id="app-menu-addspotify-label">Add your Spotify</ion-label>
                     </ion-item>
 
                     <ion-item button (click)="logout()" color="opendj" *ngIf="userState?.isLoggedIn">

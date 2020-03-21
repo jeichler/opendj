@@ -156,8 +156,8 @@
                         <ion-label>Music Provider</ion-label>
                     </ion-item-divider>
                     <ion-item class="provider-item">
-                        <ion-label slot="start">Press to add:</ion-label>
-                        <ion-button slot="start" id="addSpotify" [disabled]="!userState?.isLoggedIn" color="none" href="{{configService.SPOTIFY_PROVIDER_API}}/events/{{event.eventID}}/providers/spotify/login" class="provider-button">
+                        <ion-label slot="start">Add:</ion-label>
+                        <ion-button slot="start" id="addSpotify" [disabled]="!userState?.isLoggedIn" color="none" (click)="addProviderSpotify()" class="provider-button">
                             <ion-img slot="icon-only" src="assets/img/provider/spotify_logo.png" class="provider-img"></ion-img>
                         </ion-button>
                         <ion-button slot="start" id="addGoogle" [disabled]="!userState?.isLoggedIn" color="primary" size="small" (click)="addProviderDeezer()" tappable>
@@ -169,7 +169,6 @@
                         <ion-icon tooltip="Press the logo of your streaming provider to add your account to the event. A consent screen will pop up where you have to allow OpenDJ to access your devices." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end"
                             name="ios-help-circle-outline">
                         </ion-icon>
-
                     </ion-item>
 
                     <ion-item *ngFor="let provider of event.providers; index as i">
@@ -182,8 +181,16 @@
                         </ion-select>
 -->
                         <ion-button slot="end" id="removeProvider" color="danger" (click)="removeProvider(provider)" tappable>Remove</ion-button>
-
+                        <ion-icon tooltip="Spotify Account Name currently active in this event." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline"></ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label>Corona Mode</ion-label>
+                        <ion-toggle id="usersCanAddProvider" color="primary" formControlName="usersCanAddProvider"></ion-toggle>
+                        <ion-icon tooltip="To practice social distancing, Users can add their own music prover to listen to the playlist" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline"></ion-icon>
+                    </ion-item>
+
+
                 </ion-item-group>
 
 

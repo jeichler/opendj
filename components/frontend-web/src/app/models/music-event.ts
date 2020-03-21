@@ -32,6 +32,7 @@ export class MusicEvent {
     demoAutoFillNumTracks: number;
     demoAutoFillFromPlaylist: string;
     providers: Array<string>;
+    usersCanAddProvider: boolean;
     activePlaylist = 0;
     playlists: [0];
     effectivePlaylist: Array<Track>;

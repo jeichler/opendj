@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Events, MenuController, Platform } from '@ionic/angular';
+import { Events, MenuController, Platform, AlertController } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
@@ -17,8 +17,8 @@ import { retry, catchError, timeout } from 'rxjs/operators';
 })
 export class AppComponent implements OnInit {
 
-  // userState is important for displaying the menu options
   userState = new UserSessionState();
+  event = null;
 
   constructor(
     public platform: Platform,
@@ -27,6 +27,7 @@ export class AppComponent implements OnInit {
     private events: Events,
     private router: Router,
     private menu: MenuController,
+    public alertController: AlertController,
     private userDataService: UserDataService,
     private confService: ConfigService,
     private http: HttpClient
@@ -97,6 +98,11 @@ export class AppComponent implements OnInit {
       this.userState = data;
     });
 
+    this.events.subscribe('event:modified', data => {
+      console.debug('Received event:modified event');
+      this.event = data;
+    });
+
   }
 
 
@@ -106,6 +112,33 @@ export class AppComponent implements OnInit {
 
   home() {
     this.events.publish('user:logout', {redirect: 'ui/landing'});
+  }
+
+  async addSpotify() {
+    const alert = await this.alertController.create({
+      header: 'Add Spotify',
+      message: 'You can add your own Spotify Account to listen to the playlist.<br>You need:<br>1. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>2. On the device you want OpenDJ to play this list on, <b>play any song now</b> to ensure it is connected and active.<br>3. Then press okay.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary seleniumCancel',
+          handler: (data) => {
+
+          }
+        }, {
+          text: 'Okay',
+          cssClass: 'seleniumOkay',
+          handler: () => {
+            const href = `${this.confService.SPOTIFY_PROVIDER_API}/events/${this.event.eventID}/providers/spotify/login?user=${this.userState.username}`;
+            console.debug('window open', href);
+
+            window.open(href, '_blank');
+          }
+        }
+      ]
+    });
+    await alert.present();
   }
 
 
