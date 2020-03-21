@@ -771,7 +771,6 @@ async function play(event, playlist) {
     updateCurrentTrackProgress(playlist);
 
     // Fire and Forget  Call Spotify-Provider to play at currentTrack.progress_ms
-    // TODO: Make this truly async, i.e. sent a message, and provider fires a "PLAY_STARTED" event when action succeded
     if (event.demoNoActualPlaying) {
         log.debug("Demo No Actual Playing is active for event %s - play request is NOT actually being executed", event.eventID);
     } else {

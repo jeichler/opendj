@@ -967,10 +967,8 @@ async function pause(account) {
 }
 
 
-async function pauseEvent(eventID) {
+async function pauseEvent(event) {
     log.trace("begin pauseEvent");
-
-    let event = await getEvent(eventID);
 
     // Fan out calls for every account in parallel:
     let parallelCalls = [];
@@ -987,6 +985,13 @@ async function play(event, account, trackID, pos) {
 
     log.debug("play eventID=%s-%s, trackID=%s, pos=%s", account.eventID, account.display, trackID, pos);
     let api = getSpotifyApiForAccount(account);
+    let result = {
+        status: 'ok',
+        code: "SPTFY-542",
+        msg: "OK-" + account.display,
+        msgShort: "",
+    }
+
 
     // If TrackID contains a "spotify:track:" prefix, we need to remove it:
     let colonPos = trackID.lastIndexOf(":");
@@ -1016,7 +1021,7 @@ async function play(event, account, trackID, pos) {
             return api.play(options).catch(retry);
         }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
 
-        log.info("PLAY ok for %s-%s", account.eventID, account.display);
+        log.info("PLAY ok %s#%s", account.eventID, account.display);
     } catch (err) {
         log.debug("play failed with err=%s - will try to handle this", err);
         try {
@@ -1024,22 +1029,30 @@ async function play(event, account, trackID, pos) {
             await handlePlayError(err, options, event, account, api);
             log.debug("play was successful after handling initial error");
         } catch (err2) {
-            log.debug("play failed after handling initial error with new error=%s", err2);
+            let msgShort = "WTF";
+            log.debug("play failed after handling initial error with new error", err2);
             let message = "Play failed for Spotify account " + account.display + ".";
             if (("" + err).includes("Not Found")) {
                 message += " Spotify could not find the device. Ensure that it is active by pressing play on the device, then press play in OpenDJ again. Or remove this account using the edit event page.";
+                msgShort = "" + account.display + ": device not found";
             } else {
                 message += " Initial Error was " + err;
+                msgShort = "" + account.display + ": strange";
             }
 
-            throw {
+            result = {
+                status: 'error',
                 code: "SPTFY-500",
                 msg: message,
+                msgShort: msgShort
             };
+            log.info("PLAY err %s#%s", account.eventID, msgShort);
         }
         log.trace("end first catch");
     }
-    log.trace("end play");
+
+    log.trace("end play", result);
+    return result;
 }
 
 async function playEvent(eventID, trackID, pos) {
@@ -1055,12 +1068,49 @@ async function playEvent(eventID, trackID, pos) {
         };
     }
 
-    // Fan out calls for every account in parallel:
+    log.debug("Fan out play calls for %s account(s) in parallel", accounts.length);
     let parallelCalls = [];
     for (const account of accounts) {
         parallelCalls.push(play(event, account, trackID, pos));
     }
-    await Promise.all(parallelCalls);
+
+    log.debug("Join all parallel calls");
+    let results = await Promise.all(parallelCalls);
+
+    if (parallelCalls.length > 1) {
+        log.debug("Count Number of ok/err play calls");
+        let playOk = 0;
+        let playErr = 0;
+        let msgsConcatenated = "";
+        for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            if (r.status == "ok") { playOk++; }
+            if (r.status == "error") {
+                playErr++;
+                msgsConcatenated += r.msgShort + "\n"
+            }
+        }
+
+        log.debug("Sanity checking counts: playOk=%s, playErr=%s, len=%s", playOk, playErr, parallelCalls.length);
+        log.debug("Escalate if more then 50% of calls failed");
+        const percentageFailed = playErr / parallelCalls.length * 100.0;
+        if (percentageFailed >= 50) {
+            log.debug("%s percent of play calls failed - async call pause to stop the ones that are playing", percentageFailed);
+            pauseEvent(event)
+                .catch(pauseErr => log.debug("async pauseEvent after play error is ignored", pauseErr));
+
+            log.debug("Now escalate");
+            throw {
+                code: "SPTFY-501",
+                msg: "Play failed for majority of accounts:\n" + msgsConcatenated
+            }
+        }
+    } else {
+        log.debug("Only one account - escalate original error if there was one");
+        if (results[0].status == 'error') {
+            throw results[0];
+        }
+    }
 
     log.trace("end playEvent");
 }
@@ -1178,11 +1228,11 @@ async function changeVolumeForAccount(account, action) {
 }
 
 
-// --------------------------------------------------------------------------
-// --------------------------------------------------------------------------
-// --------------------------- sync api routes ------------------------------
-// --------------------------------------------------------------------------
-// --------------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ---------------------------  api routes ------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 if (COMPRESS_RESULT == 'true') {
     log.info("compression enabled");
     app.use(compression())
@@ -1383,7 +1433,8 @@ router.get('/events/:eventID/providers/spotify/pause', async function(req, res) 
     log.trace("begin pause route");
 
     try {
-        await pauseEvent(req.params.eventID);
+        let event = await getEvent(req.params.eventID);
+        await pauseEvent(event);
         res.status(200).send("ok");
         log.info("PAUSE eventID=%s", req.params.eventID);
     } catch (err) {
@@ -1405,6 +1456,7 @@ router.get('/events/:eventID/providers/spotify/play/:trackID', async function(re
         await playEvent(eventID, trackID, pos);
         res.status(200).send("ok");
     } catch (err) {
+        log.debug("play route err", err);
         res.status(500).send(err);
     }
     log.trace("end play route");
