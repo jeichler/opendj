@@ -232,7 +232,7 @@ export class EventEditPage implements OnInit {
           text: 'Okay',
           cssClass: 'seleniumOkay',
           handler: () => {
-            const href = `${this.configService.SPOTIFY_PROVIDER_API}/events/${this.event.eventID}/providers/spotify/login`;
+            const href = `${this.configService.SPOTIFY_PROVIDER_API}/events/${this.event.eventID}/providers/spotify/login?user=${this.userState.username}`;
             console.debug('window open', href);
 
             window.open(href, '_blank');
