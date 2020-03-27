@@ -1742,6 +1742,23 @@ function readyAndHealthCheck(req, res) {
 router.get('/ready', readyAndHealthCheck);
 router.get('/health', readyAndHealthCheck);
 
+router.get('/internal/dump', async function(req, res) {
+    log.trace("begin dump");
+    try {
+        let it = await gridEvents.iterator(10);
+        let entry = await it.next();
+        let result = [];
+
+        while (!entry.done) {
+            result.push(JSON.parse(entry.value));
+            entry = await it.next();
+        }
+        await it.close();
+        res.status(200).send(result);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
 
 
 app.use("/api/service-playlist/v1", router);

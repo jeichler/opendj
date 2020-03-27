@@ -360,12 +360,15 @@ function createProviderFromAccountAndUser(account, user) {
 async function addAccountToEvent(event, account, spotifyUser) {
     log.trace('begin addAccountToEvent');
 
+    log.debug("addAccountToEvent sanity checks");
     if (Object.values(event.accounts).length > MAX_ACCOUNTS_PER_EVENT) {
         throw {
             msg: "Sorry, max " + MAX_ACCOUNTS_PER_EVENT + "accounts per event allowed",
             code: "SPTY-578"
         }
-
+    }
+    if (account.eventID != event.eventID) {
+        throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
     }
 
     log.debug("Register new account/provider with event service");
@@ -510,7 +513,11 @@ router.get('/auth_callback', async function(req, res) {
 // Step 4 of the flow - refresh tokens!
 async function refreshAccessTokenForAccount(event, account) {
     let stateChanged = false;
-    log.trace("refreshAccessToken begin eventID=%s, account=%s", event.eventID, account.display);
+    log.trace("begin refreshAccessToken eventID=%s, account=%s", event.eventID, account.display);
+
+    if (account.eventID != event.eventID) {
+        throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
+    }
 
     if (!account.token_expires) {
         log.error("refreshAccessToken: event has no token_expires, nothing to do here");
@@ -555,7 +562,7 @@ async function refreshAccessTokenForAccount(event, account) {
     } else {
         log.debug("refreshAccessToken: token for eventID=%s is still valid", event.eventID);
     }
-    log.trace("refreshAccessToken end eventID=%s", event.eventID);
+    log.trace("end refreshAccessToken eventID=%s", event.eventID);
 
     return stateChanged;
 }
@@ -1526,6 +1533,26 @@ async function readyAndHealthCheck(req, res) {
 
 router.get('/ready', readyAndHealthCheck);
 router.get('/health', readyAndHealthCheck);
+
+
+router.get('/internal/dump', async function(req, res) {
+    log.trace("begin dump");
+    try {
+        let it = await cacheState.iterator(10);
+        let entry = await it.next();
+        let result = [];
+
+        while (!entry.done) {
+            result.push(JSON.parse(entry.value));
+            entry = await it.next();
+        }
+        await it.close();
+        res.status(200).send(result);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+});
+
 
 router.get('/internal/searchPlaylist', async function(req, res) {
     log.trace("begin export_playlist");
