@@ -517,7 +517,7 @@ async function refreshAccessTokenForAccount(event, account) {
 
     /*
         if (account.eventID != event.eventID) {
-            throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
+            throw "!!! refreshAccessTokenForAccount: eventID of account and event to not match !!!";
         }
     */
     if (!account.token_expires) {
