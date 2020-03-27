@@ -515,10 +515,11 @@ async function refreshAccessTokenForAccount(event, account) {
     let stateChanged = false;
     log.trace("begin refreshAccessToken eventID=%s, account=%s", event.eventID, account.display);
 
-    if (account.eventID != event.eventID) {
-        throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
-    }
-
+    /*
+        if (account.eventID != event.eventID) {
+            throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
+        }
+    */
     if (!account.token_expires) {
         log.error("refreshAccessToken: event has no token_expires, nothing to do here");
         return false;
