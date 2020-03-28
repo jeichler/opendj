@@ -337,7 +337,7 @@ function updateTokensFromSpotifyBody(account, body) {
 
     account.token_created = now.toISOString();
     account.token_expires = new Date(now.getTime() + 1000 * body['expires_in']).toISOString();
-    log.trace("end updateEventTokensFromSpotifyBody acount=", acount);
+    log.trace("end updateEventTokensFromSpotifyBody account=", account);
 }
 
 function updateAccountFromSpotifyUser(account, spotifyUser, openDJUser) {
