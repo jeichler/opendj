@@ -210,3 +210,4 @@
         resources:
           requests:
             storage: "{{ENV.BACKEND_DATAGRID.STORAGE_SIZE}}"
+        storageClassName: "{{ ENV.COMMON.STORAGE_CLASS_FILE}}"

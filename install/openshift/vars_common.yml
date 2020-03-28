@@ -17,6 +17,7 @@ common:
     CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: false
     CONTAINER_IMAGE_EXTERNAL_REGISTRY: "undefined"
     QUAY_SECRET: "{{VAULT_QUAY_SECRET}}"
+    STORAGE_CLASS_FILE: "ocs-storagecluster-cephfs"
 
 
     MAVEN_MIRROR_URL: "http://nexus-oschneid-cluster-nexus.apps.ocp1.stormshift.coe.muc.redhat.com/repository/maven-public/"
@@ -27,7 +28,6 @@ common:
     KAFKA:
       HOST: "backend-eventstore-kafka-bootstrap:9092"
       USE: true
-      OPERATOR_AVAILABLE: true
       TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
       NUM_BROKERS: 2
       NUM_ZOOKEPERS: 1

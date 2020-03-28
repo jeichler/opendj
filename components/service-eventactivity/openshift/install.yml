@@ -16,13 +16,26 @@
       meta: end_play
       when: not ENV.SERVICE_EVENTACTIVITY.DEPLOY
 
-    - name: Create kafka topic
+    - name: Create kafka topic using operator
       tags: kafka
       when: ENV.BACKEND_EVENTSTORE.KAFKA.USE
-      command: "{{ENV.BACKEND_EVENTSTORE.KAFKA.TOPIC_CMD|mandatory}} --create --topic opendj.event.activity --partitions {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_PARTITIONS}} --replication-factor {{ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS}}  --config retention.ms=43200000" 
-      register: topic_result
-      failed_when: 'topic_result.rc != 0 and "already exists" not in topic_result.stderr'
-      changed_when: '"already exists" not in topic_result.stderr'
+      k8s:
+        state: present
+        wait: true
+        definition:
+          kind: KafkaTopic
+          apiVersion: kafka.strimzi.io/v1beta1
+          metadata:
+            name: opendj.event.activity
+            labels:
+              strimzi.io/cluster: backend-eventstore
+            namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
+          spec:
+            partitions: 10
+            replicas: 1
+            config:
+              retention.ms: 604800000
+              segment.bytes: 1073741824
 
     - name: Create definitions for image build 
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD

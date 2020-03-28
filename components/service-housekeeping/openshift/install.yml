@@ -32,6 +32,8 @@
             resources:
               requests:
                 storage: 1Gi
+            storageClassName: "{{ ENV.COMMON.STORAGE_CLASS_FILE}}"
+
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:

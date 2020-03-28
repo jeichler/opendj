@@ -12,6 +12,7 @@ specific:
     CONTAINER_IMAGE_TAG: "prd"
     CONTAINER_IMAGE_FROM_EXTERNAL_REGISTRY: true
     CONTAINER_IMAGE_EXTERNAL_REGISTRY: "quay.io/opendj"
+    STORAGE_CLASS_FILE: "managed-nfs-storage"
 
 
 

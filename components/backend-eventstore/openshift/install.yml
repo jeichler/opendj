@@ -16,7 +16,6 @@
       when: not ENV.BACKEND_EVENTSTORE.DEPLOY
 
     - name: Deploy Kafka via Operator
-      when: ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
       k8s:
         state: present
         wait: true
@@ -31,45 +30,45 @@
               app: backend
           spec:
             kafka:
-              version: 2.3.0
-              replicas: 2
+              version: 2.4.0
+              replicas: 1
               listeners:
                 plain: {}
                 tls: {}
               config:
 #                offsets.topic.replication.factor: "{{ (ENV.BACKEND_EVENTSTORE.KAFKA.NUM_BROKERS | default('1')) | int}}"
-                offsets.topic.replication.factor: 2
+                offsets.topic.replication.factor: 1
                 transaction.state.log.replication.factor: 1
                 transaction.state.log.min.isr: 1
-                log.message.format.version: "2.3"
+                log.message.format.version: "2.4"
               storage:
                 type: persistent-claim
                 size: 1Gi
+                class: "{{ ENV.COMMON.STORAGE_CLASS_FILE}}"
                 deleteClaim: true
+              template:
+                statefulset:
+                  metadata:
+                    labels:
+                      app.kubernetes.io/part-of: backend
+                      app.kubernetes.io/name: backend
+                      app: backend
             zookeeper:
               replicas: 1
               storage:
                 type: persistent-claim
                 size: 1Gi
+                class: "{{ ENV.COMMON.STORAGE_CLASS_FILE}}"
                 deleteClaim: true
-
-# Ugly as hell, but i dont care.
-# Need to ignore errors as no idempotency here:
-# TODO: Use Better way described here:
-# https://access.redhat.com/solutions/4241041
-    - name: Deploy Kafka via ugly workaround (errors can be ignored)
-      block:
-        - name: Deploy zookepper
-          command: oc create --namespace {{ENV.COMMON.NAMESPACE}} -f -
-          args:
-            stdin: "{{ lookup('template', 'noOperator_zookeeper.yml') }}"
-          ignore_errors: yes
-        - name: Deploy broker
-          command: oc create --namespace {{ENV.COMMON.NAMESPACE}} -f -
-          args:
-            stdin: "{{ lookup('template', 'noOperator_broker.yml') }}"
-          ignore_errors: yes
-      when: not ENV.BACKEND_EVENTSTORE.KAFKA.OPERATOR_AVAILABLE|bool
+              template:
+                statefulset:
+                  metadata:
+                    labels:
+                      app.kubernetes.io/part-of: backend
+                      app.kubernetes.io/name: backend
+                      app: backend
+            entityOperator:
+              topicOperator: {}
 
     - name: Wait for broker pod to be online
       shell: oc get pods --namespace {{ENV.COMMON.NAMESPACE}} | grep backend-eventstore-kafka-0 | grep Running
