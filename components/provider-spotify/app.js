@@ -290,8 +290,10 @@ function getSpotifyApiForAccount(account) {
 }
 
 function getAccountForEvent(event, accountID) {
+    log.trace("begin getAccountForEvent")
     let account = event.accounts[accountID];
     if (!account) {
+        log.debug("getAccountForEvent: creating account %s for event %s", accountID, event.eventID);
         account = Object.assign({}, accountPrototype);
         account.accountID = accountID;
         account.eventID = event.eventID;
@@ -370,6 +372,7 @@ async function addAccountToEvent(event, account, spotifyUser) {
     if (account.eventID != event.eventID) {
         throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
     }
+    event.accounts[account.accountID] = account;
 
     log.debug("Register new account/provider with event service");
     let provider = createProviderFromAccountAndUser(account, spotifyUser);
@@ -381,7 +384,6 @@ async function addAccountToEvent(event, account, spotifyUser) {
             json: true,
             timeout: 1000
         });
-        event.accounts[account.accountID] = account;
     } catch (err) {
         log.error("addAccountToEvent register with event failed ?!", err);
         throw {
