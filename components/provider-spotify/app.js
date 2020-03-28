@@ -290,14 +290,17 @@ function getSpotifyApiForAccount(account) {
 }
 
 function getAccountForEvent(event, accountID) {
-    log.trace("begin getAccountForEvent")
+    log.trace("begin getAccountForEvent eventID=%s, accountID=%s", event.eventID, accountID);
     let account = event.accounts[accountID];
-    if (!account) {
+    if (account) {
+        log.trace("using account from event", event);
+    } else {
         log.debug("getAccountForEvent: creating account %s for event %s", accountID, event.eventID);
         account = Object.assign({}, accountPrototype);
         account.accountID = accountID;
         account.eventID = event.eventID;
     }
+    log.trace("end getAccountForEvent account=", account);
     return account;
 }
 
@@ -310,16 +313,16 @@ async function getEvent(eventID) {
         eventState.eventID = eventID;
         eventState.timestamp = new Date().toISOString();
     } else {
-        log.debug("event from cache = %s", JSON.stringify(eventState));
+        log.debug("getEvent - is in cache");
     }
-    log.trace("end getEvent id=%s", eventID);
+    log.trace("end getEvent event=", eventState);
     return eventState;
 }
 
 
 function updateTokensFromSpotifyBody(account, body) {
     let now = new Date();
-    log.debug("updateEventTokensFromSpotifyBody body=", body);
+    log.trace("begin updateEventTokensFromSpotifyBody body=", body);
     if (body['access_token']) {
         log.trace("received new access token");
         account.access_token = body['access_token'];
@@ -334,13 +337,16 @@ function updateTokensFromSpotifyBody(account, body) {
 
     account.token_created = now.toISOString();
     account.token_expires = new Date(now.getTime() + 1000 * body['expires_in']).toISOString();
+    log.trace("end updateEventTokensFromSpotifyBody acount=", acount);
 }
 
 function updateAccountFromSpotifyUser(account, spotifyUser, openDJUser) {
+    log.trace("begin updateAccountFromSpotifyUser");
     account.accountID = spotifyUser.id;
     account.email = spotifyUser.email;
     account.user = openDJUser;
     account.display = openDJUser + "/" + spotifyUser.display_name;
+    log.trace("end updateAccountFromSpotifyUser account=", account);
 }
 
 function createProviderFromAccountAndUser(account, user) {
@@ -370,7 +376,8 @@ async function addAccountToEvent(event, account, spotifyUser) {
         }
     }
     if (account.eventID != event.eventID) {
-        throw "!!! addAccountToEvent: eventID of account and event to not match !!!";
+        log.fatal("addAccountToEvent: eventID of account and eventID of event do not match !!!", account, event);
+        throw "!!! addAccountToEvent: eventID of account and eventID of event do not match !!!";
     }
     event.accounts[account.accountID] = account;
 
@@ -455,7 +462,7 @@ router.get('/auth_callback', async function(req, res) {
         let spotifyUser = await spotifyApi.getMe();
         log.trace("spotifyUser", spotifyUser.body);
 
-        log.debug("Build account object with spotify user:");
+        log.debug("Build account object with spotify user for eventID=", eventID);
         let event = await getEvent(eventID);
         let accountID = spotifyUser.body.id;
         let account = getAccountForEvent(event, accountID);
