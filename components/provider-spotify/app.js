@@ -368,6 +368,7 @@ function createProviderFromAccountAndUser(account, user) {
 
 async function addAccountToEvent(event, account, spotifyUser) {
     log.trace('begin addAccountToEvent');
+    let trackStarted = false;
 
     log.debug("addAccountToEvent sanity checks");
     if (Object.values(event.accounts).length > MAX_ACCOUNTS_PER_EVENT) {
@@ -385,13 +386,25 @@ async function addAccountToEvent(event, account, spotifyUser) {
     log.debug("Register new account/provider with event service");
     let provider = createProviderFromAccountAndUser(account, spotifyUser);
     try {
-        provider = await request({
+        const musicEvent = await request({
             method: 'POST',
             uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
             body: provider,
             json: true,
             timeout: 1000
         });
+        log.trace("musicEvent from event service after register new account", musicEvent);
+        if (musicEvent && musicEvent.playlists && musicEvent.playlists.length > 0) {
+            const playlist = musicEvent.playlists[musicEvent.activePlaylist];
+            if (playlist && playlist.isPlaying && playlist.currentTrack && playlist.currentTrack.id && playlist.currentTrack.id.startsWith('spotify')) {
+                log.trace("playlist is currently playing a spotify track - let's play it on the new account, too");
+                const track = playlist.currentTrack;
+                const pos = (Date.now() - Date.parse(track.started_at));
+                await play(event, account, track.id, pos > 0 ? pos : 0);
+                trackStarted = true;
+            }
+        }
+
     } catch (err) {
         log.error("addAccountToEvent register with event failed ?!", err);
         throw {
@@ -400,7 +413,8 @@ async function addAccountToEvent(event, account, spotifyUser) {
         }
     }
 
-    log.trace('end addAccountToEvent');
+    log.trace('end addAccountToEvent trackStarted=', trackStarted);
+    return trackStarted;
 }
 
 async function removeAccountFromEvent(event, account) {
@@ -477,7 +491,7 @@ router.get('/auth_callback', async function(req, res) {
         await spotifyApi.play({ uris: ["spotify:track:4u7EnebtmKWzUH433cf5Qv"], device_id: account.currentDevice });
 
         log.debug("Don't forget to stop it after 10seconds")
-        setTimeout(async function() {
+        let stopFreddy = setTimeout(async function() {
             try {
                 await spotifyApi.pause({ device_id: account.currentDevice });
             } catch (err) {
@@ -487,8 +501,12 @@ router.get('/auth_callback', async function(req, res) {
         }, 10000);
 
         log.debug('Hooray, all worked out! Now store the new account.');
-        await addAccountToEvent(event, account, spotifyUser.body);
+        const trackStarted = await addAccountToEvent(event, account, spotifyUser.body);
         fireEventStateChange(event);
+        if (trackStarted) {
+            log.debug("Track of playlist started, we can cancel stop of bohemian rhapsody");
+            clearTimeout(stopFreddy);
+        }
 
         log.debug("All done - redirect user to next page");
         // TODO: Depends on role owner->edit, user->playlist
@@ -498,11 +516,11 @@ router.get('/auth_callback', async function(req, res) {
         // To the create/edit event page:
         let continueWith = "/ui/event-edit";
 
-        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body>Spotify Authorization was successful, Spotify Device should be playing Bohemian Rhapsody for the next 10 seconds.</body></html>");
+        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body><h1>Spotify Authorization was successful, Spotify Device should be playing Bohemian Rhapsody for the next 10 seconds.</h1></body></html>");
     } catch (err) {
         log.trace("auth shit happened!", err)
         let errTxt = '' + JSON.stringify(err);
-        let msg = '';
+        let msg = '<html><body><h1>';
         if (errTxt.includes('Forbidden')) {
             log.trace('forbidden');
             msg = 'Spotify Login was successful, but playing a song failed (forbidden).<br>Probably you have a Spotify Free account. Sorry, that does not work.<br>Please upgrade to Spotify Premium! The free trial period is sufficient for OpenDJ!<br>(SPTY-333)';
@@ -514,6 +532,7 @@ router.get('/auth_callback', async function(req, res) {
             msg = "Something unexpected went wrong!<br><br>" + errTxt;
         }
         msg = msg + '<br><br><a href="/' + eventID + '">Return to OpenDJ</>'
+        msg = msg + '</h1></body></html>'
         res.send(msg);
     }
 });
@@ -1027,15 +1046,10 @@ async function play(event, account, trackID, pos) {
         account.currentDevice = currentState.body.device.id;
     }
 
-
     if (account.currentDevice) {
         log.debug("account has currentDevice set - using it");
         options.device_id = account.currentDevice;
     }
-
-
-
-
 
     if (pos) {
         options.position_ms = pos;
