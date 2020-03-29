@@ -1019,10 +1019,23 @@ async function play(event, account, trackID, pos) {
     let uris = ["spotify:track:" + trackID];
     let options = { uris: uris };
 
+    log.trace('Ask Spotify about current device to honor ad hoc device selection');
+    let currentState = await api.getMyCurrentPlaybackState();
+    log.trace('currentState from spotify is ', currentState.body);
+    if (currentState && currentState.body && currentState.body.device && currentState.body.device.id) {
+        log.debug("Using device from current playback state")
+        account.currentDevice = currentState.body.device.id;
+    }
+
+
     if (account.currentDevice) {
         log.debug("account has currentDevice set - using it");
         options.device_id = account.currentDevice;
     }
+
+
+
+
 
     if (pos) {
         options.position_ms = pos;

@@ -21,10 +21,11 @@ specific:
 #                  NUM_ZOOKEPERS: 1
 
       PROVIDER_SPOTIFY:
+            LOG_LEVEL: "trace"
             REPLICAS: 2
 
       SERVICE_PLAYLIST:
-            LOG_LEVEL: "debug"
+            LOG_LEVEL: "trace"
             TEST_EVENT_ID: "demo"
             DEFAULT_AUTOFILL_EMPTY_PLAYLIST: "true"
             MOCKUP_NO_ACTUAL_PLAYING: "true"
