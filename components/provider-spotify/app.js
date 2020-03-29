@@ -310,7 +310,7 @@ async function getEvent(eventID) {
     if (eventState == null) {
         log.debug("EvenState object created for eventID=%s", eventID);
         //        eventState = Object.assign({}, eventStatePrototype);
-        evenState = JSON.parse(JSON.stringify(eventStatePrototype));
+        eventState = JSON.parse(JSON.stringify(eventStatePrototype));
         eventState.eventID = eventID;
         eventState.timestamp = new Date().toISOString();
     } else {
