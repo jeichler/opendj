@@ -140,7 +140,7 @@
                 </ion-item-group>
 
                 <!-- ------------------------------------------ Music Provider ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID">
                     <ion-item-divider mode="md">
                         <ion-label>Music Provider</ion-label>
                     </ion-item-divider>
@@ -179,14 +179,14 @@
                     <ion-item>
                         <ion-label>Corona Mode</ion-label>
                         <ion-toggle id="usersCanAddProvider" color="primary" formControlName="usersCanAddProvider"></ion-toggle>
-                        <ion-icon tooltip="To practice social distancing, Users can add their own music prover to listen to the playlist" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline"></ion-icon>
+                        <ion-icon tooltip="To practice viral distancing, Users can add their own music prover to listen to the playlist" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline"></ion-icon>
                     </ion-item>
 
 
                 </ion-item-group>
 
                 <!-- ------------------------------------------ Playlist settings ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID && event.providers.length>0">
                     <ion-item-divider mode="md">
                         <ion-label>Playlist settings</ion-label>
                     </ion-item-divider>
@@ -280,7 +280,7 @@
                 </ion-item-group>
 
                 <!-- ------------------------------------------ TIMING AND LIMITS ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID && event.providers.length>0">
                     <ion-item-divider mode="md">
                         <ion-label>Timing and Limits</ion-label>
                     </ion-item-divider>
@@ -323,7 +323,7 @@
 
 
                 <!-- ------------------------------------------ EVENT VIEW ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID && event.providers.length>0">
                     <ion-item-divider mode="md">
                         <ion-label>Event View</ion-label>
                     </ion-item-divider>
@@ -414,7 +414,7 @@
                 </ion-item-group>
 
                 <!-- ------------------------------------------ DEMO MODE ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID && event.providers.length>0">
                     <ion-item-divider mode="md">
                         <ion-label>Demo Mode</ion-label>
                     </ion-item-divider>
@@ -440,7 +440,7 @@
                 </ion-item-group>
 
                 <!-- ------------------------------------------ Advanced and Experimental ------------------------------------------ -->
-                <ion-item-group>
+                <ion-item-group *ngIf="event.eventID && event.providers.length>0">
                     <ion-item-divider mode="md">
                         <ion-label>Advanced and Experimental</ion-label>
                     </ion-item-divider>
@@ -493,10 +493,6 @@
                         <ion-icon tooltip="When auto moving tracks based on user feedback, how much does a like or a hate count? Default: like=1, hate=-1" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
-
-
-
-
                 </ion-item-group>
 
             </ion-list>
