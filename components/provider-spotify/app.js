@@ -248,7 +248,10 @@ function getAnyAccountForEvent(event) {
     log.trace("begin getAnyAccountForEvent");
     const accounts = Object.entries(event.accounts);
     if (accounts.length == 0) {
-        throw "Can't get any account for Event because no accounts available";
+        throw {
+            msg: "No Spotify accounts available! You have to add a spotify account using 'Edit Event' from the menu!",
+            code: "SPTY-042"
+        };
     }
     // For sake of simplicity, we simply take the first account.
     // TODO: select a random one for kind of load balancing between accounts
@@ -1438,20 +1441,19 @@ router.delete('/events/:eventID/providers/spotify/:providerID', async function(r
 });
 
 router.get('/events/:eventID/providers/spotify/search', async function(req, res) {
-    log.trace("searchTrack begin");
+    log.trace("begin searchTrack");
+    try {
+        let eventID = req.params.eventID;
+        let query = req.query.q
+        let event = await getEvent(eventID);
+        let api = getSpotifyApiForEvent(event);
 
-    let eventID = req.params.eventID;
-    let query = req.query.q
-    let event = await getEvent(eventID);
-    let api = getSpotifyApiForEvent(event);
-
-    api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT }).then(function(data) {
+        let data = await api.searchTracks(query, { limit: SPOTIFY_SEARCH_LIMIT })
         res.send(mapSpotifySearchResultToOpenDJSearchResult(data.body));
-        //        res.send(data.body);
-        log.trace("searchTrack end");
-    }, function(err) {
+    } catch (err) {
         handleError(err, res);
-    });
+    }
+    log.trace("end searchTrack");
 });
 
 
