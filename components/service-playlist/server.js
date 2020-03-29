@@ -1235,6 +1235,10 @@ async function getPlaylistForRequest(req) {
     return playlist;
 }
 
+async function getCurrentPlaylistForEvent(event) {
+    return await getPlaylistWithID(event.eventID, event.activePlaylist);
+}
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // ----------------------------     Event Stuff   ----------------------------
@@ -1487,10 +1491,12 @@ router.post('/events/:eventID/providers', async function(req, res) {
 
     try {
         log.trace("route addProvider body ", req.body);
-        let event = await getEventForRequest(req);
+        const event = await getEventForRequest(req);
         await addProvider(event, req.body);
-        res.status(200).send(event);
 
+        log.trace("Respond with current playlist so that provider can play current track");
+        const playlist = await getCurrentPlaylistForEvent(event);
+        res.status(200).send(playlist);
     } catch (error) {
         log.warn("addProvider route failed", error);
         res.status(500).send(JSON.stringify(error));

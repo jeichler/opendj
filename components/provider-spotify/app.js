@@ -386,23 +386,20 @@ async function addAccountToEvent(event, account, spotifyUser) {
     log.debug("Register new account/provider with event service");
     let provider = createProviderFromAccountAndUser(account, spotifyUser);
     try {
-        const musicEvent = await request({
+        const playlist = await request({
             method: 'POST',
             uri: PLAYLIST_PROVIDER_URL + 'events/' + account.eventID + '/providers',
             body: provider,
             json: true,
             timeout: 1000
         });
-        log.trace("musicEvent from event service after register new account", musicEvent);
-        if (musicEvent && musicEvent.playlists && musicEvent.playlists.length > 0) {
-            const playlist = musicEvent.playlists[musicEvent.activePlaylist];
-            if (playlist && playlist.isPlaying && playlist.currentTrack && playlist.currentTrack.id && playlist.currentTrack.id.startsWith('spotify')) {
-                log.trace("playlist is currently playing a spotify track - let's play it on the new account, too");
-                const track = playlist.currentTrack;
-                const pos = (Date.now() - Date.parse(track.started_at));
-                await play(event, account, track.id, pos > 0 ? pos : 0);
-                trackStarted = true;
-            }
+        log.trace("playlist from event service after register new account", playlist);
+        if (playlist && playlist.isPlaying && playlist.currentTrack && playlist.currentTrack.id && playlist.currentTrack.id.startsWith('spotify')) {
+            log.trace("playlist is currently playing a spotify track - let's play it on the new account, too");
+            const track = playlist.currentTrack;
+            const pos = (Date.now() - Date.parse(track.started_at));
+            await play(event, account, track.id, pos > 0 ? pos : 0);
+            trackStarted = true;
         }
 
     } catch (err) {
