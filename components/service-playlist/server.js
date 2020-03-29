@@ -1171,6 +1171,7 @@ async function checkEvents() {
 async function getEventForEventID(eventID) {
     log.trace("begin getEventForEventID id=%s", eventID);
     let event = null;
+    eventID = eventID.toLowerCase();
     if ("___prototype___" == eventID) {
         log.debug("getEventForEventID prototype requested");
         event = createEmptyEvent();

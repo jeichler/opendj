@@ -178,7 +178,7 @@ const SPOTIFY_AUTOSELECT_DEVICE = (process.env.SPOTIFY_AUTOSELECT_DEVICE || 'tru
 const SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
 const SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1000";
 const SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "1000";
-const MAX_ACCOUNTS_PER_EVENT = process.env.MAX_ACCOUNTS_PER_EVENT || "10";
+const MAX_ACCOUNTS_PER_EVENT = process.env.MAX_ACCOUNTS_PER_EVENT || "20";
 
 
 // Map of Spotify API Objects:
@@ -296,7 +296,7 @@ function getAccountForEvent(event, accountID) {
         log.trace("using account from event", event);
     } else {
         log.debug("getAccountForEvent: creating account %s for event %s", accountID, event.eventID);
-        account = Object.assign({}, accountPrototype);
+        account = JSON.parse(JSON.stringify(accountPrototype));
         account.accountID = accountID;
         account.eventID = event.eventID;
     }
@@ -309,7 +309,8 @@ async function getEvent(eventID) {
     let eventState = await getFromCache(cacheState, eventID);
     if (eventState == null) {
         log.debug("EvenState object created for eventID=%s", eventID);
-        eventState = Object.assign({}, eventStatePrototype);
+        //        eventState = Object.assign({}, eventStatePrototype);
+        evenState = JSON.parse(JSON.stringify(eventStatePrototype));
         eventState.eventID = eventID;
         eventState.timestamp = new Date().toISOString();
     } else {

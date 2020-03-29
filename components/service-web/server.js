@@ -64,7 +64,7 @@ function updateEventStatsFromActivity(activity) {
     let username = null;
 
     if (!stats) {
-        stats = Object.assign({}, EVENT_INFO_PROTOTYPE);;
+        stats = JSON.parse(JSON.stringify(EVENT_INFO_PROTOTYPE));
         stats.userSet = new Set();
         stats.curatorSet = new Set();
         stats.activityHistory = new Array();

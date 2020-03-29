@@ -232,7 +232,7 @@ export class EventLoginPage implements OnDestroy, OnInit {
           handler: (result) => {
             if (result && result.eventID) {
               console.debug('landing: going to event %s', result.eventID);
-              this.router.navigate(['ui/event/' + result.eventID]);
+              this.router.navigate(['ui/event/' + result.eventID.toLowerCase()]);
             }
           }
         }
@@ -292,8 +292,9 @@ export class EventLoginPage implements OnDestroy, OnInit {
   async init() {
     console.debug('begin init');
     this.userState = await this.userDataService.getUser();
-    const eventID = this.route.snapshot.paramMap.get('eventId');
+    let eventID = this.route.snapshot.paramMap.get('eventId');
     try {
+      eventID = eventID.toLowerCase();
       this.event = await this.feService.readEvent(eventID).toPromise();
       console.debug('init event=', this.event);
 

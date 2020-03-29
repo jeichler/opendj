@@ -268,6 +268,7 @@ export class FEService {
             eventID = '___prototype___';
         }
 
+        eventID = eventID.toLowerCase();
         return this.http.get<MusicEvent>(this.PLAYLIST_PROVIDER_API + '/events/' + eventID, {}).pipe(
             timeout(this.SERVER_TIMEOUT),
             retry(1),
