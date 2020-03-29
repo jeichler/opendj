@@ -30,15 +30,6 @@
                 <ion-icon name="trash" slot="start"></ion-icon>
                 Delete Event
             </ion-button>
-
-            <!-- Tooltip-Help is always on, no further help needed:
-            <ion-button color="primary" (click)='toggleHelp()' tappable fill="solid" *ngIf="showHelp">
-                Help
-            </ion-button>
-            <ion-button color="primary" (click)='toggleHelp()' tappable fill="outline" *ngIf="!showHelp">
-                Help?
-            </ion-button>
--->
         </div>
     </ion-toolbar>
 </ion-header>
@@ -46,20 +37,6 @@
 <ion-content color="dark">
 
     <div class="event-form-wrapper">
-        <!--
-        <ion-card *ngIf="isCreate" style="background-color: #111;">
-            <ion-item>
-                <ion-icon name="wine" slot="start" color="light"></ion-icon>
-                <ion-label class="ion-text-wrap">Create your own OpenDJ Music Event!</ion-label>
-                <ion-button fill="outline" slot="end">Help?</ion-button>
-            </ion-item>
-
-            <ion-card-content>
-                Fill in your data and create your individual OpenDJ Party Event. Share your party link with friends,
-                colleagues and people around the globe...
-            </ion-card-content>
-        </ion-card>
-        -->
 
         <form [formGroup]="eventForm">
 
@@ -69,9 +46,19 @@
                     <ion-item-divider mode="md">
                         <ion-label>Instructions</ion-label>
                     </ion-item-divider>
-                    <ion-item lines="none">
+                    <ion-item lines="none" *ngIf="!event.eventID">
                         <ion-label class="ion-text-wrap">
-                            First, fill in the mandatory fields (marked red) - the tooltips provide guidance. Second, press 'create event' button. Third, add your music provider, e.g. Spotify.
+                            First, fill in the mandatory fields (marked red) - the tooltips provide guidance! Then press 'create event' button.
+                        </ion-label>
+                    </ion-item>
+                    <ion-item lines="none" *ngIf="event.eventID && event.providers.length==0">
+                        <ion-label class="ion-text-wrap">
+                            Now add your music provider by pressing on the icon below.
+                        </ion-label>
+                    </ion-item>
+                    <ion-item lines="none" *ngIf="event.eventID && event.providers.length>0">
+                        <ion-label class="ion-text-wrap">
+                            All set! Fine tune settings - the tool tips provide guidance. Don't forget to press update if you change something. Or switch to user/curator view using the menu.
                         </ion-label>
                     </ion-item>
                 </ion-item-group>
@@ -113,6 +100,7 @@
                     </ion-item>
                 </ion-item-group>
 
+                <!-- ------------------------------------------ Credentials ------------------------------------------ -->
                 <ion-item-group>
                     <ion-item-divider mode="md">
                         <ion-label>Credentials</ion-label>
@@ -151,6 +139,7 @@
                     </ion-item>
                 </ion-item-group>
 
+                <!-- ------------------------------------------ Music Provider ------------------------------------------ -->
                 <ion-item-group>
                     <ion-item-divider mode="md">
                         <ion-label>Music Provider</ion-label>
@@ -195,51 +184,6 @@
 
 
                 </ion-item-group>
-
-
-
-                <!-- ------------------------------------------ TIMING AND LIMITS ------------------------------------------ -->
-                <ion-item-group>
-                    <ion-item-divider mode="md">
-                        <ion-label>Timing and Limits</ion-label>
-                    </ion-item-divider>
-
-                    <ion-item>
-                        <ion-label>Start:</ion-label>
-                        <ion-datetime id="eventStartsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
-                        <ion-icon tooltip="The date and time when this event starts" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-
-                    <ion-item>
-                        <ion-label>End:</ion-label>
-                        <ion-datetime id="eventEndsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
-                        <ion-icon tooltip="When does the event end? Please note: all data of the event is delete 24 hours after the event ends." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Max tracks</ion-label>
-                        <ion-input name="maxTracksInPlaylist" type="number" formControlName="maxTracksInPlaylist" class="ion-text-right">
-                        </ion-input>
-                        <ion-icon tooltip="The maximum number of tracks in a playlist of this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Max users</ion-label>
-                        <ion-input name="maxUsers" type="number" formControlName="maxUsers" class="ion-text-right"></ion-input>
-                        <ion-icon tooltip="The maximum number of users who can join this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-                    <ion-item>
-                        <ion-label class="ion-text-wrap">Max contributions per User</ion-label>
-                        <ion-input name="maxContributionsPerUser" type="number" formControlName="maxContributionsPerUser" class="ion-text-right"></ion-input>
-                        <ion-icon tooltip="The maximum number of tracks a user can add to the playlist. 0 means unlimited" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
-                </ion-item-group>
-
 
                 <!-- ------------------------------------------ Playlist settings ------------------------------------------ -->
                 <ion-item-group>
@@ -333,11 +277,50 @@
                             [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
-
-
-
-
                 </ion-item-group>
+
+                <!-- ------------------------------------------ TIMING AND LIMITS ------------------------------------------ -->
+                <ion-item-group>
+                    <ion-item-divider mode="md">
+                        <ion-label>Timing and Limits</ion-label>
+                    </ion-item-divider>
+
+                    <ion-item>
+                        <ion-label>Start:</ion-label>
+                        <ion-datetime id="eventStartsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventStartsAt"></ion-datetime>
+                        <ion-icon tooltip="The date and time when this event starts" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label>End:</ion-label>
+                        <ion-datetime id="eventEndsAt" displayFormat="DD.MM.YY HH:mm" formControlName="eventEndsAt"></ion-datetime>
+                        <ion-icon tooltip="When does the event end? Please note: all data of the event is delete 24 hours after the event ends." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Max tracks</ion-label>
+                        <ion-input name="maxTracksInPlaylist" type="number" formControlName="maxTracksInPlaylist" class="ion-text-right">
+                        </ion-input>
+                        <ion-icon tooltip="The maximum number of tracks in a playlist of this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Max users</ion-label>
+                        <ion-input name="maxUsers" type="number" formControlName="maxUsers" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="The maximum number of users who can join this event" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label class="ion-text-wrap">Max contributions per User</ion-label>
+                        <ion-input name="maxContributionsPerUser" type="number" formControlName="maxContributionsPerUser" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="The maximum number of tracks a user can add to the playlist. 0 means unlimited" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+                </ion-item-group>
+
 
                 <!-- ------------------------------------------ EVENT VIEW ------------------------------------------ -->
                 <ion-item-group>
