@@ -394,7 +394,7 @@ async function addAccountToEvent(event, account, spotifyUser) {
             timeout: 1000
         });
         log.trace("playlist from event service after register new account", playlist);
-        if (playlist && playlist.isPlaying && playlist.currentTrack && playlist.currentTrack.id && playlist.currentTrack.id.startsWith('spotify')) {
+        if (playlist && playlist.isPlaying && playlist.currentTrack && playlist.currentTrack.id && playlist.currentTrack.provider.startsWith('spotify')) {
             log.trace("playlist is currently playing a spotify track - let's play it on the new account, too");
             const track = playlist.currentTrack;
             const pos = (Date.now() - Date.parse(track.started_at));
