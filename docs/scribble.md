@@ -89,7 +89,8 @@ http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/search?
 http://localhost:8080/api/provider-spotify/v1/events/demo/providers/spotify/tracks/5ftamIDoDRpEvlZinDuNNW
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/pause/
 http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW
-http://localhost:8080/api/provider-spotify/v1/events/0/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW&pos=5000
+
+http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/play/5ftamIDoDRpEvlZinDuNNW?pos=5000
 
 
 http://localhost:8080/api/provider-spotify/v1/events/dan/providers/spotify/login
