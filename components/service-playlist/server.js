@@ -113,6 +113,8 @@ const EVENT_PROTOTYPE = {
     fitTrackWeightGenre: 0.5,
     autoMoveWeightLike: 1,
     autoMoveWeightHate: -1,
+    skipCurrentTrackQuorum: 3,
+    skipCurrentTrackHatePercentage: 66,
 
 }
 const EVENT_EXT_PROTOTYPE = {
@@ -689,8 +691,8 @@ async function provideTrackFeedback(event, playlist, provider, trackID, feedback
         if (event.enableCurrentTrackHateSkip && trackIsCurrentTrack) {
             log.trace("Check if we have to skip current track due to hates");
             const numVotes = track.numHates + track.numLikes;
-            const numVotes4Quorum = 1;
-            const hatePercentageRequired = 0.5;
+            const numVotes4Quorum = event.skipCurrentTrackQuorum;
+            const hatePercentageRequired = event.skipCurrentTrackHatePercentage / 100;
 
             log.trace("numVotes=%s, numVotes4Quorum=%s, numHates=%s, hatePercentageRequired=%s", numVotes, numVotes4Quorum, track.numHates, hatePercentageRequired);
             if (numVotes >= numVotes4Quorum && track.numHates / numVotes >= hatePercentageRequired) {

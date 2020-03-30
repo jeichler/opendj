@@ -240,6 +240,13 @@
                     </ion-item>
 
                     <ion-item>
+                        <ion-label>Auto move tracks</ion-label>
+                        <ion-toggle id="enableTrackAutoMove" color="primary" formControlName="enableTrackAutoMove"></ion-toggle>
+                        <ion-icon tooltip="Move tracks up/down in the playlist according to likes and hates." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
+                    <ion-item>
                         <ion-label>Skip tracks with hates > likes</ion-label>
                         <ion-toggle id="enableTrackHateSkip" color="primary" formControlName="enableTrackHateSkip"></ion-toggle>
                         <ion-icon tooltip="When a track with more hates then likes reaches the top of the list, it is skipped automatically." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
@@ -249,16 +256,11 @@
                     <ion-item>
                         <ion-label>Skip <b>current</b> track with hates >>> likes</ion-label>
                         <ion-toggle id="enableCurrentTrackHateSkip" color="primary" formControlName="enableCurrentTrackHateSkip"></ion-toggle>
-                        <ion-icon tooltip="When the current track receives significantly more hates then likes, it is HARD SKIPPED WHILE PLAYING." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-icon tooltip="When the current track receives significantly more hates then likes, it is HARD SKIPPED WHILE PLAYING. You can configure below in the advanced section what 'significant' means." [options]="tooltipOptions" color="primary" *ngIf="showHelp"
+                            slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
-                    <ion-item>
-                        <ion-label>Auto move tracks</ion-label>
-                        <ion-toggle id="enableTrackAutoMove" color="primary" formControlName="enableTrackAutoMove"></ion-toggle>
-                        <ion-icon tooltip="Move tracks up/down in the playlist according to likes and hates." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
-                        </ion-icon>
-                    </ion-item>
 
                     <ion-item>
                         <ion-label class="ion-text-wrap">Fill Empty Playlist</ion-label>
@@ -452,23 +454,16 @@
                         <ion-label>Advanced and Experimental</ion-label>
                     </ion-item-divider>
                     <ion-item>
-                        <ion-label>Pause on play error</ion-label>
-                        <ion-toggle id="pauseOnPlayError" color="primary" formControlName="pauseOnPlayError"></ion-toggle>
-                        <ion-icon tooltip="If the playing of a track fails for whatever reasons (e.g. your device hast lost internet connection), 
-                        what shall we do? If you turn this on, we pause the list and you need to manually press play again, 
-                        after the problem is fixed. If you turn it off, we try to play the next song. This might fix the problem, 
-                        but faces the risk of trying to rapidly try to play all songs until your list is empty. We recommend to turn it on." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-label class="ion-text-wrap">Skip Current Track Quorum</ion-label>
+                        <ion-input name="skipCurrentTrackQuorum" type="number" formControlName="skipCurrentTrackQuorum" class="ion-text-right"></ion-input>
+                        <ion-icon tooltip="How many votes (likes+hates) are required to reach quorum for skip of current track? Default: 3" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
-
                     <ion-item>
-                        <ion-label>Track progress required</ion-label>
-                        <ion-input name="progressPercentageRequiredForEffectivePlaylist" type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" class="ion-text-right"></ion-input>
+                        <ion-label class="ion-text-wrap">Skip Current Track Hates</ion-label>
+                        <ion-input name="skipCurrentTrackHatePercentage" type="number" formControlName="skipCurrentTrackHatePercentage" class="ion-text-right"></ion-input>
                         <ion-label>%</ion-label>
-                        <ion-icon tooltip="We keep track of which music has been actually played at your event. 
-                        But what counts as 'actually beeing played'? If a track as been skipped after 5 seconds, 
-                        do you want it to be added or not? Define this as percentage of the total duration of the track. 
-                        Recommended value is 75%" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        <ion-icon tooltip="If quorum is reached, what is the percentage of hates per total votes that is required to execute a hard skip? Default: 66%" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
 
@@ -488,6 +483,8 @@
                         </ion-icon>
                     </ion-item>
 
+
+
                     <ion-item>
                         <ion-label class="ion-text-wrap">Automove Track Weights &nbsp;</ion-label>
 
@@ -500,6 +497,27 @@
                         <ion-icon tooltip="When auto moving tracks based on user feedback, how much does a like or a hate count? Default: like=1, hate=-1" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
                         </ion-icon>
                     </ion-item>
+
+                    <ion-item>
+                        <ion-label>Pause on play error</ion-label>
+                        <ion-toggle id="pauseOnPlayError" color="primary" formControlName="pauseOnPlayError"></ion-toggle>
+                        <ion-icon tooltip="If the playing of a track fails for whatever reasons (e.g. your device hast lost internet connection), 
+                        what shall we do? If you turn this on, we pause the list and you need to manually press play again, 
+                        after the problem is fixed. If you turn it off, we try to play the next song. This might fix the problem, 
+                        but faces the risk of trying to rapidly try to play all songs until your list is empty. We recommend to turn it on." [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+                    <ion-item>
+                        <ion-label>Track progress required</ion-label>
+                        <ion-input name="progressPercentageRequiredForEffectivePlaylist" type="number" formControlName="progressPercentageRequiredForEffectivePlaylist" class="ion-text-right"></ion-input>
+                        <ion-label>%</ion-label>
+                        <ion-icon tooltip="We keep track of which music has been actually played at your event. 
+                        But what counts as 'actually beeing played'? If a track as been skipped after 5 seconds, 
+                        do you want it to be added or not? Define this as percentage of the total duration of the track. 
+                        Recommended value is 75%" [options]="tooltipOptions" color="primary" *ngIf="showHelp" slot="end" name="ios-help-circle-outline">
+                        </ion-icon>
+                    </ion-item>
+
                 </ion-item-group>
 
             </ion-list>

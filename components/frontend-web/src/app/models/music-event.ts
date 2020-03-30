@@ -58,6 +58,9 @@ export class MusicEvent {
 
     autoMoveWeightLike: number;
     autoMoveWeightHate: number;
+
+    skipCurrentTrackQuorum: number;
+    skipCurrentTrackHatePercentage: number;
 }
 
 export class EventStats {

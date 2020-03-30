@@ -359,7 +359,8 @@ private refreshSpotifyDevices() {
 
       autoMoveWeightLike: [1],
       autoMoveWeightHate: [-1],
-
+      skipCurrentTrackQuorum: [3, Validators.min(1)],
+      skipCurrentTrackHatePercentage: [66, Validators.compose([Validators.min(0), Validators.max(100)])]
     });
   }
 
