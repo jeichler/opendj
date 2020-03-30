@@ -44,11 +44,11 @@
                         </ion-img>
                     </ion-col>
 
-                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackLiking && !track.isEmptyTrack" size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
+                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackLiking && !track.isEmptyTrack" (click)="trackLike()" tappable size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
                         <div class="track-feedback-icon">{{currentEvent.emojiTrackLike}}</div><br>
                         <div class="track-feedback-counter-passive">{{track.numLikes ? track.numLikes : 0}}</div>
                     </ion-col>
-                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackHating && !track.isEmptyTrack" size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
+                    <ion-col *ngIf="!isCurator && currentEvent.enableTrackHating && !track.isEmptyTrack" (click)="trackHate()" tappable size="auto" class="track-feedback ion-text-nowrap workaroundTransparency ion-align-self-center">
                         <div class="track-feedback-icon">{{currentEvent.emojiTrackHate}}</div><br>
                         <div class="track-feedback-counter-passive">{{track.numHates ? track.numHates: 0}}</div>
                     </ion-col>

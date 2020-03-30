@@ -151,6 +151,17 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     return this.trackFeedback[track.id] === 'H';
   }
 
+  currentTrackFeedback(feedback: string) {
+    console.debug('currentTrackFeedback', feedback);
+    if (feedback === 'L') {
+      this.trackLike(this.currentPlaylist.currentTrack);
+    } else if (feedback === 'H'){
+      this.trackHate(this.currentPlaylist.currentTrack);
+    } else {
+      throw new Error('Unexpected feedback for current track');
+    }
+  }
+
   trackLike(track) {
     console.debug('begin trackLike()');
     let oldFeedback = this.trackFeedback[track.id];

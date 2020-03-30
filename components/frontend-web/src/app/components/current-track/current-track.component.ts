@@ -1,5 +1,5 @@
 import { FEService } from './../../providers/fes.service';
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Track } from 'src/app/models/track';
 import { MusicEvent } from 'src/app/models/music-event';
 import { Platform } from '@ionic/angular';
@@ -26,6 +26,8 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     this.currentEvent = event;
   }
   @Input() user: UserSessionState;
+
+  @Output() currentTrackFeedback = new EventEmitter<string>();
 
   emptyTrack = {
     name: '---',
@@ -135,6 +137,15 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     const spStr = sP < 10 ? '0' + sP : '' + sP;
     const mpStr = mP < 10 ? '0' + mP : '' + mP;
     this.playingTime = mpStr + ':' + spStr;
+  }
+  trackLike() {
+    console.debug('trackLike() current');
+    this.currentTrackFeedback.emit('L');
+  }
+
+  trackHate() {
+    console.debug('trackHate() current');
+    this.currentTrackFeedback.emit('H');
   }
 
   playTrack() {

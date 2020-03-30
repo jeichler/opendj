@@ -336,6 +336,7 @@ private refreshSpotifyDevices() {
       enableTrackAI: [false],
       enableTrackAutoMove: [true],
       enableTrackHateSkip: [true],
+      enableCurrentTrackHateSkip: [true],
       demoAutoskip: [''],
       demoNoActualPlaying: [false],
       demoAutoFillEmptyPlaylist: [false],

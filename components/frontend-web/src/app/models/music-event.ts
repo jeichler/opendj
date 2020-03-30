@@ -26,6 +26,7 @@ export class MusicEvent {
     enableTrackAutoMove: boolean;
     enableTrackAI: boolean;
     enableTrackHateSkip: boolean;
+    enableCurrentTrackHateSkip: boolean;
     demoAutoskip: number;
     demoNoActualPlaying: boolean;
     demoAutoFillEmptyPlaylist: boolean;
