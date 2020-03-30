@@ -62,6 +62,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     public platform: Platform ) {
   }
   setTrack(value: Track) {
+    console.debug('begin setTrack', value);
     if (this.intervalHandle) {
       clearInterval(this.intervalHandle);
     }
@@ -72,18 +73,16 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     }
 
     this.track = value;
-    this.progress = this.track.progress_ms / 1000;
 
     if (this.isPlaying) {
-      const now = new Date().getTime() / 1000;
-      const startedAt = new Date(this.track.started_at).getTime() / 1000;
-      const diff = (now - startedAt);
-      this.progress = diff;
       this.intervalHandle = setInterval(() => this.countdown(), 500);
     } else {
-      this.track.started_at =  new Date().toISOString();
-      this.countdown();
+      if (this.intervalHandle) {
+        clearInterval(this.intervalHandle);
+        this.intervalHandle = null;
+      }
     }
+    this.countdown();
   }
 
   calculateTotalTime() {
@@ -98,7 +97,12 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
   countdown() {
     const duration = this.track.duration_ms;
-    this.progress  = (Date.now() - Date.parse(this.track.started_at));
+    if (this.isPlaying) {
+      this.progress  = (Date.now() - Date.parse(this.track.started_at));
+    } else {
+        this.progress = this.track.progress_ms;
+    }
+
     if (this.progress < 0) {
       this.progress = 0;
     }
@@ -116,7 +120,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
 
     this.timeRemaining = 1 - (timeLeft / duration);
     this.timeRemaining = Math.floor(this.timeRemaining * 1000) / 1000;
-    // console.debug("timeRemaining=%s", this.timeRemaining);
+//    console.debug('timeRemaining=%s progress=%s duration=%s', this.timeRemaining, this.progress, duration);
 
     let s = timeLeft / 1000 % 60;
     s = Math.floor(s);
@@ -174,7 +178,8 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-//    console.debug('current-track-componentn-ngOnInit', this.track);
+    console.debug('current-track-component-ngOnInit', this.track);
+    this.setTrack(this.track);
   }
 
   ngOnDestroy() {

@@ -514,9 +514,19 @@ router.get('/auth_callback', async function(req, res) {
         // To the event login page: let continueWith = "/" + eventID;
         // To the curator page: let continueWith = "/ui/playlist-curator";
         // To the create/edit event page:
-        let continueWith = "/ui/event-edit";
+        let continueWith = "";
+        let msg = "";
+        if (trackStarted) {
+            log.trace("Event is already running, so it is probably a user");
+            continueWith = "ui/playlist-user";
+            msg = "Spotify Authorization was successful, Spotify Device should be playing the current track of the playlist - you will be redirected to the playlist in 10 seconds.";
+        } else {
+            log.trace("No track started, probably a new event and the owner");
+            continueWith = "/ui/event-edit";
+            msg = "Spotify Authorization was successful, Spotify Device should be playing Bohemian Rhapsody for the next 10 seconds.";
+        }
 
-        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body><h1>Spotify Authorization was successful, Spotify Device should be playing Bohemian Rhapsody for the next 10 seconds.</h1></body></html>");
+        res.send("<html><head><meta http-equiv=\"refresh\" content=\"10;url=" + continueWith + "\"/></head><body><h1>" + msg + "</h1></body></html>");
     } catch (err) {
         log.trace("auth shit happened!", err)
         let errTxt = '' + JSON.stringify(err);
@@ -1101,7 +1111,7 @@ async function play(event, account, trackID, pos) {
 }
 
 async function playEvent(eventID, trackID, pos) {
-    log.trace("begin playEvent");
+    log.trace("begin playEvent eventID=%s, trackID=s, pos=%s", eventID, trackID, pos);
 
     let event = await getEvent(eventID);
     let accounts = Object.values(event.accounts);
@@ -1121,6 +1131,9 @@ async function playEvent(eventID, trackID, pos) {
 
     log.debug("Join all parallel calls");
     let results = await Promise.all(parallelCalls);
+
+    log.debug("Play can modify state (failure counters, current device. Save it:");
+    fireEventStateChange(event);
 
     if (parallelCalls.length > 1) {
         log.debug("Count Number of ok/err play calls");
