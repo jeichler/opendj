@@ -176,8 +176,8 @@ const SPOTIFY_SEARCH_LIMIT = process.env.SPOTIFY_SEARCH_LIMIT || "20";
 
 const SPOTIFY_AUTOSELECT_DEVICE = (process.env.SPOTIFY_AUTOSELECT_DEVICE || 'true') == 'true';
 const SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
-const SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1000";
-const SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "1000";
+const SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1500";
+const SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "2500";
 const MAX_ACCOUNTS_PER_EVENT = process.env.MAX_ACCOUNTS_PER_EVENT || "20";
 
 
@@ -1007,7 +1007,8 @@ async function pause(account) {
 
     let api = getSpotifyApiForAccount(account);
 
-    await api.pause({ device_id: account.currentDevice });
+    //    await api.pause({ device_id: account.currentDevice });
+    await api.pause();
     log.info("PAUSE eventID=%s-%s", account.eventID, account.display);
 
     log.trace("end pauseAccount");
@@ -1055,12 +1056,10 @@ async function play(event, account, trackID, pos) {
         log.debug("Using device from current playback state")
         account.currentDevice = currentState.body.device.id;
     }
-
     if (account.currentDevice) {
         log.debug("account has currentDevice set - using it");
         options.device_id = account.currentDevice;
     }
-
     if (pos) {
         options.position_ms = pos;
     }
@@ -1182,7 +1181,7 @@ async function handlePlayError(err, options, event, account, api) {
             fireEventStateChange(event);
 
             log.debug("AutoSelect did change device setting, so play it again, same!");
-            options.device_id = event.currentDevice;
+            options.device_id = account.currentDevice;
             await promiseRetry(function(retry, number) {
                 log.debug("call spotify play, try #", number);
                 return api.play(options).catch(retry);
