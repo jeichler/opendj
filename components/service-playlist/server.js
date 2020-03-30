@@ -763,8 +763,10 @@ async function play(event, playlist) {
         // DUE TO A BUG IN SPOTIY PROVIDER WE CANT RESUME  
         // Play will actually start at the beginning.
         // WORKAROUND:
-        playlist.currentTrack.progress_ms = 0;
-        now = Date.now();
+        /*        
+                playlist.currentTrack.progress_ms = 0;
+                now = Date.now();
+        */
     }
     playlist.currentTrack.started_at = new Date(now).toISOString();
 
