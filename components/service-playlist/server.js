@@ -89,6 +89,7 @@ const EVENT_PROTOTYPE = {
     enableTrackHating: true,
     enableTrackAutoMove: true,
     enableTrackHateSkip: true,
+    enableCurrentTrackHateSkip: true,
     emojiTrackLike: '🥰',
     emojiTrackHate: '🤮',
     demoAutoskip: MOCKUP_AUTOSKIP,
@@ -554,14 +555,26 @@ function computeTrackFeedbackScore(event, track) {
 
 
 
-function provideTrackFeedback(event, playlist, provider, trackID, feedback, user) {
+async function provideTrackFeedback(event, playlist, provider, trackID, feedback, user) {
     log.trace("begin provideTrackFeedback eventID=%s, playlistID=%s, provider=%s, trackID=%s", event.eventID, playlist.playlistID, provider, trackID);
 
     let track = findTrackInList(playlist.nextTracks, provider, trackID);
     let stateChanged = false;
     let eventID = event.eventID;
+    let trackIsInPlaylist = false;
+    let trackIsCurrentTrack = false;
 
     if (track) {
+        log.trace("track is in playlist");
+        trackIsInPlaylist = false;
+    } else if (playlist.currentTrack && playlist.currentTrack.id == trackID) {
+        log.trace("track is current track");
+        trackIsCurrentTrack = true;
+        track = playlist.currentTrack;
+    }
+
+    if (track) {
+        log.trace("Apply feedback to like/hate counter - this a bit complex due to mind changes, e.g. from like to hate");
         let activityMsg = '?';
 
         ensureFeedbackAttributes(track);
@@ -619,8 +632,8 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
         );
 
         // Implement #189: Auto move track up/down in the list:
-        if (event.enableTrackAutoMove) {
-            log.trace("track automove is enabled");
+        if (event.enableTrackAutoMove && trackIsInPlaylist) {
+            log.trace("Find new position depending on feedback");
             let currentPos = findTrackPositionInList(playlist.nextTracks, provider, trackID);
             let currentScore = computeTrackFeedbackScore(event, track);
             let newPos = currentPos;
@@ -672,8 +685,21 @@ function provideTrackFeedback(event, playlist, provider, trackID, feedback, user
             }
         }
 
+        // Implement #173: skip current track if hates >>> likes
+        if (event.enableCurrentTrackHateSkip && trackIsCurrentTrack) {
+            log.trace("Check if we have to skip current track due to hates");
+            const numVotes = track.numHates + track.numLikes;
+            const numVotes4Quorum = 1;
+            const hatePercentageRequired = 0.5;
 
-
+            log.trace("numVotes=%s, numVotes4Quorum=%s, numHates=%s, hatePercentageRequired=%s", numVotes, numVotes4Quorum, track.numHates, hatePercentageRequired);
+            if (numVotes >= numVotes4Quorum && track.numHates / numVotes >= hatePercentageRequired) {
+                log.info("HARD-SKIP: numHates for currentTrack above threshold %s", hatePercentageRequired);
+                await skip(event, playlist, "OpenDJ");
+            } else {
+                log.trace("numHates below threshold - nothing to do");
+            }
+        }
     } else {
         log.info("provideTrackFeedback IGNORED - track %s:%s not found in playlist - maybe it has been deleted meanwhile ", provider, trackID)
     }
@@ -1715,7 +1741,7 @@ router.post('/events/:eventID/playlists/:listID/tracks/:track/feedback', async f
         let feedback = req.body;
         let user = req.body.user;
 
-        let stateChanged = provideTrackFeedback(event, playlist, provider, trackID, feedback, user);
+        let stateChanged = await provideTrackFeedback(event, playlist, provider, trackID, feedback, user);
         if (stateChanged) {
             firePlaylistChangedEvent(event.eventID, playlist);
             res.status(200).send(playlist);
