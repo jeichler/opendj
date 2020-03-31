@@ -117,7 +117,7 @@ export class AppComponent implements OnInit {
   async addSpotify() {
     const alert = await this.alertController.create({
       header: 'Add Spotify',
-      message: 'To add Spotify as music provider for your event, you need:<br>1. <b>Start playing any song NOW</b> on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.<br>2. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>3. Then press okay.',
+      message: 'To listen to the playlist on your own Spotify device, you need:<br>1. <b>Start playing any song NOW</b> on the Spotify device you want OpenDJ to play music. This ensures it is connected and active.<br>2. The username/password for your Spotify <b>Premium</b> account. (Free does not work, sorry)<br>3. Then press okay.',
       buttons: [
         {
           text: 'Cancel',
