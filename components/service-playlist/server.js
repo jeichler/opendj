@@ -568,7 +568,7 @@ async function provideTrackFeedback(event, playlist, provider, trackID, feedback
 
     if (track) {
         log.trace("track is in playlist");
-        trackIsInPlaylist = false;
+        trackIsInPlaylist = true;
     } else if (playlist.currentTrack && playlist.currentTrack.id == trackID) {
         log.trace("track is current track");
         trackIsCurrentTrack = true;
