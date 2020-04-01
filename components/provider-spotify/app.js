@@ -518,7 +518,7 @@ router.get('/auth_callback', async function(req, res) {
         let msg = "";
         if (trackStarted) {
             log.trace("Event is already running, so it is probably a user");
-            continueWith = "ui/playlist-user";
+            continueWith = "/ui/playlist-user";
             msg = "Spotify Authorization was successful, Spotify Device should be playing the current track of the playlist - you will be redirected to the playlist in 10 seconds.";
         } else {
             log.trace("No track started, probably a new event and the owner");
