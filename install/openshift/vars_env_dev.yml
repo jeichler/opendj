@@ -14,6 +14,8 @@ specific:
       COMMON:
             GIT:
                   REF: "master"
+#            NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
+            NPM_MIRROR_URL: ""
 
 #      BACKEND_EVENTSTORE:
 #            KAFKA:

@@ -20,13 +20,14 @@
 # See https://github.com/tnozicka/openshift-acme/tree/master/deploy/letsencrypt-live/single-namespace
     - name: Deploy opensfhit-acme for lets encrypt certs
       when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
+      when: false
       shell: |
         oc project {{ENV.COMMON.NAMESPACE|mandatory}}
-        oc create -fhttps://raw.githubusercontent.com/tnozicka/openshift-acme/master/deploy/letsencrypt-live/single-namespace/{role,serviceaccount,imagestream,deployment}.yaml
-        oc policy add-role-to-user openshift-acme --role-namespace="$(oc project --short)" -z openshift-acme
-        oc patch deployment openshift-acme -p '{"spec": {"template": {"spec": {"containers": [{"name": "openshift-acme","resources": {"limits": {"memory": "80Mi"}}}]}}}}'
+        oc apply -fhttps://raw.githubusercontent.com/tnozicka/openshift-acme/master/deploy/single-namespace/{role,serviceaccount,issuer-letsencrypt-live,deployment}.yaml
+        oc create rolebinding openshift-acme --role=openshift-acme --serviceaccount="$( oc project -q ):openshift-acme" --dry-run -o yaml | oc apply -f -
+#        oc patch deployment openshift-acme -p '{"spec": {"template": {"spec": {"containers": [{"name": "openshift-acme","resources": {"limits": {"memory": "80Mi"}}}]}}}}'
       register: acmedeploy
-      changed_when: "'AlreadyExists' not in acmedeploy.stderr" 
+      changed_when: "'created' in acmedeploy.stdout" 
 
     - name: Create Image Stream for S2I Builder Image
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
@@ -281,7 +282,7 @@
             name: frontend-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
             annotations:
-              app.openshift.io/connects-to: 'service-web,service-playlist,provider-spotify'
+#              app.openshift.io/connects-to: 'service-web,service-playlist,provider-spotify'
           spec:
             replicas: 2
             revisionHistoryLimit: 5

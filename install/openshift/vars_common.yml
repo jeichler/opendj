@@ -18,10 +18,8 @@ common:
     CONTAINER_IMAGE_EXTERNAL_REGISTRY: "undefined"
     QUAY_SECRET: "{{VAULT_QUAY_SECRET}}"
     STORAGE_CLASS_FILE: "ocs-storagecluster-cephfs"
-
-
-    MAVEN_MIRROR_URL: "http://nexus-oschneid-cluster-nexus.apps.ocp1.stormshift.coe.muc.redhat.com/repository/maven-public/"
-    NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
+#    MAVEN_MIRROR_URL: "http://nexus-oschneid-cluster-nexus.apps.ocp1.stormshift.coe.muc.redhat.com/repository/maven-public/"
+#    NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
 
   BACKEND_EVENTSTORE:
     DEPLOY: true

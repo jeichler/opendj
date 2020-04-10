@@ -264,6 +264,14 @@ skopeo copy docker://quay.io/opendj/service-eventactivity:latest docker://quay.i
 skopeo copy docker://quay.io/opendj/service-web:latest docker://quay.io/opendj/service-web:prd
 skopeo copy docker://quay.io/opendj/frontend-web:latest docker://quay.io/opendj/frontend-web:prd
 
+# Label QUAY uat to PRD:
+skopeo copy docker://quay.io/opendj/provider-spotify:uat docker://quay.io/opendj/provider-spotify:prd
+skopeo copy docker://quay.io/opendj/service-playlist:uat docker://quay.io/opendj/service-playlist:prd
+skopeo copy docker://quay.io/opendj/service-housekeeping:uat docker://quay.io/opendj/service-housekeeping:prd
+skopeo copy docker://quay.io/opendj/service-eventactivity:uat docker://quay.io/opendj/service-eventactivity:prd
+skopeo copy docker://quay.io/opendj/service-web:uat docker://quay.io/opendj/service-web:prd
+skopeo copy docker://quay.io/opendj/frontend-web:uat docker://quay.io/opendj/frontend-web:prd
+
 
 # Import PRD TAG from Quay to OpenShift: 
 oc tag --source=docker quay.io/opendj/provider-spotify:prd provider-spotify:prd --reference-policy=local --scheduled=true

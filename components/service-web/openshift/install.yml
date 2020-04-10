@@ -126,7 +126,7 @@
               app: service
               app.kubernetes.io/part-of: service
             annotations:
-              app.openshift.io/connects-to: 'service-eventactivity,service-playlist'
+#              app.openshift.io/connects-to: 'service-eventactivity,service-playlist'
             name: service-web
             namespace: "{{ENV.COMMON.NAMESPACE|mandatory}}"
           spec:

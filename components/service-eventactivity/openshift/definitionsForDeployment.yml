@@ -24,7 +24,7 @@
           app: service
         name: service-eventactivity
         annotations:
-          app.openshift.io/connects-to: 'backend-eventstore-kafka'
+#          app.openshift.io/connects-to: 'backend-eventstore-kafka'
       spec:
         containers:
           - env:

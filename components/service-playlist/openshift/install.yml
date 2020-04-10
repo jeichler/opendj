@@ -115,7 +115,7 @@
           apiVersion: apps.openshift.io/v1
           metadata:
             annotations:
-              app.openshift.io/connects-to: 'provider-spotify,service-eventactivity,backend-datagrid'
+#              app.openshift.io/connects-to: 'provider-spotify,service-eventactivity,backend-datagrid'
             labels:
               app: service
               app.kubernetes.io/part-of: service
