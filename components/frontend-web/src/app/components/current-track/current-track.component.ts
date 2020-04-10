@@ -28,6 +28,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() user: UserSessionState;
 
   @Output() currentTrackFeedback = new EventEmitter<string>();
+  @Output() newPlaylist = new EventEmitter<Playlist>();
 
   emptyTrack = {
     name: '---',
@@ -154,6 +155,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
       console.debug('current-track - playTrackResponse', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
+      this.newPlaylist.emit(data);
     });
   }
 
@@ -163,6 +165,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
       console.debug('current-track - pauseTrackResponse', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
+      this.newPlaylist.emit(data);
     });
   }
 
@@ -172,6 +175,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
       console.debug('current-track - nextTrack', data);
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
+      this.newPlaylist.emit(data);
     });
   }
 

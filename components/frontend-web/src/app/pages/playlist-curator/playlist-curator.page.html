@@ -22,7 +22,7 @@
     <!-- Current Track always visible on top, important for Curators
     to see when the next track will start: -->
     <ion-toolbar color="dark">
-        <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="true" [isPlaying]="currentPlaylist.isPlaying" [user]="this.userState"></app-current-track>
+        <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist.currentTrack" [isCurator]="true" [isPlaying]="currentPlaylist.isPlaying" [user]="this.userState" (newPlaylist)="this.handlePlaylistUpdate($event)"></app-current-track>
     </ion-toolbar>
 
 </ion-header>
