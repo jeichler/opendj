@@ -286,12 +286,6 @@ export class EventViewPage implements OnInit, OnDestroy {
 
   async ionViewDidEnter() {
     console.debug('begin ionViewDidEnter');
-    setTimeout(() => {
-      if (!this.websocketService.isConnected) {
-        console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID, this.userState);
-      }
-    }, 100);
 
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
@@ -299,6 +293,13 @@ export class EventViewPage implements OnInit, OnDestroy {
 
     console.debug('before refresh()');
     await this.refresh(null);
+
+    if (this.websocketService.isConnected()) {
+      this.isConnected = true;
+    } else {
+      console.debug('ionViewDidEnter() - not connect - init websocket');
+      this.websocketService.init(this.currentEvent.eventID, this.userState);
+    }
 
     console.debug('end ionViewDidEnter');
   }
@@ -318,7 +319,11 @@ export class EventViewPage implements OnInit, OnDestroy {
       await this.refresh(null);
 
       // Connect websocket
-      this.websocketService.init(this.currentEvent.eventID, this.userState);
+      if (this.websocketService.isConnected()) {
+        this.isConnected = true;
+      } else {
+        this.websocketService.init(this.currentEvent.eventID, this.userState);
+      }
 
       let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
         console.debug('received playlist update via websocket');
@@ -343,7 +348,7 @@ export class EventViewPage implements OnInit, OnDestroy {
 
       this.intervalHandle = setInterval(() => {
         this.isConnected = this.websocketService.isConnected();
-      }, 2500);
+      }, 1000);
     } catch (err) {
       console.error('init failed - nav2landing', err);
       this.router.navigateByUrl('ui/landing');
@@ -355,7 +360,7 @@ export class EventViewPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
-    this.websocketService.disconnect();
+//    this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
 /* NO_AUTOSCROLL#264
     clearInterval(this.autoScrollHandler);

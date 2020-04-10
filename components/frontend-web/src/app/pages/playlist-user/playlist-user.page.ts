@@ -357,12 +357,6 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
   async ionViewDidEnter() {
     console.debug('begin ionViewDidEnter');
-    setTimeout(() => {
-      if (!this.websocketService.isConnected) {
-        console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID, this.userState);
-      }
-    }, 100);
 
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
@@ -376,6 +370,15 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
     console.debug('before refresh()');
     await this.refresh(null);
+
+    // WebSocket:
+    if (this.websocketService.isConnected()) {
+      console.debug('ionViewDidEnter() - ws is connected');
+      this.isConnected = true;
+    } else {
+      console.debug('ionViewDidEnter() - not connect - init websocket');
+      this.websocketService.init(this.currentEvent.eventID, this.userState);
+    }
 
     this.ensureTrackFeedbackEmojis();
 
@@ -393,7 +396,13 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
 
     // Connect websocket
-    this.websocketService.init(eventID, this.userState);
+    if (this.websocketService.isConnected()) {
+      console.debug('ngOnInit() - ws is already connected');
+      this.isConnected = true;
+    } else {
+      console.debug('ngOnInit() - need to connect ws');
+      this.websocketService.init(eventID, this.userState);
+    }
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');
@@ -417,7 +426,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
 
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
-    }, 2500);
+    }, 1000);
   }
 
   ngOnDestroy() {
@@ -425,7 +434,7 @@ export class PlaylistUserPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
-    this.websocketService.disconnect();
+    // this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
   }
 

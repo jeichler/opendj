@@ -442,12 +442,6 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
   async ionViewDidEnter() {
     console.debug('begin ionViewDidEnter');
-    setTimeout(() => {
-      if (!this.websocketService.isConnected) {
-        console.debug('ionViewDidEnter() - not connect - init websocket');
-        this.websocketService.init(this.currentEvent.eventID, this.userState);
-      }
-    }, 100);
 
     console.debug('getUser()');
     this.userState = await this.userDataService.getUser();
@@ -455,6 +449,15 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
     console.debug('before refresh()');
     await this.refresh(null);
+
+    if (this.websocketService.isConnected()) {
+      console.debug('ionViewDidEnter() - ws is already connected');
+      this.isConnected = true;
+    } else {
+      console.debug('ionViewDidEnter() - need to connect ws');
+      this.websocketService.init(this.currentEvent.eventID, this.userState);
+    }
+
     console.debug('end ionViewDidEnter');
   }
 
@@ -468,7 +471,14 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     const eventID = this.userState.currentEventID;
 
     // Connect websocket
-    this.websocketService.init(eventID, this.userState);
+    if (this.websocketService.isConnected()) {
+      console.debug('ngOnInit() - ws is already connected');
+      this.isConnected = true;
+    } else {
+      console.debug('ngOnInit() - need to connect ws');
+      this.websocketService.init(eventID, this.userState);
+    }
+
 
     let sub = this.websocketService.observePlaylist().pipe().subscribe(data => {
       console.debug('playlist-page - received playlist update via websocket');
@@ -492,7 +502,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
 
     this.intervalHandle = setInterval(() => {
       this.isConnected = this.websocketService.isConnected();
-    }, 2500);
+    }, 1000);
   }
 
   ngOnDestroy() {
@@ -500,7 +510,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
-    this.websocketService.disconnect();
+//    this.websocketService.disconnect();
     clearInterval(this.intervalHandle);
   }
 

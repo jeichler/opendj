@@ -65,7 +65,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     public platform: Platform ) {
   }
   setTrack(value: Track) {
-    console.debug('begin setTrack', value);
+    console.debug('begin setTrack');
     if (this.intervalHandle) {
       clearInterval(this.intervalHandle);
     }
@@ -152,7 +152,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   playTrack() {
     console.debug('playTrack()');
     this.feService.playTrack(this.currentEvent, this.user).subscribe(data => {
-      console.debug('current-track - playTrackResponse', data);
+      console.debug('current-track - playTrackResponse');
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
       this.newPlaylist.emit(data);
@@ -162,7 +162,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   pauseTrack() {
     console.debug('pauseTrack()');
     this.feService.pauseTrack(this.currentEvent, this.user).subscribe(data => {
-      console.debug('current-track - pauseTrackResponse', data);
+      console.debug('current-track - pauseTrackResponse');
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
       this.newPlaylist.emit(data);
@@ -172,7 +172,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   nextTrack() {
     console.debug('nextTrack()');
     this.feService.playNextTrack(this.currentEvent, this.user).subscribe(data => {
-      console.debug('current-track - nextTrack', data);
+      console.debug('current-track - nextTrack');
       this.isPlaying = data.isPlaying;
       this.setTrack(data.currentTrack);
       this.newPlaylist.emit(data);
@@ -193,7 +193,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.debug('current-track-component-ngOnInit', this.track);
+    console.debug('current-track-component-ngOnInit');
     this.setTrack(this.track);
   }
 

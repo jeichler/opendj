@@ -10,7 +10,10 @@ export class WebsocketService {
     // Our socket connection
     private socket = null;
 
-    constructor(private confService: ConfigService) {}
+    constructor(private confService: ConfigService) {
+        console.debug('constructor');
+
+    }
 
 // TODO: Add "query" parameter with event ID to be received by server:
     init(eventID: string, user: UserSessionState) {
@@ -35,7 +38,7 @@ export class WebsocketService {
         });
 
         this.socket.on('connect', (socket) => {
-            console.debug('connected!');
+            console.debug('ws connected established!');
 // No need to request refresh - will be sent by server as welcome package:
 //            console.debug('connected! - request refreshPlaylist');
 //            this.refreshPlaylist();
@@ -85,7 +88,7 @@ export class WebsocketService {
     }
 
     isConnected() {
-        return this.socket.connected;
+        return this.socket!=null && this.socket.connected;
     }
 
     disconnect() {
