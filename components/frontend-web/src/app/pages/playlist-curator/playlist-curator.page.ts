@@ -540,7 +540,7 @@ export class PlaylistCuratorPage implements OnInit, OnDestroy {
         </a>
       </ion-thumbnail>
       <ion-label>{{item.name}}<br />
-        <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}</span><br />
+        <span style="font-size: 14px; color: #666;">{{item.artist}}, {{item.year}}, {{item.durationStr}}</span><br />
       </ion-label>
 
       <a *ngIf="item.preview" href="{{item.preview}}" target="_blank">
@@ -585,6 +585,9 @@ export class PlaylistAddModalComponent implements OnInit {
     this.feService.searchTracks(this.currentEvent, this.queryText).subscribe(
       data => {
         this.tracks = data;
+        for (const track of this.tracks) {
+          track.durationStr = new Date(track.duration_ms).toISOString().slice(14, 19);
+        }
       },
       err => console.error(err));
   }
