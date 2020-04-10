@@ -31,7 +31,7 @@
         <ion-refresher-content></ion-refresher-content>
     </ion-refresher>
 
-    <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying" [user]="this.userState" (currentTrackFeedback)="currentTrackFeedback($event)"></app-current-track>
+    <app-current-track *ngIf="currentPlaylist" [currentEventInput]="currentEvent" [trackInput]="currentPlaylist?.currentTrack" [isCurator]="false" [isPlaying]="currentPlaylist?.isPlaying" [user]="this.userState" [trackFeedback]="this.trackFeedback" (currentTrackFeedbackEvent)="currentTrackFeedback($event)"></app-current-track>
 
     <ion-grid class="track-grid">
         <ion-row nowrap *ngFor="let item of currentPlaylist?.nextTracks;  index as i; trackBy: trackElement">

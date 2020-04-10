@@ -21,13 +21,16 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   @Input() set trackInput(value: any) {
     this.setTrack(value);
   }
+  @Input() trackFeedback: Map<string, string>;
 
   @Input() set currentEventInput(event: MusicEvent) {
+    console.log('set currentEventInput');
     this.currentEvent = event;
+    this.setTrackFeedbackColors();
   }
   @Input() user: UserSessionState;
 
-  @Output() currentTrackFeedback = new EventEmitter<string>();
+  @Output() currentTrackFeedbackEvent = new EventEmitter<string>();
   @Output() newPlaylist = new EventEmitter<Playlist>();
 
   emptyTrack = {
@@ -64,6 +67,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
     public feService: FEService,
     public platform: Platform ) {
   }
+
   setTrack(value: Track) {
     console.debug('begin setTrack');
     if (this.intervalHandle) {
@@ -86,6 +90,83 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
       }
     }
     this.countdown();
+
+    this.setTrackFeedbackColors();
+  }
+
+  setTrackFeedbackColors() {
+    if (this.trackFeedback) {
+      const currentFeedback = this.trackFeedback[this.track.id];
+      console.debug('currentTrackFeedback', currentFeedback);
+
+      const likeCounter = document.getElementById('track-like-counter');
+      if (likeCounter) {
+        let newColor = '#666';
+        let newWeight = '';
+        if (currentFeedback === 'L') {
+          // Basic Coloring: highlight if user liked
+          newColor = '#fff';
+          newWeight = 'bold';
+
+          if (this.currentEvent.enableTrackHateSkip) {
+            // User liked this track and hate skip is active.
+            // Let's check if the liking would be revoked, would that lead
+            // to a hard skip?
+            const track = this.track;
+            const event = this.currentEvent;
+            const numVotes = track.numHates + track.numLikes - 1;
+            const numVotes4Quorum = event.skipCurrentTrackQuorum;
+            const hatePercentageRequired = event.skipCurrentTrackHatePercentage / 100;
+            if (numVotes >= numVotes4Quorum && track.numHates / numVotes >= hatePercentageRequired) {
+              // Yes! Skip would happen on revoke. Flag this red:
+              newColor = '#ff0000';
+            }
+          }
+        }
+        likeCounter.style.color = newColor;
+        likeCounter.style.fontWeight = newWeight;
+      }
+
+      const hateCounter = document.getElementById('track-hate-counter');
+      if (hateCounter) {
+        let newColor = '#666';
+        let newWeight = '';
+        if (currentFeedback === 'H') {
+          newColor = '#fff';
+          newWeight = 'bold';
+        }
+
+        if (this.currentEvent.enableTrackHateSkip) {
+          // Let's check if hating this track would lead
+          // to a hard skip?
+          const track = this.track;
+          const event = this.currentEvent;
+          const numVotes = track.numHates + track.numLikes;
+          const numVotes4Quorum = event.skipCurrentTrackQuorum;
+          const hatePercentageRequired = event.skipCurrentTrackHatePercentage / 100;
+          if (numVotes + 1 >= numVotes4Quorum && (track.numHates + 1) / (numVotes + 1) >= hatePercentageRequired) {
+            // Yes! Skip would happen on hate. Flag this red:
+            if (currentFeedback === 'H') {
+              newColor = '#ff0000';
+            } else {
+              newColor = '#aa0000';
+            }
+          } else if (numVotes + 5 >= numVotes4Quorum && (track.numHates + 5) / (numVotes + 5) >= hatePercentageRequired) {
+            // 5 additional hates would lead to hard skip: flag this yellow:
+            if (currentFeedback === 'H') {
+              newColor = '#ffff00';
+            } else {
+              newColor = '#aaaa00';
+            }
+          }
+        }
+
+        hateCounter.style.color = newColor;
+        hateCounter.style.fontWeight = newWeight;
+      }
+    } else {
+      console.debug('no track feedback?');
+    }
   }
 
   calculateTotalTime() {
@@ -141,12 +222,12 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
   }
   trackLike() {
     console.debug('trackLike() current');
-    this.currentTrackFeedback.emit('L');
+    this.currentTrackFeedbackEvent.emit('L');
   }
 
   trackHate() {
     console.debug('trackHate() current');
-    this.currentTrackFeedback.emit('H');
+    this.currentTrackFeedbackEvent.emit('H');
   }
 
   playTrack() {
