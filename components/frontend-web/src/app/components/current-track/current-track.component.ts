@@ -122,6 +122,18 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
               newColor = '#ff0000';
             }
           }
+        } else {
+          // Let's check if the like of this track would lead to a hard skip
+          // due to quorum being reached;
+          const track = this.track;
+          const event = this.currentEvent;
+          const numVotes = track.numHates + track.numLikes + 1;
+          const numVotes4Quorum = event.skipCurrentTrackQuorum;
+          const hatePercentageRequired = event.skipCurrentTrackHatePercentage / 100;
+          if (numVotes >= numVotes4Quorum && track.numHates / numVotes >= hatePercentageRequired) {
+            // Yes! Skip would happen on like. Flag this red:
+            newColor = '#ff0000';
+          }
         }
         likeCounter.style.color = newColor;
         likeCounter.style.fontWeight = newWeight;
