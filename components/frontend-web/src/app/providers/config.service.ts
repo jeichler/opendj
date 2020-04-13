@@ -15,7 +15,9 @@ export class ConfigService {
     SPOTIFY_PROVIDER_API;
     PLAYLIST_PROVIDER_API;
     WEB_PROVIDER_API;
+    HELP_PAGE_URL;
     SERVER_TIMEOUT = 1000;
+
 
     constructor(public http: HttpClient) {}
 
@@ -34,6 +36,7 @@ export class ConfigService {
         this.SPOTIFY_PROVIDER_API = data.SPOTIFY_PROVIDER_API;
         this.PLAYLIST_PROVIDER_API = data.PLAYLIST_PROVIDER_API;
         this.SERVER_TIMEOUT = data.SERVER_TIMEOUT;
+        this.HELP_PAGE_URL = data.HELP_PAGE_URL;
     }
 
 }

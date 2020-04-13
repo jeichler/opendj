@@ -120,6 +120,11 @@ export class AppComponent implements OnInit {
     this.events.publish('user:logout', {redirect: 'ui/landing'});
   }
 
+  help() {
+    window.open(this.confService.HELP_PAGE_URL, '_blank');
+
+  }
+
   getProviderForUser(): MusicProvider {
     for (const p of this.event.providers) {
       if (p.user === this.userState.username) {
