@@ -122,7 +122,7 @@ export class CurrentTrackComponent implements OnInit, OnDestroy {
               newColor = '#ff0000';
             }
           }
-        } else {
+        } else if (this.currentEvent.enableTrackHateSkip) {
           // Let's check if the like of this track would lead to a hard skip
           // due to quorum being reached;
           const track = this.track;

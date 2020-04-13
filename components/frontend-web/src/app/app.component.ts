@@ -9,6 +9,7 @@ import { UserSessionState } from './models/usersessionstate';
 import { ConfigService } from './providers/config.service';
 import { HttpClient } from '@angular/common/http';
 import { retry, catchError, timeout } from 'rxjs/operators';
+import { WebsocketService } from './providers/websocket.service';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit {
     public alertController: AlertController,
     private userDataService: UserDataService,
     private confService: ConfigService,
+    private websocketService: WebsocketService,
     private http: HttpClient
   ) {
     this.initializeApp();
@@ -86,6 +88,7 @@ export class AppComponent implements OnInit {
         redirectUrl = 'ui/event/' + this.userState.currentEventID;
       }
 
+      this.websocketService.destroy();
       this.serverSideLogout(this.userState);
 
       this.userState = new UserSessionState();

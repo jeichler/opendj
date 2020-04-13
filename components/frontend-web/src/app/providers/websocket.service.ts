@@ -9,13 +9,13 @@ export class WebsocketService {
 
     // Our socket connection
     private socket = null;
+    private eventID = null;
 
     constructor(private confService: ConfigService) {
         console.debug('constructor');
 
     }
 
-// TODO: Add "query" parameter with event ID to be received by server:
     init(eventID: string, user: UserSessionState) {
         console.debug('init ws -> eventID=%s', eventID);
 
@@ -37,15 +37,22 @@ export class WebsocketService {
             }
         });
 
+        this.eventID = eventID;
+
         this.socket.on('connect', (socket) => {
-            console.debug('ws connected established!');
-// No need to request refresh - will be sent by server as welcome package:
-//            console.debug('connected! - request refreshPlaylist');
-//            this.refreshPlaylist();
+            console.debug('ws connection established!');
         });
 
         console.debug('init(): connect');
         this.connect();
+    }
+
+    destroy() {
+        console.debug('destroy()');
+        if (this.socket != null) {
+            this.socket.disconnect();
+        }
+        this.socket = null;
     }
 
     observePlaylist() {
@@ -53,7 +60,13 @@ export class WebsocketService {
         const observable = new Observable(observer => {
             this.socket.on('current-playlist', (data) => {
                 console.debug('observePlaylist -> Received playlist update');
-                observer.next(data);
+                // Sanity check before we post thew news:
+                if (data.eventID === this.eventID) {
+                    observer.next(data);
+                } else {
+                    console.error('received playlist for event %s, but we are expecting update for %s - disconnecting!', data.eventID, this.eventID);
+                    this.destroy();
+                }
             });
         });
         return observable;
@@ -64,7 +77,13 @@ export class WebsocketService {
         const observable = new Observable(observer => {
             this.socket.on('current-event', (data) => {
                 console.debug('observeEvent -> Received event update');
-                observer.next(data);
+                // Sanity check before we post thew news:
+                if (data.eventID === this.eventID) {
+                    observer.next(data);
+                } else {
+                    console.error('received update for event %s, but we are expecting update for %s - disconnecting!', data.eventID, this.eventID);
+                    this.destroy();
+                }
             });
         });
         return observable;
@@ -88,7 +107,7 @@ export class WebsocketService {
     }
 
     isConnected() {
-        return this.socket!=null && this.socket.connected;
+        return this.socket != null && this.socket.connected;
     }
 
     disconnect() {
