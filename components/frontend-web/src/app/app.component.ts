@@ -10,6 +10,8 @@ import { ConfigService } from './providers/config.service';
 import { HttpClient } from '@angular/common/http';
 import { retry, catchError, timeout } from 'rxjs/operators';
 import { WebsocketService } from './providers/websocket.service';
+import { MusicProvider } from './models/music-event';
+import { FEService } from './providers/fes.service';
 
 @Component({
   selector: 'app-root',
@@ -28,10 +30,11 @@ export class AppComponent implements OnInit {
     private events: Events,
     private router: Router,
     private menu: MenuController,
-    public alertController: AlertController,
+    private alertController: AlertController,
     private userDataService: UserDataService,
     private confService: ConfigService,
     private websocketService: WebsocketService,
+    private feService: FEService,
     private http: HttpClient
   ) {
     this.initializeApp();
@@ -117,6 +120,20 @@ export class AppComponent implements OnInit {
     this.events.publish('user:logout', {redirect: 'ui/landing'});
   }
 
+  getProviderForUser(): MusicProvider {
+    for (const p of this.event.providers) {
+      if (p.user === this.userState.username) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  userHasAddedSpotify() {
+    const p = this.getProviderForUser();
+    return p && p.type === 'spotify';
+  }
+
   async addSpotify() {
     const alert = await this.alertController.create({
       header: 'Add Spotify',
@@ -142,6 +159,18 @@ export class AppComponent implements OnInit {
       ]
     });
     await alert.present();
+  }
+
+  async removeSpotify() {
+    const provider = this.getProviderForUser();
+    if (provider) {
+      this.feService.deleteProvider(this.event, provider).subscribe(
+        result => {
+          console.debug('Got new list of providers!');
+          this.event.providers = result;
+        }
+      );
+    }
   }
 
 

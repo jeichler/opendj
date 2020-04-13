@@ -40,9 +40,14 @@
                         <ion-label id="app-menu-editevent-label">Edit Event</ion-label>
                     </ion-item>
 
-                    <ion-item *ngIf="event?.usersCanAddProvider" button (click)="addSpotify()" color="opendj" color="opendj">
+                    <ion-item *ngIf="event?.usersCanAddProvider && !userHasAddedSpotify()" button (click)="addSpotify()" color="opendj" color="opendj">
                         <ion-img slot="start" src="assets/img/provider/spotify_icon_passive_light_64.png" class="spotify-logo"></ion-img>
                         <ion-label id="app-menu-addspotify-label">Add your Spotify</ion-label>
+                    </ion-item>
+
+                    <ion-item *ngIf="event?.usersCanAddProvider && userHasAddedSpotify()" button (click)="removeSpotify()" color="opendj" color="opendj">
+                        <ion-img slot="start" src="assets/img/provider/spotify_icon_passive_light_64.png" class="spotify-logo"></ion-img>
+                        <ion-label id="app-menu-removespotify-label">Remove your Spotify</ion-label>
                     </ion-item>
 
                     <ion-item button (click)="logout()" color="opendj" *ngIf="userState?.isLoggedIn">

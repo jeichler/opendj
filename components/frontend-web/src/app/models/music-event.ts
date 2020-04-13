@@ -1,5 +1,6 @@
 import { Track } from 'src/app/models/track';
 
+
 export class MusicEvent {
     eventID: string;
     url: string;
@@ -32,7 +33,8 @@ export class MusicEvent {
     demoAutoFillEmptyPlaylist: boolean;
     demoAutoFillNumTracks: number;
     demoAutoFillFromPlaylist: string;
-    providers: Array<string>;
+    providerTypes: Array<string>;
+    providers: Array<MusicProvider>;
     usersCanAddProvider: boolean;
     activePlaylist = 0;
     playlists: [0];
@@ -71,4 +73,14 @@ export class EventStats {
     numCurators: number;
     numCuratorsOnline: number;
     numTracksPlayed: number;
+}
+
+export class MusicProvider {
+    type: string;
+    id: string;
+    display: string;
+    user: string;
+    email: string;
+    // tslint:disable-next-line:variable-name
+    image_url: string;
 }
