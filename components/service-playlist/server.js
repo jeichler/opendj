@@ -1408,7 +1408,7 @@ async function addProvider(event, newProvider) {
     eventActivityClient.publishActivity(
         'PROVIDER_ADD',
         event.eventID, { newProvider: newProvider },
-        'Music provider' + newProvider.type + ' added'
+        newProvider.user + ' added ' + newProvider.type
     );
 
     log.trace("end addProvider");
@@ -1424,7 +1424,7 @@ async function deleteProvider(event, provider) {
     eventActivityClient.publishActivity(
         'PROVIDER_DEL',
         event.eventID, { provider: provider },
-        'Music provider' + provider.type + ' removed'
+        newProvider.user + ' removed ' + newProvider.type
     );
 
     log.trace("end delProvider");
