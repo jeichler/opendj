@@ -75,7 +75,7 @@ const EVENT_PROTOTYPE = {
     passwordCurator: "opendj",
     passwordUser: "",
     maxUsers: 100,
-    maxDurationInMinutes: 7200, // 5d
+    maxDurationInMinutes: 2880, // 48h
     maxTracksInPlaylist: 50,
     maxContributionsPerUser: 10,
     eventStartsAt: "",

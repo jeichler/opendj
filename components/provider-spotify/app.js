@@ -427,6 +427,13 @@ async function removeAccountFromEvent(event, account) {
         json: true,
         timeout: 1000
     });
+
+    try {
+        await pause(account);
+    } catch (err) {
+        log.debug("pause failed when removing account - ignored", err);
+    }
+
     log.debug('newListOfProviders', newListOfProviders);
     log.trace('begin removeAccountFromEvent');
     return newListOfProviders;
