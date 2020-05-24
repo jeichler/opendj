@@ -165,9 +165,10 @@
             timeoutSeconds: 10
           resources:
             limits:
+              cpu: 1
               memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY}}"
             requests:
-              cpu: "0.5"
+              cpu: 0
               memory: "{{ ENV.BACKEND_DATAGRID.LIMIT_MEMORY}}"
           volumeMounts:
           - mountPath: /opt/datagrid/standalone/data

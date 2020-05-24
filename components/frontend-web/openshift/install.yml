@@ -227,9 +227,6 @@
                 kind: ImageStreamTag
                 name: frontend-web:latest
             postCommit: {}
-            resources: 
-              limits:
-                memory: 512Mi
             runPolicy: Serial
             source:
               dockerfile: |-
@@ -325,6 +322,9 @@
                       limits:
                         memory: 128Mi
                         cpu: 1000m
+                      requests:
+                        memory: 128Mi
+                        cpu: 0
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                     volumeMounts:

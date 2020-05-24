@@ -189,6 +189,8 @@
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MAX | default('1000')}}"
                       - name:  PLAYLIST_PROVIDER_URL
                         value: "{{ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8081/api/service-playlist/v1/')}}"
+                      - name:  MAX_PLAY_ERRORS
+                        value: "{{ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3')}}"
 
                         
 
@@ -225,6 +227,9 @@
                       limits:
                         memory: 128Mi
                         cpu: 1000m
+                      requests:
+                        cpu: 0
+                        memory: 128Mi
                     terminationMessagePath: /dev/termination-log
                     terminationMessagePolicy: File
                 dnsPolicy: ClusterFirst

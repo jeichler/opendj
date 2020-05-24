@@ -179,7 +179,7 @@ const SPOTIFY_RETRIES = process.env.SPOTIFY_RETRIES || "1";;
 const SPOTIFY_RETRY_TIMEOUT_MIN = process.env.SPOTIFY_RETRY_TIMEOUT_MIN || "1500";
 const SPOTIFY_RETRY_TIMEOUT_MAX = process.env.SPOTIFY_RETRY_TIMEOUT_MAX || "2500";
 const MAX_ACCOUNTS_PER_EVENT = process.env.MAX_ACCOUNTS_PER_EVENT || "20";
-
+const MAX_PLAY_ERRORS = process.env.MAX_PLAY_ERRORS || "3";
 
 // Map of Spotify API Objects:
 // Key: EventID-AccountID
@@ -208,6 +208,7 @@ const accountPrototype = {
     token_expires: "",
     token_created: "",
     token_refresh_failures: 0,
+    play_failures: 0,
     isPlaying: false,
     currentTrack: "",
     currentDevice: "",
@@ -1047,6 +1048,9 @@ async function play(event, account, trackID, pos) {
         msgShort: "",
     }
 
+    if (!account.play_failures)
+        account.play_failures = 0;
+
 
     // If TrackID contains a "spotify:track:" prefix, we need to remove it:
     let colonPos = trackID.lastIndexOf(":");
@@ -1083,8 +1087,10 @@ async function play(event, account, trackID, pos) {
         }, { retries: SPOTIFY_RETRIES, minTimeout: SPOTIFY_RETRY_TIMEOUT_MIN, maxTimeout: SPOTIFY_RETRY_TIMEOUT_MAX });
 
         log.info("PLAY ok %s#%s", account.eventID, account.display);
+        account.play_failures = 0;
     } catch (err) {
         log.debug("play failed with err=%s - will try to handle this", err);
+        account.play_failures++;
         try {
             // res.status(200).send({ code: "SPTFY-200", msg: "needed to handle spotify error, maybe device was changed!" });
             await handlePlayError(err, options, event, account, api);
@@ -1108,6 +1114,16 @@ async function play(event, account, trackID, pos) {
                 msgShort: msgShort
             };
             log.info("PLAY err %s#%s", account.eventID, msgShort);
+
+            if (account.play_failures >= MAX_PLAY_ERRORS && !account.display.includes(event.owner)) {
+                log.info("PLAY err limit reached - account %s#%s is removed", account.eventID, account.display);
+                try {
+                    await removeAccountFromEvent(event, account);
+                } catch (err) {
+                    log.error("removeAccountFromEvent failed after max play error reached - this is ignored", err);
+                }
+            }
+
         }
         log.trace("end first catch");
     }
@@ -1198,7 +1214,7 @@ async function handlePlayError(err, options, event, account, api) {
             throw err;
         }
     } else {
-        log.debug("unexpected shit happend, or autoplay is disabled - we can do nothing here");
+        log.debug("unexpected shit happened, or autoplay is disabled - we can do nothing here");
         throw err;
     }
 }
