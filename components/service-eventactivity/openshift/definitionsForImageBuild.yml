@@ -94,6 +94,7 @@
         from:
           kind: ImageStreamTag
           name: ubi-quarkus-native-s2i:19.2.1
+        incremental: true
       type: Source
     successfulBuildsHistoryLimit: 2
     triggers:

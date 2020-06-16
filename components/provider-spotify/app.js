@@ -35,10 +35,58 @@ const datagrid = require('infinispan');
 var cacheTracks = null;
 var cacheState = null;
 
+const CACHE_CONFIG_XML2 = `
+<infinispan>
+    <cache-container>
+        <distributed-cache 
+            mode="SYNC"  owners="2" segments="200" remote-timeout="1000" start="EAGER" name="dummy">
+            <memory>
+                <object size="10000" strategy="REMOVE"/>
+            </memory>
+            <partition-handling when-split="ALLOW_READS"/>
+
+            <persistence>
+                <file-store shared="false" fetch-state="true" preload="true">
+                </file-store>
+            </persistence>
+        </distributed-cache>
+    </cache-container>
+</infinispan>
+`
+const CACHE_CONFIG_XML = `<infinispan>
+    <cache-container>
+        <distributed-cache mode="SYNC" name="dummy" owners="2">
+            <memory>
+                <object size="10000" strategy="REMOVE"/>
+            </memory>
+            <expiration lifespan="-1" max-idle="-1" interval="0" />
+            <partition-handling when-split="ALLOW_READS"/>
+            <persistence>
+                <file-store shared="false" fetch-state="true" preload="true" max-entries="10000">
+                    <write-behind modification-queue-size="200" fail-silently="false"/>
+                </file-store>
+            </persistence>
+        </distributed-cache>
+    </cache-container>
+</infinispan>`
+
+
 async function connectToCache(name) {
     let cache = null;
     try {
         log.debug("begin connectToCache %s", name);
+        // Create Cache:
+        let result = await request({
+            method: 'POST',
+            uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
+            body: CACHE_CONFIG_XML,
+            headers: {
+                "Content-Type": "application/xml"
+            },
+            timeout: 1000
+        });
+        log.trace("result", result);
+
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
@@ -46,6 +94,7 @@ async function connectToCache(name) {
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
+        log.error("Shit hit the fan", err);
         readyState.datagridClient = false;
         readyState.lastError = err;
         throw "DataGrid connection FAILED with err " + err;

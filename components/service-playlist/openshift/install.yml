@@ -94,6 +94,7 @@
                   kind: ImageStreamTag
                   name: "nodejs:10"
                   namespace: openshift
+                incremental: true
               type: Source
             successfulBuildsHistoryLimit: 2
             triggers:
