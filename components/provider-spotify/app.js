@@ -31,6 +31,8 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "F7SygT7HF1wFZz19"
 const datagrid = require('infinispan');
 var cacheTracks = null;
 var cacheState = null;
@@ -38,7 +40,7 @@ var cacheState = null;
 const CACHE_CONFIG_XML2 = `
 <infinispan>
     <cache-container>
-        <distributed-cache 
+        <distributed-cache
             mode="SYNC"  owners="2" segments="200" remote-timeout="1000" start="EAGER" name="dummy">
             <memory>
                 <object size="10000" strategy="REMOVE"/>
@@ -75,22 +77,46 @@ async function connectToCache(name) {
     let cache = null;
     try {
         log.debug("begin connectToCache %s", name);
-        // Create Cache:
-        let result = await request({
-            method: 'POST',
-            uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
-            body: CACHE_CONFIG_XML,
-            headers: {
-                "Content-Type": "application/xml"
-            },
-            timeout: 1000
-        });
-        log.trace("result", result);
+        try {
+
+          log.trace("try to create Cache");
+
+          let result = await request({
+              method: 'POST',
+              uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
+              body: CACHE_CONFIG_XML,
+              headers: {
+                  "Content-Type": "application/xml"
+              },
+              auth: {
+                  user: DATAGRID_USER,
+                  password: DATAGRID_PSWD
+              },
+
+              timeout: 10000
+          });
+          log.trace("result", result);
+        } catch (createErr){
+          if (createErr.error.includes("ISPN000507")) {
+            log.trace("cache already exists, error is ignored");
+          } else {
+            throw createErr;
+          }
+        }
+
 
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        cache = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
+        cache = await datagrid.client([{ host: host, port: port }], {
+          cacheName: name,
+          authentication: {
+            enabled: true,
+//            serverName: 'infinispan',
+            saslMechanism: 'PLAIN',
+            userName: DATAGRID_USER,
+            password: DATAGRID_PSWD },
+          mediaType: 'application/json' });
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
@@ -239,7 +265,7 @@ var mapOfSpotifyApis = {
 
 // Example Object for an Event State - this is clone for all events:
 const eventStatePrototype = {
-    eventID: "-1", // ID of Music Event  
+    eventID: "-1", // ID of Music Event
 
     // map of accounts. key: accountID,value: account object
     accounts: {},
@@ -248,7 +274,7 @@ const eventStatePrototype = {
 
 const accountPrototype = {
     accountID: undefined,
-    eventID: "-1", // ID of Music Event  
+    eventID: "-1", // ID of Music Event
     display: '',
     email: '',
     access_token: "",
@@ -493,7 +519,7 @@ async function removeAccountFromEvent(event, account) {
 
 
 // We are using "Authorization Code Flow" as we need full access on behalf of the user.
-// Read https://developer.spotify.com/documentation/general/guides/authorization-guide/ to 
+// Read https://developer.spotify.com/documentation/general/guides/authorization-guide/ to
 // understand this, esp. the references to the the steps.
 // step1: - generate the login URL / redirect....
 router.get('/events/:eventID/providers/spotify/login', async function(req, res) {
@@ -509,7 +535,7 @@ router.get('/events/:eventID/providers/spotify/login', async function(req, res) 
     res.redirect(authorizeURL);
 });
 
-// This is Step 2 of the Authorization Code Flow: 
+// This is Step 2 of the Authorization Code Flow:
 // Redirected from Spotify AccountsService after user Consent.
 // We receive a code and need to trade that code into tokens:
 router.get('/auth_callback', async function(req, res) {
@@ -987,7 +1013,7 @@ async function getTrackDetails(account, trackID) {
         log.trace("getAudioFeaturesForTrack()");
         audioFeaturesResult = api.getAudioFeaturesForTrack(trackID);
 
-        // When we have trackResult we get the album and artist ID , and with that, we can make call 
+        // When we have trackResult we get the album and artist ID , and with that, we can make call
         // #3 to get album details and ...
         try {
             log.trace("awaiting trackResult");
@@ -1127,7 +1153,7 @@ async function play(event, account, trackID, pos) {
     log.trace("play options: ", options);
 
     // play sometimes fails on first try, probably due to comm issues
-    // with the device. Thus we re-try 
+    // with the device. Thus we re-try
     // before getting into fancy error handling:
     try {
         await promiseRetry(function(retry, number) {
