@@ -17,7 +17,7 @@
       meta: end_play
       when: not ENV.BACKEND_DATAGRID.DEPLOY
 
-    - name: undeploy Datagrid 
+    - name: undeploy Datagrid
       when: ENV.BACKEND_DATAGRID.UNDEPLOY
       k8s:
         state: absent
@@ -27,7 +27,8 @@
             strict: no
         definition: "{{ (lookup('template', 'datagrid.yml') | from_yaml_all | list)[0] }}"
 
-    - name: Deploy Datagrid 
+    - name: Deploy Datagrid with template
+      when: ENV.BACKEND_DATAGRID.DEPLOY_WITH_TEMPLATE
       k8s:
         state: present
         wait: true
@@ -36,6 +37,16 @@
             strict: no
         definition: "{{ (lookup('template', 'datagrid.yml') | from_yaml_all | list)[0] }}"
 
+    - name: Deploy Datagrid with operator
+      when: ENV.BACKEND_DATAGRID.DEPLOY_WITH_OPERATOR
+      k8s:
+        state: present
+        wait: true
+        validate:
+            fail_on_error: no
+            strict: no
+        definition: "{{ (lookup('template', 'operator.yml') | from_yaml_all | list)[0] }}"
+
     - name: Wait for datagrid pod to be online
       shell: oc get pods --namespace {{ENV.COMMON.NAMESPACE}} | grep backend-datagrid-0 | grep Running
       register: getpods
@@ -43,3 +54,11 @@
       retries: 120
       delay: 2
       changed_when: false
+
+    - name: Create datagrid secret from generated
+      when: ENV.BACKEND_DATAGRID.DEPLOY_WITH_OPERATOR
+      shell: |
+        oc create secret generic backend-datagrid-credentials  --from-literal=USER=developer --from-literal=PSWD=`oc get secret backend-datagrid-generated-secret -o jsonpath="{.data.identities\.yaml}" | base64 --decode | grep password -m 1 | cut -f4 -d ' '` --namespace {{ENV.COMMON.NAMESPACE}}
+      register: createSecret
+      failed_when: "createSecret.rc != 0 and 'already exists' not in createSecret.stderr"
+      changed_when: "'already exists' not in createSecret.stderr"
