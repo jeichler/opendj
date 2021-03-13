@@ -32,29 +32,11 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 // ---------------------------------------------------------------------------
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
-const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "GImy8wm1Ya8ywleA"
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret---"
 const datagrid = require('@dfroehli42/infinispan');
 var cacheTracks = null;
 var cacheState = null;
 
-const CACHE_CONFIG_XML2 = `
-<infinispan>
-    <cache-container>
-        <distributed-cache
-            mode="SYNC"  owners="2" segments="200" remote-timeout="1000" start="EAGER" name="dummy">
-            <memory>
-                <object size="10000" strategy="REMOVE"/>
-            </memory>
-            <partition-handling when-split="ALLOW_READS"/>
-
-            <persistence>
-                <file-store shared="false" fetch-state="true" preload="true">
-                </file-store>
-            </persistence>
-        </distributed-cache>
-    </cache-container>
-</infinispan>
-`
 const CACHE_CONFIG_XML = `<infinispan>
     <cache-container>
         <distributed-cache mode="SYNC" name="dummy" owners="2">
@@ -78,7 +60,6 @@ async function connectToCache(name) {
     try {
         log.debug("begin connectToCache %s", name);
         try {
-
           log.trace("try to create Cache");
 
           let result = await request({
@@ -112,7 +93,6 @@ async function connectToCache(name) {
           cacheName: name,
           authentication: {
             enabled: true,
-//            serverName: 'infinispan',
             saslMechanism: 'PLAIN',
             userName: DATAGRID_USER,
             password: DATAGRID_PSWD },

@@ -192,8 +192,6 @@
                         value: "{{ENV.PROVIDER_SPOTIFY.PLAYLIST_PROVIDER_URL | default('http://service-playlist:8081/api/service-playlist/v1/')}}"
                       - name:  MAX_PLAY_ERRORS
                         value: "{{ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3')}}"
-
-
                     envFrom:
                       - prefix: SPOTIFY_
                         secretRef:

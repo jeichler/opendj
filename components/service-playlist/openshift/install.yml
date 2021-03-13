@@ -15,7 +15,7 @@
     - name: Skip deployment if not needed
       meta: end_play
       when: not ENV.SERVICE_PLAYLIST.DEPLOY
-      
+
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
       k8s:
@@ -146,21 +146,21 @@
                 containers:
                   - env:
                       - name: PORT
-                        value: "8081" 
+                        value: "8081"
                       - name: LOG_LEVEL
                         value: "{{ENV.SERVICE_PLAYLIST.LOG_LEVEL | default('info')}}"
                       - name: COMPRESS_RESULT
                         value: "true"
                       - name: DATAGRID_URL
-                        value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
+                        value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}"
                       - name: SPOTIFY_PROVIDER_URL
-                        value: "{{ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/')}}"   
+                        value: "{{ENV.SERVICE_PLAYLIST.SPOTIFY_PROVIDER_URL | default('http://provider-spotify:8080/api/provider-spotify/v1/')}}"
                       - name: EVENTACTIVITY_PROVIDER_URL
-                        value: "{{ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/')}}"   
+                        value: "{{ENV.SERVICE_EVENTACTIVITY.PROVIDER_URL | default('http://service-eventactivity:8080/api/service-eventactivity/v1/')}}"
                       - name: EVENT_URL
                         value: "{{ENV.COMMON.DNS_BASENAME | default('localhost:8080')}}"
                       - name: DEFAULT_AUTOFILL_EMPTY_PLAYLIST
-                        value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_AUTOFILL_EMPTY_PLAYLIST | default('false')}}" 
+                        value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_AUTOFILL_EMPTY_PLAYLIST | default('false')}}"
                       - name: DEFAULT_IS_PLAYING
                         value: "{{ENV.SERVICE_PLAYLIST.DEFAULT_IS_PLAYING | default('true')}}"
                       - name: DEFAULT_ALLOW_DUPLICATE_TRACKS
@@ -168,9 +168,13 @@
                       - name: MOCKUP_AUTOSKIP_SECONDS
                         value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_AUTOSKIP_SECONDS | default('0')}}"
                       - name: MOCKUP_NO_ACTUAL_PLAYING
-                        value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_NO_ACTUAL_PLAYING | default('false')}}" 
+                        value: "{{ENV.SERVICE_PLAYLIST.MOCKUP_NO_ACTUAL_PLAYING | default('false')}}"
                       - name: INTERNAL_POLL_INTERVAL
-                        value: "{{ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('10000')}}" 
+                        value: "{{ENV.SERVICE_PLAYLIST.INTERNAL_POLL_INTERVAL | default('10000')}}"
+                    envFrom:
+                      - prefix: DATAGRID_
+                        secretRef:
+                          name: backend-datagrid-credentials
                     imagePullPolicy: IfNotPresent
                     name: service-playlist
                     ports:

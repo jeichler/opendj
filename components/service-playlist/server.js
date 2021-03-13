@@ -671,7 +671,7 @@ async function provideTrackFeedback(event, playlist, provider, trackID, feedback
                 log.trace("currentPos=%s, newPos=%s, currenScore=%s", currentPos, newPos, currentScore);
                 if (newPos - 1 != currentPos) {
                     log.trace('Move track down:');
-                    playlist.nextTracks.splice(newPos, 0, track); // Insert BEFORE new pos 
+                    playlist.nextTracks.splice(newPos, 0, track); // Insert BEFORE new pos
                     playlist.nextTracks.splice(currentPos, 1); // Remove at old pos
                     activityMsg = "OpenDJ auto moved down " + currentPos + "->" + (newPos - 1) + ": " + track.name;
                 }
@@ -788,10 +788,10 @@ async function play(event, playlist) {
         log.debug("PLAY: actually it is a resume, adjusting started_at");
         now -= playlist.currentTrack.progress_ms;
 
-        // DUE TO A BUG IN SPOTIY PROVIDER WE CANT RESUME  
+        // DUE TO A BUG IN SPOTIY PROVIDER WE CANT RESUME
         // Play will actually start at the beginning.
         // WORKAROUND:
-        /*        
+        /*
                 playlist.currentTrack.progress_ms = 0;
                 now = Date.now();
         */
@@ -890,11 +890,11 @@ async function skip(event, playlist, user) {
             eventExt.effectivePlaylist.push(playlist.currentTrack);
             await putEventExt(event.eventID, eventExt);
 
-            // Dirty optimization Part #1 - autofill also needs ext, to avoid re-loading it from grid, we store it 
+            // Dirty optimization Part #1 - autofill also needs ext, to avoid re-loading it from grid, we store it
             // at the event:
             event.ext = eventExt;
 
-            // Fix #205 - do not push event on skip - effective playlist is now at event-ext, so we 
+            // Fix #205 - do not push event on skip - effective playlist is now at event-ext, so we
             // dont need this anymore:
             // fireEventChangedEvent(event);
         } else {
@@ -1808,12 +1808,59 @@ app.use("/api/service-playlist/v1", router);
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+const datagrid = require('@dfroehli42/infinispan');
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
-const datagrid = require('infinispan');
+const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
+const CACHE_CONFIG_XML = `<infinispan>
+    <cache-container>
+        <distributed-cache mode="SYNC" name="dummy" owners="2">
+            <memory>
+                <object size="10000" strategy="REMOVE"/>
+            </memory>
+            <expiration lifespan="-1" max-idle="-1" interval="0" />
+            <partition-handling when-split="ALLOW_READS"/>
+            <persistence>
+                <file-store shared="false" fetch-state="true" preload="true" max-entries="10000">
+                    <write-behind modification-queue-size="200" fail-silently="false"/>
+                </file-store>
+            </persistence>
+        </distributed-cache>
+    </cache-container>
+</infinispan>`
+
 var gridPlaylists = null;
 var gridEvents = null;
 var gridEventLck = null;
 var gridEventExt = null;
+
+async function createCache(name) {
+  try {
+    log.trace("try to create Cache");
+
+    let result = await request({
+        method: 'POST',
+        uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
+        body: CACHE_CONFIG_XML,
+        headers: {
+            "Content-Type": "application/xml"
+        },
+        auth: {
+            user: DATAGRID_USER,
+            password: DATAGRID_PSWD
+        },
+
+        timeout: 10000
+    });
+    log.info("CREATED cache %s", name);
+  } catch (createErr){
+    if (createErr.error && createErr.error.includes("ISPN000507")) {
+      log.trace("cache already exists, error is ignored");
+    } else {
+      throw createErr;
+    }
+  }
+}
 
 async function connectToGrid(name) {
     let grid = null;
@@ -1822,13 +1869,25 @@ async function connectToGrid(name) {
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        grid = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
+        grid = await datagrid.client([{ host: host, port: port }], {
+          cacheName: name, mediaType: 'application/json',
+          authentication: {
+            enabled: true,
+            saslMechanism: 'PLAIN',
+            userName: DATAGRID_USER,
+            password: DATAGRID_PSWD },
+        });
         readyState.datagridClient = true;
         log.info("CONNECTED to grid %s", name);
     } catch (err) {
-        readyState.datagridClient = false;
-        readyState.lastError = err;
-        throw "DataGrid connection FAILED with err " + err;
+        if (err.includes("CacheNotFoundException")) {
+          await createCache(name);
+          grid = connectToGrid(name);
+        } else {
+          readyState.datagridClient = false;
+          readyState.lastError = err;
+          throw "DataGrid connection FAILED with err " + err;
+        }
     }
 
     return grid;
