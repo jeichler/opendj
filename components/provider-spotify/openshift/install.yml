@@ -20,8 +20,8 @@
       shell: |
         oc create secret generic spotify-api-credentials  --from-literal=CLIENT_ID={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_ID | mandatory}} --from-literal=CLIENT_SECRET={{ENV.PROVIDER_SPOTIFY.SPOTIFY_CLIENT_SECRET | mandatory}} --namespace {{ENV.COMMON.NAMESPACE}}
       register: createSecret
-      failed_when: "createSecret.rc != 0 and 'already exists' not in createSecret.stderr" 
-      changed_when: "'already exists' not in createSecret.stderr" 
+      failed_when: "createSecret.rc != 0 and 'already exists' not in createSecret.stderr"
+      changed_when: "'already exists' not in createSecret.stderr"
 
     - name: Create ImageStreamTag
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
@@ -165,27 +165,27 @@
                       - name: PORT
                         value: "8080"
                       - name: DATAGRID_URL
-                        value: "{{ENV.BACKEND_DATAGRiD.URL | default('backend-datagrid:11222')}}" 
+                        value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}"
                       - name: SPOTIFY_CALLBACK_URL
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL | mandatory}}" 
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_CALLBACK_URL | mandatory}}"
                       - name: SPOTIFY_REFRESH_TOKEN_INTERVAL
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_INTERVAL | default('60000')}}" 
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_INTERVAL | default('60000')}}"
                       - name: SPOTIFY_REFRESH_TOKEN_OFFSET
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET | default('300000')}}" 
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET | default('300000')}}"
                       - name: SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM | default('180000')}}" 
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_REFRESH_TOKEN_OFFSET_RANDOM | default('180000')}}"
                       - name: SPOTIFY_TRACK_DETAIL_NUM_GENRES
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_GENRES | default('1')}}"      
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_GENRES | default('1')}}"
                       - name: SPOTIFY_TRACK_DETAIL_NUM_ARTISTS
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS | default('1')}}"      
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_TRACK_DETAIL_NUM_ARTISTS | default('1')}}"
                       - name: SPOTIFY_SEARCH_LIMIT
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_SEARCH_LIMIT | default('20')}}"     
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_SEARCH_LIMIT | default('20')}}"
                       - name: "SPOTIFY_AUTOSELECT_DEVICE"
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_AUTOSELECT_DEVICE | default('true')}}"
-                      - name: SPOTIFY_RETRIES 
+                      - name: SPOTIFY_RETRIES
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRIES | default('1')}}"
                       - name: SPOTIFY_RETRY_TIMEOUT_MIN
-                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MIN | default('1000')}}" 
+                        value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MIN | default('1000')}}"
                       - name:  SPOTIFY_RETRY_TIMEOUT_MAX
                         value: "{{ENV.PROVIDER_SPOTIFY.SPOTIFY_RETRY_TIMEOUT_MAX | default('1000')}}"
                       - name:  PLAYLIST_PROVIDER_URL
@@ -193,12 +193,14 @@
                       - name:  MAX_PLAY_ERRORS
                         value: "{{ENV.PROVIDER_SPOTIFY.MAX_PLAY_ERRORS | default('3')}}"
 
-                        
 
                     envFrom:
                       - prefix: SPOTIFY_
                         secretRef:
                           name: spotify-api-credentials
+                      - prefix: DATAGRID_
+                        secretRef:
+                          name: backend-datagrid-credentials
                     imagePullPolicy: IfNotPresent
                     name: provider-spotify
                     ports:
@@ -331,4 +333,3 @@
               name: provider-spotify
               weight: 100
             wildcardPolicy: None
-            
