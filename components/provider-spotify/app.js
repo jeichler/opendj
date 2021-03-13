@@ -54,38 +54,39 @@ const CACHE_CONFIG_XML = `<infinispan>
     </cache-container>
 </infinispan>`
 
+async function createCache(name) {
+  try {
+    log.trace("try to create Cache");
+
+    let result = await request({
+        method: 'POST',
+        uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
+        body: CACHE_CONFIG_XML,
+        headers: {
+            "Content-Type": "application/xml"
+        },
+        auth: {
+            user: DATAGRID_USER,
+            password: DATAGRID_PSWD
+        },
+
+        timeout: 10000
+    });
+    log.info("CREATED cache %s", name);
+  } catch (createErr){
+    if (createErr.error && createErr.error.includes("ISPN000507")) {
+      log.trace("cache already exists, error is ignored");
+    } else {
+      throw createErr;
+    }
+  }
+}
+
 
 async function connectToCache(name) {
     let cache = null;
     try {
         log.debug("begin connectToCache %s", name);
-        try {
-          log.trace("try to create Cache");
-
-          let result = await request({
-              method: 'POST',
-              uri: 'http://' + DATAGRID_URL + '/rest/v2/caches/' + name,
-              body: CACHE_CONFIG_XML,
-              headers: {
-                  "Content-Type": "application/xml"
-              },
-              auth: {
-                  user: DATAGRID_USER,
-                  password: DATAGRID_PSWD
-              },
-
-              timeout: 10000
-          });
-          log.trace("result", result);
-        } catch (createErr){
-          if (createErr.error && createErr.error.includes("ISPN000507")) {
-            log.trace("cache already exists, error is ignored");
-          } else {
-            throw createErr;
-          }
-        }
-
-
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
@@ -100,10 +101,15 @@ async function connectToCache(name) {
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
+      if (err.includes("CacheNotFoundException")) {
+        await createCache(name);
+        grid = connectToGrid(name);
+      } else {
         log.error("Shit hit the fan", err);
         readyState.datagridClient = false;
         readyState.lastError = err;
         throw "DataGrid connection FAILED with err " + err;
+      }
     }
 
     return cache;
