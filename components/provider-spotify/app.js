@@ -32,7 +32,7 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 // ---------------------------------------------------------------------------
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
-const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "F7SygT7HF1wFZz19"
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "GImy8wm1Ya8ywleA"
 const datagrid = require('infinispan');
 var cacheTracks = null;
 var cacheState = null;
@@ -97,7 +97,7 @@ async function connectToCache(name) {
           });
           log.trace("result", result);
         } catch (createErr){
-          if (createErr.error.includes("ISPN000507")) {
+          if (createErr.error && createErr.error.includes("ISPN000507")) {
             log.trace("cache already exists, error is ignored");
           } else {
             throw createErr;
