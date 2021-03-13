@@ -33,7 +33,7 @@ const PLAYLIST_PROVIDER_URL = process.env.PLAYLIST_PROVIDER_URL || "http://local
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
 const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
 const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "GImy8wm1Ya8ywleA"
-const datagrid = require('infinispan');
+const datagrid = require('@dfroehli42/infinispan');
 var cacheTracks = null;
 var cacheState = null;
 
