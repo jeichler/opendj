@@ -20,14 +20,13 @@
 # See https://github.com/tnozicka/openshift-acme/tree/master/deploy/letsencrypt-live/single-namespace
     - name: Deploy opensfhit-acme for lets encrypt certs
       when: ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
-      when: false
       shell: |
         oc project {{ENV.COMMON.NAMESPACE|mandatory}}
         oc apply -fhttps://raw.githubusercontent.com/tnozicka/openshift-acme/master/deploy/single-namespace/{role,serviceaccount,issuer-letsencrypt-live,deployment}.yaml
         oc create rolebinding openshift-acme --role=openshift-acme --serviceaccount="$( oc project -q ):openshift-acme" --dry-run -o yaml | oc apply -f -
 #        oc patch deployment openshift-acme -p '{"spec": {"template": {"spec": {"containers": [{"name": "openshift-acme","resources": {"limits": {"memory": "80Mi"}}}]}}}}'
       register: acmedeploy
-      changed_when: "'created' in acmedeploy.stdout" 
+      changed_when: "'created' in acmedeploy.stdout"
 
     - name: Create Image Stream for S2I Builder Image
       when: ENV.COMMON.CONTAINER_IMAGE_BUILD
@@ -103,8 +102,8 @@
               local: false
 
     - name: Create Image Stream for Component Runtime Image
-      when: 
-        - ENV.COMMON.CONTAINER_IMAGE_BUILD 
+      when:
+        - ENV.COMMON.CONTAINER_IMAGE_BUILD
         - ENV.FRONTEND_WEB.USE_RUNTIME_IMAGE
       k8s:
         state: present
@@ -173,7 +172,7 @@
             postCommit: {}
 # Was need to build on employee openshift due to quota constraints
 # but is not needed any more as we build on stormshift:
-#            resources: 
+#            resources:
 #              limits:
 #                memory: 2048Mi
             runPolicy: Serial
@@ -205,8 +204,8 @@
                 secret: rEVLkWDcrlBoPuionusPj0CL4A1H1DsFCMYPCdSw
               type: Generic
     - name: Create BuildConfig Runtime image
-      when: 
-        - ENV.COMMON.CONTAINER_IMAGE_BUILD 
+      when:
+        - ENV.COMMON.CONTAINER_IMAGE_BUILD
         - ENV.FRONTEND_WEB.USE_RUNTIME_IMAGE
       k8s:
         state: present
@@ -230,21 +229,21 @@
             runPolicy: Serial
             source:
               dockerfile: |-
-                FROM openshift/httpd:2.4                 
+                FROM openshift/httpd:2.4
                 COPY ./artifact/app-root/src/my-httpd.conf /etc/httpd/conf/httpd.conf
                 COPY ./artifact/app-root/output /var/www/html/
               images:
-              - from: 
+              - from:
                   kind: ImageStreamTag
                   name: frontend-web-artifact:latest
-                paths: 
+                paths:
                 - sourcePath: /opt/app-root
                   destinationDir: "./artifact"
             strategy:
               dockerStrategy:
-                from: 
+                from:
                   kind: ImageStreamTag
-                  name: httpd:2.4  
+                  name: httpd:2.4
                   namespace: openshift
             triggers:
               - imageChange:
@@ -256,10 +255,10 @@
               - imageChange:
                   from:
                     kind: ImageStreamTag
-                    name: httpd:2.4  
+                    name: httpd:2.4
                     namespace: openshift
                 type: ImageChange
-            
+
 
     - name: Create ConfigMap
       k8s:
@@ -404,7 +403,7 @@
               name: frontend-web
               weight: 100
             wildcardPolicy: None
-            
+
     - name: Create Route with custom certs
       when: not ENV.FRONTEND_WEB.USE_ACME_CERTS|bool
       k8s:
@@ -434,4 +433,3 @@
               name: frontend-web
               weight: 100
             wildcardPolicy: None
-            
