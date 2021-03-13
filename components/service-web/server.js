@@ -221,8 +221,10 @@ function startKafkaConsumer() {
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+const datagrid = require('@dfroehli42/infinispan');
 const DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
-const datagrid = require('infinispan');
+const DATAGRID_USER = process.env.DATAGRID_USER || "developer"
+const DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
 var gridPlaylists = null;
 var gridEvents = null;
 
@@ -233,7 +235,14 @@ async function connectToGrid(name) {
         let splitter = DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        grid = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
+        grid = await datagrid.client([{ host: host, port: port }], {
+          cacheName: name, mediaType: 'application/json',
+          authentication: {
+            enabled: true,
+            saslMechanism: 'PLAIN',
+            userName: DATAGRID_USER,
+            password: DATAGRID_PSWD },
+        });
         readyState.datagridClient = true;
         log.debug("connectToGrid grid=%s client=%s", name, grid);
         log.info("connected to grid %s", name);
