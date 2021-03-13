@@ -29,11 +29,11 @@ kafka-topics --bootstrap-server localhost:9092  --create --topic  opendj.state.p
 kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.data.event --partitions 3 --replication-factor 2 --config retention.ms=43200000
 kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.playlist --partitions 3 --replication-factor 2 --config retention.ms=43200000
 
-kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.activity --partitions 1 --replication-factor 1 
+kafka-topics --bootstrap-server localhost:9092  --create --topic opendj.event.activity --partitions 1 --replication-factor 1
 
 
 # Delete Topics:
-kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify 
+kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.state.provider-spotify
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.data.event
 kafka-topics --bootstrap-server localhost:9092 --delete --topic opendj.event.playlist
 
@@ -136,6 +136,8 @@ http://dev.opendj.io/api/service-playlist/v1/events/0/playlists/0/push
 
 http://demo.opendj.io/api/service-playlist/v1/events/0/playlists/0
 
+https://www.opendj.io/api/service-playlist/v1/events/demo/
+
 
 
 # Add Track
@@ -227,7 +229,7 @@ oc new-app service-eventactivity-minimal
 oc create serviceaccount skopeo
 oc get secrets -o jsonpath='{range .items[?(@.metadata.annotations.kubernetes\.io/service-account\.name=="skopeo")]}{.metadata.annotations.openshift\.io/token-secret\.value}{end}' |tee skopeo-token
 TOKEN="$(cat skopeo-token)"
- 
+
 
 
 # --- copy from ocp4 to quay latest ---
@@ -273,7 +275,7 @@ skopeo copy docker://quay.io/opendj/service-web:uat docker://quay.io/opendj/serv
 skopeo copy docker://quay.io/opendj/frontend-web:uat docker://quay.io/opendj/frontend-web:prd
 
 
-# Import PRD TAG from Quay to OpenShift: 
+# Import PRD TAG from Quay to OpenShift:
 oc tag --source=docker quay.io/opendj/provider-spotify:prd provider-spotify:prd --reference-policy=local --scheduled=true
 oc tag --source=docker quay.io/opendj/service-playlist:prd service-playlist:prd --reference-policy=local --scheduled=true
 oc tag --source=docker quay.io/opendj/service-housekeeping:prd service-housekeeping:prd --reference-policy=local --scheduled=true
@@ -311,4 +313,3 @@ aws --profile opendj-ops route53 list-resource-record-sets
         },
 
 aws --profile opendj-ops route53 change-resource-record-sets
-
