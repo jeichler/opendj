@@ -2,7 +2,7 @@
 # Common variables
 # HEADS UP: Due to limitation of variable parsing, you cant
 # use a variable defined here also in this file.
-# So certain values might occur redudant! 
+# So certain values might occur redudant!
 # Be sure to search for them and replace ALL occurences!
 common:
   COMMON:
@@ -26,15 +26,18 @@ common:
     KAFKA:
       HOST: "backend-eventstore-kafka-bootstrap:9092"
       USE: true
-      TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810 
+      TOPIC_CMD:  oc --namespace dfroehli-opendj-{{STAGE}} rsh backend-eventstore-zookeeper-0 /opt/kafka/bin/kafka-topics.sh --zookeeper localhost:21810
       NUM_BROKERS: 2
       NUM_ZOOKEPERS: 1
       NUM_PARTITIONS: 1
-      
+
   BACKEND_DATAGRID:
     DEPLOY: true
+    DEPLOY_WITH_TEMPLATE: false
+    DEPLOY_WITH_OPERATOR: true
     URL: "backend-datagrid:11222"
     UNDEPLOY: false
+    LIMIT_CPU: "1000m"
     LIMIT_MEMORY: "512Mi"
     STORAGE_SIZE: "1Gi"
 
@@ -59,10 +62,10 @@ common:
     DEPLOY: true
     EMIT_ACTIVITY: true
 
-    
+
   FRONTEND_WEB:
     DEPLOY: true
-# Do not specific host - use relative hostname to allow switch between http/https:  
+# Do not specific host - use relative hostname to allow switch between http/https:
     WEBSOCKET_HOST: ""
     API_HOST: ""
     SERVER_TIMEOUT: "5000"

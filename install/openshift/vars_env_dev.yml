@@ -3,7 +3,7 @@
 # These cert are valid for dev.opendj.io
 # created using lets encrypt openshift-acme in demo env
 # PROBLEM: let's encrypt does not work for dev env, as it is not
-# in public internet. So we use a tricky hack: 
+# in public internet. So we use a tricky hack:
 # Step 1: Change dns entry dev.opendj.io from stormshift to demo env
 # Step 2: create a dummy route in demo env there with hostname dev.opendj.io
 # Step 3: Openshift acme will create a cert and add it to the dummy route
@@ -16,6 +16,7 @@ specific:
                   REF: "master"
 #            NPM_MIRROR_URL: "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org"
             NPM_MIRROR_URL: ""
+            STORAGE_CLASS_FILE: "managed-nfs-storage"
 
 #      BACKEND_EVENTSTORE:
 #            KAFKA:
@@ -34,10 +35,10 @@ specific:
             MOCKUP_AUTOSKIP_SECONDS: "20"
             INTERNAL_POLL_INTERVAL: "20000"
             REPLICAS: 2
-      
+
       SERVICE_WEB:
             REPLICAS: 2
-      
+
       FRONTEND_WEB:
             REPLICAS: 2
             USE_ACME_CERTS: false
