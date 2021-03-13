@@ -165,11 +165,15 @@
                       - name: LOG_LEVEL
                         value: "{{ENV.SERVICE_HOUSEKEEPING.LOG_LEVEL | default('info')}}"
                       - name: EVENT_STORAGE
-                        value: "{{ENV.SERVICE_HOUSEKEEPING.EVENT_STORAGE | default('/data')}}" 
+                        value: "{{ENV.SERVICE_HOUSEKEEPING.EVENT_STORAGE | default('/data')}}"
                       - name: CRONTAB
-                        value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('0,30 * * * * *')}}" 
+                        value: "{{ENV.SERVICE_HOUSEKEEPING.CRONTAB | default('0,30 * * * * *')}}"
                       - name: DATAGRID_URL
-                        value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}" 
+                        value: "{{ENV.BACKEND_DATAGRID.URL | default('backend-datagrid:11222')}}"
+                    envFrom:
+                      - prefix: DATAGRID_
+                        secretRef:
+                          name: backend-datagrid-credentials
                     imagePullPolicy: IfNotPresent
                     name: service-housekeeping
                     resources:

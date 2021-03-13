@@ -12,6 +12,8 @@ const cron = require('node-cron');
 
 log.level = process.env.LOG_LEVEL || "trace";
 const ENV_DATAGRID_URL = process.env.DATAGRID_URL || "localhost:11222"
+const ENV_DATAGRID_USER = process.env.DATAGRID_USER || "developer"
+const ENV_DATAGRID_PSWD = process.env.DATAGRID_PSWD || "--secret--"
 const ENV_EVENT_STORAGE = process.env.EVENT_STORAGE || "./events/"
 const ENV_CRONTAB = process.env.CRONTAB
 
@@ -20,7 +22,7 @@ const ENV_CRONTAB = process.env.CRONTAB
 // ------------------------------ datagrid stuff -----------------------------
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-const datagrid = require('infinispan');
+const datagrid = require('@dfroehli42/infinispan');
 var gridEvents = null;
 var gridEventExt = null;
 var gridPlaylists = null;
@@ -33,7 +35,14 @@ async function connectToGrid(name) {
         let splitter = ENV_DATAGRID_URL.split(":");
         let host = splitter[0];
         let port = splitter[1];
-        cache = await datagrid.client([{ host: host, port: port }], { cacheName: name, mediaType: 'application/json' });
+        cache = await datagrid.client([{ host: host, port: port }], {
+          cacheName: name, mediaType: 'application/json',
+          authentication: {
+            enabled: true,
+            saslMechanism: 'PLAIN',
+            userName: ENV_DATAGRID_USER,
+            password: ENV_DATAGRID_PSWD },
+        });
         log.trace("end connected to grid %s", name);
     } catch (err) {
         throw "DataGrid connection FAILED with err " + err;
