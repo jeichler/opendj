@@ -101,9 +101,9 @@ async function connectToCache(name) {
         readyState.datagridClient = true;
         log.debug("connected to grid %s", name);
     } catch (err) {
-      if (err.includes("CacheNotFoundException")) {
+      if ((""+err).includes("CacheNotFoundException")) {
         await createCache(name);
-        grid = connectToGrid(name);
+        cache = connectToCache(name);
       } else {
         log.error("Shit hit the fan", err);
         readyState.datagridClient = false;
