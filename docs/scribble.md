@@ -60,22 +60,6 @@ sa-mw-dach/OpenDJ#64
 
 
 # Spotify API
-Registered Callbacks in Spotify Developer Dashboard for OpenDJ App:
-http://dev.opendj.io/api/provider-spotify/v1/auth_callback
-http://demo.opendj.io/api/provider-spotify/v1/auth_callback
-http://www.opendj.io/api/provider-spotify/v1/auth_callback
-http://localhost:8081/api/provider-spotify/v1/auth_callback
-
-http://localhost:8081/backend-spotifyprovider/auth_callback
-
-
-# old:
-
-http://localhost:8080/api/provider-spotify/v1/getSpotifyLoginURL?event=0
-http://demo.opendj.io/api/provider-spotify/v1/getSpotifyLoginURL?event=0
-
-http://demo.opendj.io/api/service-playlist/v1/events/0/
-
 
 # provider api:
 http://localhost:8081/api/provider-spotify/v1/events/demo/providers/spotify/login

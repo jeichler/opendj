@@ -211,7 +211,7 @@ function handleCacheError(cache, err) {
 // ------------------- spotify authentication stuff -------------------------
 // --------------------------------------------------------------------------
 // --------------------------------------------------------------------------
-const SpotifyWebApi = require('@g749/spotify-web-api-node');
+const SpotifyWebApi = require('spotify-web-api-node');
 const spotifyClientID = process.env.SPOTIFY_CLIENT_ID || "-unknown-";
 const spotifyClientSecret = process.env.SPOTIFY_CLIENT_SECRET || "-unknown-";
 const spotifyRedirectUri = process.env.SPOTIFY_CALLBACK_URL || "-unknown-";
