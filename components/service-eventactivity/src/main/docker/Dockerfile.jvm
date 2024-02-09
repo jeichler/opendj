@@ -14,7 +14,7 @@
 # docker run -i --rm -p 8080:8080 quarkus/service-eventactivity-jvm
 #
 ###
-FROM fabric8/java-alpine-openjdk8-jre:1.6.5
+FROM fabric8/java-alpine-openjdk8-jre:1.6.5@sha256:0c8081607b985031195e7de1678128169f8b71722ac21c3038210dbe01758c5c
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV AB_ENABLED=jmx_exporter
 
