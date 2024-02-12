@@ -37,7 +37,7 @@
         "keycloak-angular": "5.1.0",
         "moment": "2.24.0",
         "ng2-charts-x": "2.0.6",
-        "ng2-tooltip-directive": "2.8.17",
+        "ng2-tooltip-directive": "2.10.3",
         "qrcode": "1.4.4",
         "rxjs": "6.5.3",
         "socket.io-client": "2.5.0",
