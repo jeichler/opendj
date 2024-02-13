@@ -47,7 +47,7 @@
         "szero": "1.0.1",
         "tap-spec": "5.0.0",
         "tape": "4.13.3",
-        "xo": "0.38.2"
+        "xo": "0.57.0"
     },
     "dependencies": {
         "@dfroehli42/infinispan": "0.7.0-hrjs36-basic-auth",
