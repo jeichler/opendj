@@ -42,7 +42,7 @@
         "nodeshift": "8.1.1",
         "nyc": "15.1.0",
         "rhoaster": "0.4.1",
-        "standard-version": "9.1.1",
+        "standard-version": "9.5.0",
         "supertest": "3.4.2",
         "szero": "1.0.1",
         "tap-spec": "5.0.0",
