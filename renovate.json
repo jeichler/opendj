@@ -8,6 +8,14 @@
       ":pinVersions"
   ],
   "rebaseWhen": "behind-base-branch",
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
+  ],  
   "regexManagers": [
     {
       "description": "Update _VERSION variables in Dockerfiles",
