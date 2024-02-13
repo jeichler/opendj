@@ -11,7 +11,7 @@
     ],
     "dependencies": {
         "@dfroehli42/infinispan": "0.7.0-hrjs36-basic-auth",
-        "log4js": "4.5.1",
+        "log4js": "6.9.1",
         "node-cron": "2.0.3"
     }
 }
