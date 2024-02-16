@@ -10,7 +10,7 @@
     "author": "Ortwin Schneider",
     "license": "MIT",
     "devDependencies": {
-        "eslint-plugin-mocha": "4.12.1",
+        "eslint-plugin-mocha": "10.3.0",
         "eslint-plugin-node": "5.1.1",
         "gulp": "4.0.2",
         "gulp-eslint": "4.0.0",
