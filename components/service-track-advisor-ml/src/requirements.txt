@@ -1,6 +1,6 @@
 absl-py==0.7.1
 astor==0.8.1
-Click==7.0
+Click==7.1.2
 Flask==1.1.4
 Flask-WTF==0.14.2
 gast==0.2.2
