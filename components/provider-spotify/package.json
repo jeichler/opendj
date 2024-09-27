@@ -43,7 +43,7 @@
         "nyc": "15.1.0",
         "rhoaster": "0.4.1",
         "standard-version": "9.1.1",
-        "supertest": "3.4.2",
+        "supertest": "6.3.4",
         "szero": "1.0.1",
         "tap-spec": "5.0.0",
         "tape": "4.13.3",
